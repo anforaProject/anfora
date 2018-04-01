@@ -3,6 +3,7 @@ certifi==2018.1.18
 chardet==3.0.4
 falcon==1.4.1
 falcon-auth==1.1.0
+falcon-multipart==0.2.0
 idna==2.6
 peewee==3.2.1
 pkg-resources==0.0.0
