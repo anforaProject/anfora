@@ -36,6 +36,9 @@ class Photo(BaseModel):
     def __str__(self):
         return "{} - {} - {}".format(self.title, self.identifier, self.upload_date)
 
+    def identify(self):
+        return str(self.identifier)
+
     def json(self):
         return model_to_dict(self)
 
