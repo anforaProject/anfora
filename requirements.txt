@@ -1,0 +1,11 @@
+bjoern==2.2.0
+certifi==2018.1.18
+chardet==3.0.4
+falcon==1.4.1
+idna==2.6
+peewee==3.2.1
+pkg-resources==0.0.0
+python-mimeparse==1.6.0
+requests==2.18.4
+six==1.11.0
+urllib3==1.22
