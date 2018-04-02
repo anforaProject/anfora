@@ -17,6 +17,8 @@ class BaseModel(Model):
 
 class User(BaseModel):
     username = CharField(unique=True)
+    password = CharField()
+    admin = BooleanField(default=False)
 
     
 class Album(BaseModel):

@@ -1,14 +1,15 @@
 import json
 import os
+import logging
 
 import falcon
+
 from storage import db, Photo, User
-import logging
-from falcon_auth import FalconAuthMiddleware, BasicAuthBackend
+from auth import loadUser
 
 #Get max size for uploads
-
 MAX_SIZE = os.getenv('MAX_SIZE', 1024*1024)
+
 
 def max_body(limit):
 
@@ -25,6 +26,11 @@ def max_body(limit):
 
 
 class getPhoto(object):
+    
+    auth = {
+        'auth_disabled': True
+    }
+    
     def on_get(self, req, resp, pid):
         #photo = self.model.get_or_none(identifier=pid)
         photo = Photopac.get_or_none(identifier=pid)
@@ -38,6 +44,8 @@ class getPhoto(object):
         resp.set_header('Response by:', 'zinat')
         resp.status = falcon.HTTP_200
 
+
+        
 class addPhoto(object):
 
     def __init__(self, uploads):
