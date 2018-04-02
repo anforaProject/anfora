@@ -1,6 +1,6 @@
-# Zinat
+#Zinat
 
-## About
+##About
 
 This projects aims to create a simple to use self-hosted gallery app
 with a minimal footprint in the server.
@@ -13,7 +13,7 @@ It is build upon the following technologies:
 * peewee
 * sqlite3
 
-## License
+##License
 
 Copyright (C) 2018-? Yábir García Benchakhtir (see AUTHORS.md)
 
