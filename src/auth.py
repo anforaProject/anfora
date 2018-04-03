@@ -107,7 +107,7 @@ class Argon2(object):
         except VerifyMismatchError:
             return False
 
-def loadUser(username, password):
+def loadUserPass(username, password):
     candidate = User.get_or_none(username=username)
 
     if candidate != None:
@@ -115,5 +115,10 @@ def loadUser(username, password):
             return candidate
         else:
             return None
+
+def loadUser(payload):
+    candidate = User.get_or_none(username=payload['user']['username'])
+
+    return candidate
 
 auth_backend = JWTAuthBackend(loadUser, "GUESSWHAT?THISISNOTSECRET")
