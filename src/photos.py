@@ -5,7 +5,7 @@ import logging
 import falcon
 
 from storage import db, Photo, User
-from auth import loadUser
+from auth import loadUser, auth_backend
 
 #Get max size for uploads
 MAX_SIZE = os.getenv('MAX_SIZE', 1024*1024)
@@ -56,11 +56,11 @@ class addPhoto(object):
         image = req.get_param('image')
 
         if image.filename:
-            yab = User.get_or_none(username='yab')
+            user = req.context['user']
             
             filename = image.filename
 
-            photo = Photo.create(title=filename, public=False, user=yab)
+            photo = Photo.create(title=filename, public=False, user=user)
             print(photo, self.uploads)
 
             try:

@@ -4,7 +4,7 @@ import bjoern
 from main import app
 
 def start(server, port):
-    print("Starting server at http://{}:{}".format(server, port))
+    print(":love: Starting server at http://{}:{}".format(server, port))
     bjoern.run(app, server, port)
 
     

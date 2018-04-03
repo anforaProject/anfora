@@ -42,7 +42,7 @@ class Photo(BaseModel):
         return str(self.identifier)
 
     def json(self):
-        return model_to_dict(self)
+        return model_to_dict(self, exclude=[User.password])
 
 def connect():
     db.connect()
