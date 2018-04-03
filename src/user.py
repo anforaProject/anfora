@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import falcon
 from falcon_auth import BasicAuthBackend
 
-from storage import db, User
+from storage import (db, User, Token)
 from auth import (auth_backend,loadUserPass)
 
 class authUser(object):
@@ -17,11 +17,10 @@ class authUser(object):
     
     def on_get(self, req, resp):
         user = req.context['user']        
-        now = datetime.utcnow()
+        token = Token.create(user=user)
+        
         payload = {
-            'id': user.id,
-            'username': user.username,
-            'admin': user.admin
+            'token': token.key
         }
 
         

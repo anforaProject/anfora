@@ -1,8 +1,8 @@
 import argon2
 from argon2.exceptions import VerificationError
-from falcon_auth import JWTAuthBackend
+from falcon_auth import TokenAuthBackend
 
-from storage import User
+from storage import User, Token
 
 
 class Argon2(object):
@@ -116,9 +116,14 @@ def loadUserPass(username, password):
         else:
             return None
 
-def loadUser(payload):
-    candidate = User.get_or_none(username=payload['user']['username'])
+def loadUser(token):
+    candidate = Token.get_or_none(key=token)
 
-    return candidate
+    if candidate:
+        return candidate.user
+    else:
+        return None
 
-auth_backend = JWTAuthBackend(loadUser, "GUESSWHAT?THISISNOTSECRET")
+
+
+auth_backend = TokenAuthBackend(loadUser)
