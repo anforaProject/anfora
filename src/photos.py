@@ -33,7 +33,7 @@ class getPhoto(object):
     
     def on_get(self, req, resp, pid):
         #photo = self.model.get_or_none(identifier=pid)
-        photo = Photopac.get_or_none(identifier=pid)
+        photo = Photo.get_or_none(identifier=pid)
         
         if photo != None:
             result = json.dumps(photo.json(), default=str)
