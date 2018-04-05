@@ -17,11 +17,16 @@ class authUser(object):
     
     def on_get(self, req, resp):
         user = req.context['user']        
-        token = Token.create(user=user)
-        
+        now = datetime.utcnow()
+            
         payload = {
-            'token': token.key
-        }
+            'id': user.id,
+            'username': user.username,
+            'admin': user.admin,
+            'iat': now,
+            'nbf': now,
+            'exp': now + timedelta(seconds=3600*5)
+        }            
 
         
         resp.status = falcon.HTTP_200

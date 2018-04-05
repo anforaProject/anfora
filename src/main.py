@@ -3,7 +3,7 @@ import os
 import falcon
 
 #Middlewares
-from middleware import RequireJSON
+#from middleware import RequireJSON
 from falcon_multipart.middleware import MultipartMiddleware
 from falcon_auth import FalconAuthMiddleware
 
