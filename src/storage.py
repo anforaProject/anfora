@@ -29,6 +29,9 @@ class Album(BaseModel):
     public = BooleanField(default=True)
     user = ForeignKeyField(User, backref='albums')
 
+    def json(self):
+        return model_to_dict(self, exclude=[User.password])
+
 class Photo(BaseModel):
     title = CharField()
     identifier = CharField(default=createId, unique=True)
