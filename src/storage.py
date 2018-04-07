@@ -8,6 +8,8 @@ from playhouse.shortcuts import model_to_dict
 
 db = SqliteDatabase('zinat.db')
 
+
+
 def createId():
     return str(uuid.uuid4())
     
@@ -22,15 +24,16 @@ class User(BaseModel):
     password = CharField()
     admin = BooleanField(default=False)
 
+default_exclude = [User.password]
     
 class Album(BaseModel):
     name = CharField()
     creted_date = DateTimeField(default=datetime.datetime.now)
-    public = BooleanField(default=True)
+    public = BooleanField(default=False)
     user = ForeignKeyField(User, backref='albums')
 
     def json(self):
-        return model_to_dict(self, exclude=[User.password])
+        return model_to_dict(self, exclude=default_exclude)
 
 class Photo(BaseModel):
     title = CharField()
@@ -38,7 +41,6 @@ class Photo(BaseModel):
     upload_date = DateTimeField(default=datetime.datetime.now)
     public = BooleanField(default=True)
     user = ForeignKeyField(User, backref='photos')
-    album = ForeignKeyField(Album, backref='albums', null=True)
 
     def __str__(self):
         return "{} - {} - {}".format(self.title, self.identifier, self.upload_date)
@@ -46,9 +48,26 @@ class Photo(BaseModel):
     def identify(self):
         return str(self.identifier)
 
-    def json(self):
-        return model_to_dict(self, exclude=[User.password])
+    def albums(self):
+        query = (RelationAlbumPhoto
+                .select()
+                .where(RelationAlbumPhoto.photo==self)
+        )
 
+        return [model_to_dict(rel,exclude=[User.password, RelationAlbumPhoto.photo, RelationAlbumPhoto.id]) for rel in query]
+
+    def json(self):
+        return model_to_dict(self, exclude=default_exclude, extra_attrs=["albums"])
+
+class RelationAlbumPhoto(BaseModel):
+
+    album = ForeignKeyField(Album)
+    photo = ForeignKeyField(Photo)
+
+    class Meta:
+        indexes = (
+        (('album', 'photo'), True),
+        )
 
 class Token(BaseModel):
 
@@ -68,7 +87,7 @@ def connect():
     db.connect()
     
 def create_tables():
-    tables = [User, Album, Photo, Token]
+    tables = [User, Album, Photo, Token, RelationAlbumPhoto]
 
     for table in tables:
         if not table.table_exists():
