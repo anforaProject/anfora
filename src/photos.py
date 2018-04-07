@@ -4,7 +4,7 @@ import logging
 
 import falcon
 
-from storage import db, Photo, User
+from storage import db, Photo, User, Album
 from auth import loadUser, auth_backend
 
 #Get max size for uploads
@@ -46,21 +46,36 @@ class getPhoto(object):
 
 
         
-class addPhoto(object):
+class manageUserPhotos(object):
 
     def __init__(self, uploads):
         self.uploads = uploads
 
+    def on_get(self, req, resp, user):
+
+        auth_user = req.context['user']
+        if auth_user.username == user:
+            photos = Photo.select().join(User).where(User.username == auth_user.username)
+        #Must to considerer the case of friends relation
+        else:
+            photos = Photo.select().where(public = True).join(User).where(User.username == user)
+
+        query = [photo.json() for photo in photos]
+        resp.body = json.dumps({"photos": query}, default=str)
+        resp.status = falcon.HTTP_200
+        
+
     @falcon.before(max_body(MAX_SIZE))
-    def on_post(self, req, resp):
+    def on_post(self, req, resp, user):
         image = req.get_param('image')
+        public = req.get_param('public') or False
 
         if image.filename:
             user = req.context['user']
             
             filename = image.filename
 
-            photo = Photo.create(title=filename, public=False, user=user)
+            photo = Photo.create(title=filename, public=public, user=user)
             print(photo, self.uploads)
 
             try:
