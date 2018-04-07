@@ -11,7 +11,7 @@ from falcon_auth import FalconAuthMiddleware
 from storage import *
 
 #Resources
-from photos import (getPhoto, addPhoto)
+from photos import (getPhoto, manageUserPhotos)
 from user import (authUser)
 
 #Auth
@@ -31,8 +31,9 @@ app = falcon.API(middleware=[
 upload_folder = os.getenv('UPLOADS', '/home/yabir/killMe/uploads')
 
 #Add route
-app.add_route('/photos/', addPhoto(upload_folder))
-app.add_route('/photos/{pid}', getPhoto())
+app.add_route('/users/{user}', manageUserPhotos(upload_folder))
+
+app.add_route('/photo/{pid}', getPhoto())
 
 app.add_route('/auth/', authUser())
 
