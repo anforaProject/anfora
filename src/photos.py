@@ -4,8 +4,8 @@ import logging
 
 import falcon
 
-from storage import db, Photo, User, Album
-from auth import loadUser, auth_backend
+from storage import (db, Photo, User, Album)
+from auth import (loadUser, auth_backend, try_logged_jwt)
 
 #Get max size for uploads
 MAX_SIZE = os.getenv('MAX_SIZE', 1024*1024)
@@ -51,14 +51,19 @@ class manageUserPhotos(object):
     def __init__(self, uploads):
         self.uploads = uploads
 
+    auth = {
+        'exempt_methods': ['GET']
+    }
+
     def on_get(self, req, resp, user):
 
-        auth_user = req.context['user']
-        if auth_user.username == user:
+        auth_user = try_logged_jwt(auth_backend, req, resp)
+        
+        if auth_user and auth_user.username == user:
             photos = Photo.select().join(User).where(User.username == auth_user.username)
         #Must to considerer the case of friends relation
         else:
-            photos = Photo.select().where(public = True).join(User).where(User.username == user)
+            photos = Photo.select().where(Photo.public == True).join(User).where(User.username == user)
 
         query = [photo.json() for photo in photos]
         resp.body = json.dumps({"photos": query}, default=str)
@@ -68,7 +73,7 @@ class manageUserPhotos(object):
     @falcon.before(max_body(MAX_SIZE))
     def on_post(self, req, resp, user):
         image = req.get_param('image')
-        public = req.get_param('public') or False
+        public = bool(req.get_param('public')) #False if None
 
         if image.filename:
             user = req.context['user']
