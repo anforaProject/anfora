@@ -8,7 +8,6 @@ falcon-auth==1.1.0
 falcon-multipart==0.2.0
 idna==2.6
 peewee==3.2.1
-pkg-resources==0.0.0
 pycparser==2.18
 PyJWT==1.6.1
 python-mimeparse==1.6.0
