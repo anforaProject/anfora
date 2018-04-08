@@ -2,7 +2,8 @@ import argon2
 from argon2.exceptions import VerificationError
 from falcon_auth import TokenAuthBackend, JWTAuthBackend
 
-from storage import User, Token
+from models.user import User
+from models.token import Token
 
 
 class Argon2(object):

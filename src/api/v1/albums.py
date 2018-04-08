@@ -4,7 +4,10 @@ import logging
 
 import falcon
 
-from storage import (db, Photo, User, Album, RelationAlbumPhoto)
+from models.photo import Photo
+from models.user import User
+from models.album import Album
+from models.albumRelation import RelationAlbumPhoto
 from auth import (loadUser, auth_backend)
 
 class getAlbum(object):
@@ -37,7 +40,7 @@ class getAlbum(object):
         
 class createAlbum(object):
 
-    def on_post(self, req, resp):
+    def on_post(self, req, resp, user):
         user = req.context['user'] 
         name = req.get_param('name')
         public = bool(req.get_param('public'))
@@ -53,9 +56,9 @@ class createAlbum(object):
             resp.boyd = json.dumps({"Error": "Error creating the album"})
         
 class addToAlbum(object):
-    def on_post(self, req, resp, album):
-        photo = Photo.get_or_none(Photo.identifier == req.get_param('photo'))
-        album = Album.get_or_none(Album.name == album)
+    def on_post(self, req, resp, album, user):
+        photo = Photo.get_or_none(Photo.id == req.get_param('photo'))
+        album = Album.get_or_none(Album.id == album)
 
         print(album, photo)
 
