@@ -6,7 +6,8 @@ from datetime import datetime, timedelta
 import falcon
 from falcon_auth import BasicAuthBackend
 
-from storage import (db, User, Token)
+from models.user import User
+from models.token import Token
 from auth import (auth_backend,loadUserPass)
 
 class authUser(object):

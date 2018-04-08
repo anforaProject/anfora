@@ -8,12 +8,12 @@ from falcon_multipart.middleware import MultipartMiddleware
 from falcon_auth import FalconAuthMiddleware
 
 #Storage classes (Manage db)
-from storage import *
+from manage_db import connect, create_tables
 
 #Resources
-from photos import (getPhoto, manageUserPhotos)
-from albums import (createAlbum, getAlbum, addToAlbum)
-from user import (authUser)
+from api.v1.photos import (getPhoto, manageUserPhotos)
+from api.v1.albums import (createAlbum, getAlbum, addToAlbum)
+from api.v1.user import (authUser)
 
 #Auth
 from auth import (auth_backend,loadUser)
@@ -31,18 +31,15 @@ app = falcon.API(middleware=[
 
 upload_folder = os.getenv('UPLOADS', '/home/yabir/killMe/uploads')
 
+#Routes
+app.add_route('/api/v1/accounts/{user}', manageUserPhotos(upload_folder))
+app.add_route('/api/v1/accounts/{user}/albums', createAlbum())
+app.add_route('/api/v1/accounts/{user}/albums/{album}', getAlbum())
+app.add_route('/api/v1/accounts/{user}/albums/{album}/add', addToAlbum())
 
-app.add_route('/me/albums', createAlbum())
-app.add_route('/me/albums/get/{pid}', getAlbum())
-app.add_route('/me/albums/{album}/add', addToAlbum())
+app.add_route('/api/v1/users/{user}/photos/{pid}', getPhoto())
 
-#Add route
-app.add_route('/users/{user}', manageUserPhotos(upload_folder))
-app.add_route('/users/albums/{album}', getAlbum())
-
-app.add_route('/photo/{pid}', getPhoto())
-
-app.add_route('/auth/', authUser())
+app.add_route('/api/v1/auth/', authUser())
 
 #Connect to db
 connect()

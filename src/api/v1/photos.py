@@ -4,7 +4,9 @@ import logging
 
 import falcon
 
-from storage import (db, Photo, User, Album)
+from models.user import User
+from models.photo import Photo
+from models.album import Album
 from auth import (loadUser, auth_backend, try_logged_jwt)
 
 #Get max size for uploads
@@ -36,7 +38,7 @@ class getPhoto(object):
         photo = Photo.get_or_none(identifier=pid)
         
         if photo != None:
-            result = json.dumps(photo.json(), default=str)
+            result = photo.json()
         else:
             result = json.dumps({"Error": 'Not found'})
 
@@ -66,7 +68,7 @@ class manageUserPhotos(object):
             photos = Photo.select().where(Photo.public == True).join(User).where(User.username == user)
 
         query = [photo.json() for photo in photos]
-        resp.body = json.dumps({"photos": query}, default=str)
+        resp.body = query
         resp.status = falcon.HTTP_200
         
 
@@ -80,19 +82,24 @@ class manageUserPhotos(object):
             
             filename = image.filename
 
-            photo = Photo.create(title=filename, public=public, user=user)
+            photo = Photo.create(title=filename,
+                                 public=public,
+                                 user=user,
+                                 media_type=1)
             print(photo, self.uploads)
 
             try:
-                file_path = os.path.join(self.uploads, photo.identify())
+                file_path = os.path.join(self.uploads, photo.media_name)
                 temp_file = file_path + '~'
                 open(temp_file, 'wb').write(image.file.read())
                 os.rename(temp_file, file_path)
                 resp.status = falcon.HTTP_201
-                resp.body = json.dumps(photo.json(), default=str)
+                resp.body = photo.json()
         
             except Exception as e:
                 print(e)
                 photo.delete_instance()
                 resp.status = falcon.HTTP_500
-                
+        else:
+            resp.status = falcon.HTTP_500
+            resp.body = json.dumps({"Error": "No photo attached"})
