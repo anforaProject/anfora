@@ -5,13 +5,13 @@ from models.album import Album
 from models.photo import Photo
 from models.albumRelation import RelationAlbumPhoto
 from models.token import Token
-
+from models.followers import FollowerRelation
 
 def connect():
     db.connect()
-    
+
 def create_tables():
-    tables = [User, Album, Photo, Token, RelationAlbumPhoto]
+    tables = [User, Album, Photo, Token, RelationAlbumPhoto, FollowerRelation]
 
     for table in tables:
         if not table.table_exists():
