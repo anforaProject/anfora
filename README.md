@@ -5,11 +5,10 @@
 This projects aims to create a simple to use self-hosted gallery app
 with a minimal footprint in the server.
 
-It is build upon the following technologies:
+It is being built upon the following technologies:
 
 * Python
 * Falcon API framework
-* bjoern WSGI
 * peewee
 * sqlite3
 
