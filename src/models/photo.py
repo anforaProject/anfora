@@ -46,7 +46,10 @@ class Photo(BaseModel):
         )
 
         
-        return [model_to_dict(rel,exclude=self._BaseModel__exclude([RelationAlbumPhoto.photo, RelationAlbumPhoto.id])) for rel in query]
+        return [model_to_dict(rel,exclude=self._BaseModel__exclude([RelationAlbumPhoto.photo, RelationAlbumPhoto.id, RelationAlbumPhoto.album.user])) for rel in query]
+
+    def to_model(self):
+        return model_to_dict(self, exclude=self._BaseModel__exclude(), extra_attrs=["albums"])
 
     def json(self):
-        return json.dumps(model_to_dict(self, exclude=self._BaseModel__exclude(), extra_attrs=["albums"]), default=str)
+        return json.dumps(self.to_model(), default=str)
