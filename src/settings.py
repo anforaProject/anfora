@@ -1,0 +1,1 @@
+ACTIVITYPUB_DOMAIN="yabir.local"
