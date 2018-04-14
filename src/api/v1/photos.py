@@ -67,8 +67,8 @@ class manageUserPhotos(object):
         else:
             photos = Photo.select().where(Photo.public == True).join(User).where(User.username == user)
 
-        query = [photo.json() for photo in photos]
-        resp.body = query
+        query = [photo.to_model() for photo in photos]
+        resp.body = json.dumps(query, default=str)
         resp.status = falcon.HTTP_200
         
 
@@ -76,7 +76,7 @@ class manageUserPhotos(object):
     def on_post(self, req, resp, user):
         image = req.get_param('image')
         public = bool(req.get_param('public')) #False if None
-
+        
         if image.filename:
             user = req.context['user']
             
