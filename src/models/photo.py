@@ -3,13 +3,16 @@ import uuid
 import binascii
 import os
 import json
+import requests
 
 from peewee import *
 from playhouse.shortcuts import model_to_dict
 
+from activityPub.helpers import (URIs, uri)
 from models.base import BaseModel
 from models.user import User
 from models.album import Album
+
 
 class Photo(BaseModel):
     title = CharField()
@@ -21,9 +24,25 @@ class Photo(BaseModel):
     user = ForeignKeyField(User, backref='photos')
     text = CharField(null=True)
     sensitive = BooleanField(default=False)
-    
+
     def __str__(self):
         return "{} - {} - {}".format(self.title, self.media_name, self.created_at)
+
+    @property
+    def uris(self):
+        if self.remote:
+            ap_id = self.id
+        else:
+            ap_id = uri("photo", self.person.username, self.id)
+        return URIs(id=ap_id)
+
+    def to_activitystream(self):
+        payload = self.payload.decode("utf-8")
+        data = json.loads(payload)
+        data.update({
+            "id": self.uris.id
+        })
+        return data
 
     def save(self,*args, **kwargs):
         if not self.media_name:
@@ -39,13 +58,13 @@ class Photo(BaseModel):
 
     def albums(self):
         from models.albumRelation import RelationAlbumPhoto
-        
+
         query = (RelationAlbumPhoto
                 .select()
                 .where(RelationAlbumPhoto.photo==self)
         )
 
-        
+
         return [model_to_dict(rel,exclude=self._BaseModel__exclude([RelationAlbumPhoto.photo, RelationAlbumPhoto.id, RelationAlbumPhoto.album.user])) for rel in query]
 
     def to_model(self):

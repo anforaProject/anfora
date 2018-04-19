@@ -28,15 +28,15 @@ def max_body(limit):
 
 
 class getPhoto(object):
-    
+
     auth = {
         'auth_disabled': True
     }
-    
+
     def on_get(self, req, resp, pid):
         #photo = self.model.get_or_none(identifier=pid)
         photo = Photo.get_or_none(identifier=pid)
-        
+
         if photo != None:
             result = photo.json()
         else:
@@ -47,7 +47,7 @@ class getPhoto(object):
         resp.status = falcon.HTTP_200
 
 
-        
+
 class manageUserPhotos(object):
 
     def __init__(self, uploads):
@@ -60,7 +60,7 @@ class manageUserPhotos(object):
     def on_get(self, req, resp, user):
 
         auth_user = try_logged_jwt(auth_backend, req, resp)
-        
+
         if auth_user and auth_user.username == user:
             photos = Photo.select().join(User).where(User.username == auth_user.username)
         #Must to considerer the case of friends relation
@@ -70,18 +70,16 @@ class manageUserPhotos(object):
         query = [photo.to_model() for photo in photos]
         resp.body = json.dumps(query, default=str)
         resp.status = falcon.HTTP_200
-        
+
 
     @falcon.before(max_body(MAX_SIZE))
     def on_post(self, req, resp, user):
         image = req.get_param('image')
         public = bool(req.get_param('public')) #False if None
-        
+
         if image.filename:
             user = req.context['user']
-            
             filename = image.filename
-
             photo = Photo.create(title=filename,
                                  public=public,
                                  user=user,
@@ -95,7 +93,7 @@ class manageUserPhotos(object):
                 os.rename(temp_file, file_path)
                 resp.status = falcon.HTTP_201
                 resp.body = photo.json()
-        
+
             except Exception as e:
                 print(e)
                 photo.delete_instance()
