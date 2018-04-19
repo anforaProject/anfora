@@ -22,3 +22,40 @@ class Activity(Object):
         return set(audience)
 
     def strip_audience(self):
+        new = copy(self)
+        if getattr(new, "bto", None):
+            delattr(new, "bto")
+        if getattr(new, "bcc", None):
+            delattr(new, "bcc")
+
+        return new
+
+    def validate(self):
+        pass
+
+class Create(Activity):
+
+    type = "Create"
+
+    def validate(self):
+        msg = None
+        if not getattr(self, "actor", None):
+            msg = "Invalid Create activity, actor is missing"
+        elif not getattr(self, "object", None):
+            msg = "Invalid Create activity, object is missing"
+        elif not isinstance(self.actor, Actor) and not isinstance(self.actor, str):
+            msg = "Invalid actor type, must be an Actor or a string"
+        elif not isinstance(self.object, Object):
+            msg = "Invalid object type, must be an Object"
+
+        if msg:
+            raise errors.ASValidateException(msg)
+
+class Follow(Activity):
+    type = "Follow"
+
+ALLOWED_TYPES.update({
+    "Activity": Activity,
+    "Create": Create,
+    "Follow": Follow,
+})
