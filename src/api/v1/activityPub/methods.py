@@ -1,7 +1,14 @@
+from urllib.parse import urlparse
+
 import requests
+
 from activityPub import activities
 from models.activity import Activity
+from activityPub import activities
 from activityPub.activities import as_activitystream
+
+from models.user import User
+from models.followers import FollowerRelation
 
 def dereference(ap_id, type=None):
     res = requests.get(ap_id)
@@ -49,3 +56,39 @@ def store(activity, person, remote=False):
         obj.ap_id = activity.id
     obj.save()
     return obj.ap_id
+
+def get_or_create_remote_user(id):
+    try:
+        user = User.get(ap_id==id)
+    except User.DoesNotExist:
+        user = dereference(id)
+        hostname = urlparse(person.id).hostname
+        username = "{0}@{1}".format(person.preferredUsername, hostname)
+
+        user = User.create(
+            username=username,
+            name=person.name,
+            ap_id=person.id,
+            remote=True,
+            password = "what"
+        )
+
+    return user
+
+def handle_follow(activity):
+    followed = User.get_or_none(ap_id=activity.object)
+
+    if followed:
+
+        if isinstance(activity.actor, activities.Actor):
+            ap_id = activity.actor.id
+        elif:
+            ap_id = activity.actor
+
+        follower = get_or_create_remote_user(ap_id)
+        FollowerRelation.create(
+            user = follower,
+            follows = followed
+        )
+    else:
+        pass

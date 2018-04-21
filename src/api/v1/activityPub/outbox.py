@@ -20,7 +20,7 @@ class Outbox():
         objects = user.activities
                                 .select()
                                 .where(remote==False)
-                                .order_by(Tweet.created_at.desc())
+                                .order_by(created_at.desc())
 
         collection = activities.OrderedCollection(objects)
         resp.body = collection.to_json(context=True)
