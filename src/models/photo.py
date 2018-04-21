@@ -15,6 +15,7 @@ from models.album import Album
 
 
 class Photo(BaseModel):
+    ap_id = TextField()
     title = CharField()
     media_name = CharField(unique=True)
     created_at = DateTimeField(default=datetime.datetime.now)
