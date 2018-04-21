@@ -23,7 +23,7 @@ class Activity(BaseModel):
         return URIs(id=ap_id)
 
     def to_activitystream(self):
-        payload = self.payload.decode("utf-8")
+        payload = self.payload
         data = json.loads(payload)
         data.update({
             "id": self.uris.id
