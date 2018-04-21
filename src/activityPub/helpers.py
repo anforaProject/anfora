@@ -1,10 +1,13 @@
 from models.base import BaseModel
 from settings import ACTIVITYPUB_DOMAIN
-from uris import reverse_uri
+from urls import urls
+
+def reverse_uri(name, *args):
+    return urls[name].format(**args)
 
 def uri(name, *args):
     domain = ACTIVITYPUB_DOMAIN
-    path = reverse_uri(name)
+    path = reverse_uri(name, *args)
     return "//{domain}{path}".format(domain, path)
 
 class URIs(object):
