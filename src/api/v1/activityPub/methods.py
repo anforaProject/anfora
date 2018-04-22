@@ -1,3 +1,4 @@
+import json
 from urllib.parse import urlparse
 
 import requests
@@ -55,11 +56,11 @@ def store(activity, person, remote=False):
     if remote:
         obj.ap_id = activity.id
     obj.save()
-    return obj.ap_id
+    return obj.id
 
 def get_or_create_remote_user(id):
     try:
-        user = User.get(ap_id==id)
+        user = User.get(id==id)
     except User.DoesNotExist:
         user = dereference(id)
         hostname = urlparse(person.id).hostname

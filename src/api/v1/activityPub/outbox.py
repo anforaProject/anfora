@@ -88,11 +88,12 @@ class Outbox():
             # if activity.object.type != "Person":
             #     raise Exception("Sorry, you can only follow Persons objects")
 
-            followed = User.get_or_create_remote_person(activity.object)
+            followed = get_or_create_remote_user(activity.object)
+            user = req.context["user"]
             FollowerRelation(user = req.context["user"], follows=followed)
 
-            activity.actor = person.uris.id
+            activity.actor = user.uris.id
             activity.to = followed.uris.id
-            activity.id = store(activity, person)
+            activity.id = store(activity, user)
             resp.body = json.dumps({"Success": "Delivered successfully"})
             resp.status = falcon.HTTP_200
