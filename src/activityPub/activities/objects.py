@@ -1,10 +1,11 @@
 import json
-import .errors
 import requests
+
+from .errors import ASTypeError
 
 class Object(object):
     attributes = ["type", "id", "name", "to"]
-    type = Object
+    type = "Object"
 
     def __init__(self, obj=None, **kwargs):
         if obj:
@@ -162,4 +163,5 @@ def as_activitystream(obj):
 def encode_activitystream(obj):
     if isinstance(obj, Object):
         return obj.to_json()
-raise errors.ASTypeError("Unknown ActivityStream Type")
+
+    raise ASTypeError("Unknown ActivityStream Type")

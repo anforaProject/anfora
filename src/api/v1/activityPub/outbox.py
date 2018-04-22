@@ -3,11 +3,14 @@ import falcon
 
 from models.user import User
 from models.photo import Photo
+from models.followers import FollowerRelation
 
 from activityPub import activities
 from activityPub.activities import as_activitystream
 
 from api.v1.activityPub.methods import deliver, store
+
+from methods import get_or_create_remote_user
 
 class Outbox():
 
@@ -17,10 +20,7 @@ class Outbox():
 
     def on_get(self, req, resp, username):
         user = User.get_or_none(username==username)
-        objects = user.activities
-                                .select()
-                                .where(remote==False)
-                                .order_by(created_at.desc())
+        objects = user.activities.select().where(remote==False).order_by(created_at.desc())
 
         collection = activities.OrderedCollection(objects)
         resp.body = collection.to_json(context=True)
@@ -33,7 +33,7 @@ class Outbox():
             resp.status = falcon.HTTP_401
             resp.body = json.dumps({"Error": "Access denied"})
 
-        payload = req.get_param('payload')
+        payload = req.stream.read().decode("utf-8")
         activity = json.loads(payload, object_hook=as_activitystream)
 
         if activity.type == "Note":
@@ -82,3 +82,17 @@ class Outbox():
             deliver(activity)
             resp.body = json.dumps({"Success": "Delivered successfully"})
             resp.status = falcon.HTTP_200
+
+
+    if activity.type == "Follow":
+        # if activity.object.type != "Person":
+        #     raise Exception("Sorry, you can only follow Persons objects")
+
+        followed = User.get_or_create_remote_person(activity.object)
+        FollowerRelation(user = req.context["user"], follows=followed)
+
+        activity.actor = person.uris.id
+        activity.to = followed.uris.id
+        activity.id = store(activity, person)
+        resp.body = json.dumps({"Success": "Delivered successfully"})
+        resp.status = falcon.HTTP_200

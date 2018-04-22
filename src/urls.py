@@ -1,9 +1,12 @@
 urls = {
-    "activity": "/@{}/outbox/{}",
-    "outbox": "/@{}/outbox",
-    "photos": "/@{}/photos"
-    "photo": "/@{}/photos/{}"
-    "following": "/@{}/following",
-    "followers": "/@{}/followers",
-    "user": "/@{}"
+    "activity": "/@{username}/outbox/{id}",
+    "outbox": "/@{username}/outbox",
+    "inbox": "/@{username}/inbox",
+    "photos": "/@{username}/photos",
+    "photo": "/@{username}/photos/{id}",
+    "following": "/@{username}/following",
+    "followers": "/@{username}/followers",
+    "user": "/@{username}",
+    "media": "/media/files/original/{}",
+    "preview": "/media/files/small/{}",
 }

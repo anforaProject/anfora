@@ -77,12 +77,12 @@ def get_or_create_remote_user(id):
 
 def handle_follow(activity):
     followed = User.get_or_none(ap_id=activity.object)
-
+    print("call")
     if followed:
 
         if isinstance(activity.actor, activities.Actor):
             ap_id = activity.actor.id
-        elif:
+        elif isinstance(activity.actor, str):
             ap_id = activity.actor
 
         follower = get_or_create_remote_user(ap_id)
@@ -90,5 +90,6 @@ def handle_follow(activity):
             user = follower,
             follows = followed
         )
+        print("Created")
     else:
         pass
