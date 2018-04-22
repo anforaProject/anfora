@@ -41,6 +41,10 @@ class authUser(object):
         resp.body = json.dumps({"token":auth_backend.get_auth_token(payload)})
 
 class getUser():
+    auth = {
+        'exempt_methods': ['GET']
+    }
+    
     def on_get(self, req, resp, username):
         person = User.get_or_none(username=username)
         if person:

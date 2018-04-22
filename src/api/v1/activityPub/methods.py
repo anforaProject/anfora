@@ -14,7 +14,6 @@ from models.followers import FollowerRelation
 def dereference(ap_id, type=None):
     res = requests.get(ap_id)
     if res.status_code != 200:
-        print("FAIIIIIIIIIIIIIIILED")
         raise Exception("Failed to dereference {0}".format(ap_id))
 
     return json.loads(res.text, object_hook=as_activitystream)
@@ -60,9 +59,8 @@ def store(activity, person, remote=False):
     return obj.id
 
 def get_or_create_remote_user(ap_id):
-    try:
-        user = User.get(ap_id==ap_id)
-    except User.DoesNotExist:
+    user = User.get_or_none(ap_id=ap_id)
+    if not user:
         user = dereference(ap_id)
         hostname = urlparse(user.id).hostname
         username = "{0}@{1}".format(user.preferredUsername, hostname)
@@ -74,7 +72,7 @@ def get_or_create_remote_user(ap_id):
             remote=True,
             password = "what"
         )
-
+    print(user)
     return user
 
 def handle_follow(activity):
