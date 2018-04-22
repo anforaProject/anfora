@@ -11,7 +11,7 @@ class Activity(BaseModel):
     ap_id = CharField()
     payload = TextField()
     created_at = DateTimeField(default = datetime.now)
-    person = ForeignKey(User, backref='activities')
+    person = ForeignKeyField(User, backref='activities')
     remote = BooleanField(default=False)
 
     @property

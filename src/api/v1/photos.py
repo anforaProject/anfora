@@ -83,7 +83,9 @@ class manageUserPhotos(object):
             photo = Photo.create(title=filename,
                                  public=public,
                                  user=user,
-                                 media_type=1)
+                                 media_type="image",
+                                 description=req.get_param('description'),
+                                 message=req.get_param('message'))
             print(photo, self.uploads)
 
             try:
