@@ -15,16 +15,20 @@ from models.album import Album
 
 
 class Photo(BaseModel):
-    ap_id = TextField()
-    title = CharField()
     media_name = CharField(unique=True)
     created_at = DateTimeField(default=datetime.datetime.now)
     updated_at = DateTimeField(default=datetime.datetime.now)
-    media_type = IntegerField()
+    message = TextField()
+    media_type = CharField(max_length=20)
     public = BooleanField(default=True)
     user = ForeignKeyField(User, backref='photos')
     text = CharField(null=True)
     sensitive = BooleanField(default=False)
+    height = IntegerField()
+    width = IntegerField()
+    description = CharField(max_length=200)
+    remote = BooleanField(default = False)
+    #Need to add tagged users
 
     def __str__(self):
         return "{} - {} - {}".format(self.title, self.media_name, self.created_at)
@@ -35,14 +39,21 @@ class Photo(BaseModel):
             ap_id = self.id
         else:
             ap_id = uri("photo", self.person.username, self.id)
-        return URIs(id=ap_id)
+        return URIs(id=ap_id,
+                    media=uri("media", self.media_name),
+                    preview=uri("preview", self.media_name)
+                    )
 
     def to_activitystream(self):
-        payload = self.payload
-        data = json.loads(payload)
-        data.update({
-            "id": self.uris.id
-        })
+        json = {
+            "type": "image",
+            "id": self.uris.id,
+            "description": self.description,
+            "url": self.uris.media,
+            "preview": self.uris.preview,
+            "content": self.message,
+        }
+
         return data
 
     def save(self,*args, **kwargs):

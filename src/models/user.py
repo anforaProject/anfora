@@ -7,12 +7,10 @@ from peewee import *
 from playhouse.shortcuts import model_to_dict
 
 from models.base import BaseModel
-from activityPub.helpers import (uri, URI)
+from activityPub.helpers import (uri, URIs)
 
 class User(BaseModel):
-
     name = CharField(null=True)
-    ap_id = TextField(null=True)
     username = CharField(unique=True)
     password = CharField()
     admin = BooleanField(default=False)
@@ -31,11 +29,11 @@ class User(BaseModel):
             return URIs(id=self.id)
 
         return URIs(
-            id=uri("person", self.username),
-            following=uri("following", self.username),
-            followers=uri("followers", self.username),
-            outbox=uri("outbox", self.username),
-            inbox=uri("inbox", self.username),
+            id=uri("person", {"username":self.username}),
+            following=uri("following", {"username":self.username}),
+            followers=uri("followers", {"username":self.username}),
+            outbox=uri("outbox", {"username":self.username}),
+            inbox=uri("inbox", {"username":self.username}),
         )
 
 
@@ -54,3 +52,5 @@ class User(BaseModel):
                 "outbox": self.uris.outbox,
                 "inbox": self.uris.inbox,
             })
+
+        return json
