@@ -10,6 +10,7 @@ from models.base import BaseModel
 from activityPub.helpers import (uri, URIs)
 
 class User(BaseModel):
+    ap_id = CharField(null=True)
     name = CharField(null=True)
     username = CharField(unique=True)
     password = CharField()
@@ -26,7 +27,7 @@ class User(BaseModel):
     @property
     def uris(self):
         if self.remote:
-            return URIs(id=self.id)
+            return URIs(id=self.ap_id)
 
         return URIs(
             id=uri("user", {"username":self.username}),

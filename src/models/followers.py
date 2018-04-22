@@ -12,3 +12,6 @@ class FollowerRelation(BaseModel):
         indexes = (
         (('user', 'follows'), True),
         )
+
+    def __str__(self):
+        return "{} follows {}".format(self.user.username, self.follows.username)
