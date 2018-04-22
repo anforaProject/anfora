@@ -1,6 +1,7 @@
 import json
 from urllib.parse import urlparse
 
+import re
 import requests
 
 from activityPub import activities
@@ -64,10 +65,10 @@ def get_or_create_remote_user(ap_id):
         user = dereference(ap_id)
         hostname = urlparse(user.id).hostname
         username = "{0}@{1}".format(user.preferredUsername, hostname)
-
+        print(user)
         user = User.create(
             username=username,
-            name=user.name,
+            name=user.preferredUsername,
             ap_id=user.id,
             remote=True,
             password = "what"
