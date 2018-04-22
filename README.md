@@ -10,7 +10,9 @@ It is being built upon the following technologies:
 * Python
 * Falcon API framework
 * peewee
-* sqlite3
+
+Also is in the objectives of this project to create a decentralized social 
+network to share photos. Similar to instagram with the technology used at mastodon.
 
 ## License
 
