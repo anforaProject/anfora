@@ -90,6 +90,7 @@ class Outbox():
 
             followed = get_or_create_remote_user(activity.object)
             user = req.context["user"]
+            print(followed.ap_id, user.username, followed.username)
             #FollowerRelation.create(user = user, follows=followed)
 
             activity.actor = user.uris.id
