@@ -10,7 +10,7 @@ from activityPub.activities import as_activitystream
 
 from api.v1.activityPub.methods import deliver, store
 
-from methods import get_or_create_remote_user
+from api.v1.activityPub.methods import get_or_create_remote_user
 
 class Outbox():
 
@@ -84,15 +84,15 @@ class Outbox():
             resp.status = falcon.HTTP_200
 
 
-    if activity.type == "Follow":
-        # if activity.object.type != "Person":
-        #     raise Exception("Sorry, you can only follow Persons objects")
+        if activity.type == "Follow":
+            # if activity.object.type != "Person":
+            #     raise Exception("Sorry, you can only follow Persons objects")
 
-        followed = User.get_or_create_remote_person(activity.object)
-        FollowerRelation(user = req.context["user"], follows=followed)
+            followed = User.get_or_create_remote_person(activity.object)
+            FollowerRelation(user = req.context["user"], follows=followed)
 
-        activity.actor = person.uris.id
-        activity.to = followed.uris.id
-        activity.id = store(activity, person)
-        resp.body = json.dumps({"Success": "Delivered successfully"})
-        resp.status = falcon.HTTP_200
+            activity.actor = person.uris.id
+            activity.to = followed.uris.id
+            activity.id = store(activity, person)
+            resp.body = json.dumps({"Success": "Delivered successfully"})
+            resp.status = falcon.HTTP_200
