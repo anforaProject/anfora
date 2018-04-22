@@ -1,7 +1,6 @@
 import json
 from urllib.parse import urlparse
 
-import re
 import requests
 
 from activityPub import activities
@@ -14,20 +13,25 @@ from models.followers import FollowerRelation
 
 def dereference(ap_id, type=None):
     res = requests.get(ap_id)
-    if res.status_code != 200:
-        raise Exception("Failed to dereference {0}".format(ap_id))
+    try:
+        if res.status_code != 200:
+            raise Exception("Failed to dereference {0}".format(ap_id))
 
-    return json.loads(res.text, object_hook=as_activitystream)
-
+        return json.loads(res.text, object_hook=as_activitystream)
+    except:
+        raise Exception("Error connectiing server")
 
 def get_final_audience(audience):
     final_audience = []
     for ap_id in audience:
+        print(ap_id)
         obj = dereference(ap_id)
         if isinstance(obj, activities.Collection):
             final_audience += [item.id for item in obj.items]
         elif isinstance(obj, activities.Actor):
             final_audience.append(obj.id)
+        else:
+            print("ninguno")
     return set(final_audience)
 
 def deliver_to(ap_id, activity):
@@ -46,7 +50,8 @@ def deliver_to(ap_id, activity):
 def deliver(activity):
     audience = activity.get_audience()
     activity = activity.strip_audience()
-    audiente = get_final_audience(audience)
+    audience = get_final_audience(audience)
+    print("delivering", audience)
     for ap_id in audience:
         deliver_to(ap_id, activity)
 
