@@ -13,7 +13,7 @@ from manage_db import connect, create_tables
 #Resources
 from api.v1.photos import (getPhoto, manageUserPhotos)
 from api.v1.albums import (createAlbum, getAlbum, addToAlbum)
-from api.v1.user import (authUser)
+from api.v1.user import (authUser, getUser)
 
 from api.v1.activityPub.inbox import (Inbox)
 from api.v1.activityPub.outbox import (Outbox)
@@ -46,7 +46,7 @@ app.add_route('/api/v1/accounts/{user}/albums/{album}/add', addToAlbum())
 app.add_route('/api/v1/users/{user}/photos/{pid}', getPhoto())
 
 app.add_route('/api/v1/auth/', authUser())
-
+app.add_route(urls["user"], getUser())
 app.add_route(urls["outbox"], Outbox())
 app.add_route(urls["inbox"], Inbox())
 

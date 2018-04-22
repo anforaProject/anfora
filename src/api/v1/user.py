@@ -10,6 +10,8 @@ from models.user import User
 from models.token import Token
 from auth import (auth_backend,loadUserPass)
 
+from activityPub import activities
+
 class authUser(object):
 
     auth = {
@@ -37,3 +39,12 @@ class authUser(object):
 
         resp.status = falcon.HTTP_200
         resp.body = json.dumps({"token":auth_backend.get_auth_token(payload)})
+
+class getUser():
+    def on_get(self, req, resp, username):
+        person = User.get_or_none(username=username)
+        if person:
+            resp.body = json.dumps(activities.Person(person).to_json(context=True))
+            resp.status = falcon.HTTP_200
+        else:
+            resp.status = falcon.HTTP_404
