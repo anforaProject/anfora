@@ -1,6 +1,8 @@
 from activityPub.activities.objects import (ALLOWED_TYPES, Object, Actor,
                                             Person, Note)
 
+from copy import copy
+
 from activityPub.activities import errors
 
 class Activity(Object):
