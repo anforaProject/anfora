@@ -8,7 +8,6 @@ from models.base import BaseModel
 from activityPub.helpers import (URIs, uri)
 
 class Activity(BaseModel):
-    ap_id = CharField()
     payload = TextField()
     created_at = DateTimeField(default = datetime.now)
     person = ForeignKeyField(User, backref='activities')

@@ -29,7 +29,7 @@ class User(BaseModel):
             return URIs(id=self.id)
 
         return URIs(
-            id=uri("person", {"username":self.username}),
+            id=uri("user", {"username":self.username}),
             following=uri("following", {"username":self.username}),
             followers=uri("followers", {"username":self.username}),
             outbox=uri("outbox", {"username":self.username}),

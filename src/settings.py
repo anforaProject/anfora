@@ -1,1 +1,1 @@
-ACTIVITYPUB_DOMAIN="yabir.local"
+ACTIVITYPUB_DOMAIN="localhost:8000"
