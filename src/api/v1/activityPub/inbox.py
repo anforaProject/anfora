@@ -8,6 +8,7 @@ from activityPub import activities
 from activityPub.activities import as_activitystream
 
 from api.v1.activityPub.methods import (deliver, store, handle_follow)
+from api.v1.activityPub.methods import (get_or_create_remote_user, dereference)
 
 class Inbox():
 
@@ -26,15 +27,19 @@ class Inbox():
 
     def on_post(self, req, resp, username):
 
-        payload = req.get_param('payload')
-        activity = json.loads(payload, object_hook=as_activitystream)
-        activity.validate()
+        if req.content_length:
+            activity = json.loads(req.stream.read().decode("utf-8"), object_hook=as_activitystream)
+        else:
+            activity = {}
 
+        activity.validate()
+        print(activity)
         if activity.type == "Create":
             #handle_note(activity)
             pass
         elif activity.type == "Follow":
             handle_follow(activity)
 
+        user = get_or_create_remote_user(ap_id=activity.actor)
         store(activity, user, remote = True)
         resp.status= falcon.HTTP_200
