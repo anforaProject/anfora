@@ -56,6 +56,12 @@ class Create(Activity):
 class Follow(Activity):
     type = "Follow"
 
+class Reject(Activity):
+    type = "Reject"
+
+class Accept(Activity):
+    type = "Accept"
+
 ALLOWED_TYPES.update({
     "Activity": Activity,
     "Create": Create,

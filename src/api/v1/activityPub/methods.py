@@ -12,6 +12,7 @@ from models.user import User
 from models.followers import FollowerRelation
 
 def dereference(ap_id, type=None):
+    print("=> dereference {}".format(ap_id))
     res = requests.get(ap_id)
     try:
         if res.status_code != 200:
@@ -19,7 +20,7 @@ def dereference(ap_id, type=None):
 
         return json.loads(res.text, object_hook=as_activitystream)
     except:
-        raise Exception("Error connectiing server")
+        raise Exception("Error connecting server")
 
 def get_final_audience(audience):
     final_audience = []
@@ -39,7 +40,7 @@ def deliver_to(ap_id, activity):
     if not getattr(obj, "inbox", None):
         # XXX: log this
         return
-
+    print(activity.to_json(context=True))
     res = requests.post(obj.inbox, json=activity.to_json(context=True))
     if res.status_code != 200:
         msg = "Failed to deliver activity {0} to {1}"
@@ -50,6 +51,7 @@ def deliver_to(ap_id, activity):
 def deliver(activity):
     audience = activity.get_audience()
     activity = activity.strip_audience()
+    print("=> audience: {}".format(audience))
     audience = get_final_audience(audience)
     print("delivering", audience)
     for ap_id in audience:
@@ -78,12 +80,12 @@ def get_or_create_remote_user(ap_id):
             remote=True,
             password = "what"
         )
-    print(user)
+    #print(user)
     return user
 
 def handle_follow(activity):
     followed = User.get_or_none(ap_id=activity.object)
-    print("call")
+    print("=> Handling follow")
     if followed:
         if isinstance(activity.actor, activities.Actor):
             ap_id = activity.actor.id
@@ -95,6 +97,9 @@ def handle_follow(activity):
             user = follower,
             follows = followed
         )
-        print("Created")
+
+        response = {"Type": "Accept", "Object":activity}
+
+
     else:
         print("error handling follow")

@@ -55,3 +55,8 @@ class User(BaseModel):
             })
 
         return json
+
+    def save(self,*args, **kwargs):
+        if not self.remote:
+            self.ap_id = uri("user", {"username":self.username})
+        return super(User, self).save(*args, **kwargs)
