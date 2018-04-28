@@ -12,7 +12,7 @@ from api.v1.activityPub.methods import (deliver, store, handle_follow)
 class Inbox():
 
     auth = {
-        'exempt_methods': ['GET']
+        'exempt_methods': ['POST']
     }
 
     def on_get(self, req, resp, username):
@@ -26,7 +26,6 @@ class Inbox():
 
     def on_post(self, req, resp, username):
 
-        user = req.context['user']
         payload = req.get_param('payload')
         activity = json.loads(payload, object_hook=as_activitystream)
         activity.validate()
