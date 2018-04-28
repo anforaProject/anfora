@@ -1,3 +1,4 @@
-gunicorn -b :8000 main:app \
+gunicorn -b :$1 main:app \
 	 --keep-alive 5 \
-	 --reload
+	 --reload \
+	 --log-level DEBUG

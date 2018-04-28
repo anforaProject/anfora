@@ -11,13 +11,12 @@ from manage_db import (connect, create_tables)
 connect()
 create_tables()
 
-passw = Argon2().generate_password_hash("yabirIn")
+passw = Argon2().generate_password_hash("test")
 
 #yab = User.create(username="yab")
-yab, created = User.get_or_create(username="yab",
+yab, created = User.get_or_create(username="test",
                                   defaults={
                                       'password':passw,
-                                      'admin':True,
                                       'email':"test@gt.com",
                                       'confirmation_sent_at':datetime.datetime.now(),
                                       'last_sign_in_at':1
