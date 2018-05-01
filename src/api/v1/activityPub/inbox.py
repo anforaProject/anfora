@@ -7,7 +7,7 @@ from models.photo import Photo
 from activityPub import activities
 from activityPub.activities import as_activitystream
 
-from api.v1.activityPub.methods import (deliver, store, handle_follow)
+from api.v1.activityPub.methods import (deliver, store, handle_follow, handle_note)
 from api.v1.activityPub.methods import (get_or_create_remote_user, dereference)
 
 class Inbox():
@@ -35,8 +35,7 @@ class Inbox():
         activity.validate()
         print(activity)
         if activity.type == "Create":
-            #handle_note(activity)
-            pass
+            handle_note(activity)
         elif activity.type == "Follow":
             handle_follow(activity)
 

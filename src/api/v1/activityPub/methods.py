@@ -103,3 +103,21 @@ def handle_follow(activity):
 
     else:
         print("error handling follow")
+
+def handle_note(activity):
+    if isinstance(activity.actor, activities.Actor):
+        ap_id = activity.actor.id
+    elif isinstance(activity.actor, str):
+        ap_id = activity.actor
+
+    person = get_or_create_remote_person(ap_id)
+
+    note = Photo.get_or_none(ap_id=activity.object.id)
+
+    if not note:
+        Photo.create(
+            content=activity.object.content,
+            person=person,
+            ap_id=activity.object.id,
+            remote=True
+        )
