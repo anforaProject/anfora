@@ -27,6 +27,8 @@ auth_middleware = FalconAuthMiddleware(auth_backend)
 #URLs
 from urls import urls
 
+from api.v1.server import serverInfo
+
 #Create the app
 app = falcon.API(middleware=[
     MultipartMiddleware(),
@@ -38,6 +40,8 @@ app = falcon.API(middleware=[
 upload_folder = os.getenv('UPLOADS', '/home/yabir/killMe/uploads')
 
 #Routes
+app.add_route('/info', serverInfo())
+
 app.add_route('/api/v1/accounts/{user}', manageUserPhotos(upload_folder))
 app.add_route('/api/v1/accounts/{user}/albums', createAlbum())
 app.add_route('/api/v1/accounts/{user}/albums/{album}', getAlbum())
