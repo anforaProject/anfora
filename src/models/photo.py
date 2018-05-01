@@ -28,6 +28,7 @@ class Photo(BaseModel):
     width = IntegerField()
     description = CharField(max_length=200)
     remote = BooleanField(default = False)
+    ap_id = CharField(null=True)
     #Need to add tagged users
 
     def __str__(self):
@@ -36,7 +37,7 @@ class Photo(BaseModel):
     @property
     def uris(self):
         if self.remote:
-            ap_id = self.id
+            ap_id = self.ap_id
         else:
             ap_id = uri("photo", self.person.username, self.id)
         return URIs(id=ap_id,

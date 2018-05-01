@@ -8,6 +8,7 @@ falcon-multipart==0.2.0
 gunicorn==19.7.1
 idna==2.6
 peewee==3.2.1
+Pillow==5.1.0
 pycparser==2.18
 PyJWT==1.6.1
 python-mimeparse==1.6.0
