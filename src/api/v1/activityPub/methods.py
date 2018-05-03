@@ -61,8 +61,6 @@ def deliver(activity):
 def store(activity, person, remote=False):
     payload  = bytes(json.dumps(activity.to_json()), "utf-8")
     obj = Activity(payload=payload, person=person, remote=remote)
-    if remote:
-        obj.ap_id = activity.id
     obj.save()
     return obj.id
 

@@ -32,17 +32,17 @@ class Photo(BaseModel):
     #Need to add tagged users
 
     def __str__(self):
-        return "{} - {} - {}".format(self.title, self.media_name, self.created_at)
+        return "{} - {} - {} - {}".format(self.title, self.media_name, self.created_at, self.remote)
 
     @property
     def uris(self):
         if self.remote:
             ap_id = self.ap_id
         else:
-            ap_id = uri("photo", self.person.username, self.id)
+            ap_id = uri("photo", {"username":"self.user.username", "id":self.id})
         return URIs(id=ap_id,
-                    media=uri("media", self.media_name),
-                    preview=uri("preview", self.media_name)
+                    media=uri("media", {"id":self.media_name}),
+                    preview=uri("preview", {"id":self.media_name})
                     )
 
     def to_activitystream(self):
