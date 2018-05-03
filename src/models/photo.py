@@ -32,7 +32,7 @@ class Photo(BaseModel):
     #Need to add tagged users
 
     def __str__(self):
-        return "{} - {} - {} - {}".format(self.title, self.media_name, self.created_at, self.remote)
+        return "{} - {} - {} - {}".format(self.message, self.media_name, self.created_at, self.remote)
 
     @property
     def uris(self):
