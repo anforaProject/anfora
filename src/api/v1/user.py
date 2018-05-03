@@ -44,11 +44,11 @@ class getUser():
     auth = {
         'exempt_methods': ['GET']
     }
-    
+
     def on_get(self, req, resp, username):
         person = User.get_or_none(username=username)
         if person:
-            resp.body = json.dumps(activities.Person(person).to_json(context=True))
+            resp.body = json.dumps(person.to_activitystream())
             resp.status = falcon.HTTP_200
         else:
             resp.status = falcon.HTTP_404
