@@ -7,7 +7,7 @@ class Object(object):
     attributes = ["type", "id", "name", "to"]
     type = "Object"
 
-    def __init__(self, obj=None, **kwargs):
+    def __init__(self, obj=None, *args, **kwargs):
         if obj:
             self.__init__(**obj.to_activitystream())
         for key in self.attributes:
@@ -15,12 +15,11 @@ class Object(object):
                 continue
 
             value = kwargs.get(key)
-            if value is None:
-                continue
 
             if isinstance(value, dict) and value.get("type"):
                 value = as_activitystream(value)
-            self.__setattr__(key, value)
+
+            setattr(self, key, value)
 
     def __str__(self):
         content = json.dumps(self, default=encode_activitystream)
@@ -72,8 +71,8 @@ class Actor(Object):
 class Person(Actor):
     type = "Person"
 
-class Note(object):
-    attributes = Object.attributes + ["content", "actor"]
+class Note(Object):
+    attributes = Object.attributes + ["message", "actor","description", "sensitive"]
     type = "Note"
 
 class Collection(Object):

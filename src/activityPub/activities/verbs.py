@@ -33,7 +33,7 @@ class Activity(Object):
         return new
 
     def validate(self):
-        pass
+        return
 
 class Create(Activity):
 

@@ -1,5 +1,6 @@
 import json
-import (os, sys, io)
+import os, sys, io
+import uuid
 
 from PIL import Image
 import falcon
@@ -15,9 +16,12 @@ from api.v1.activityPub.methods import deliver, store
 
 from api.v1.activityPub.methods import get_or_create_remote_user
 
-THUMBNAIL_SIZE = (320, 320)
-DEFAULT_BOX = (0,0,1080, 1080)
+THUMBNAIL_SIZE = 320, 320
+DEFAULT_BOX = 0,0,1080, 1080
 class Outbox():
+
+    def __init__(self):
+        self.uploads = os.getenv('UPLOADS', '/home/yabir/killMe/uploads')
 
     auth = {
         'exempt_methods': ['GET']
@@ -38,14 +42,14 @@ class Outbox():
             resp.status = falcon.HTTP_401
             resp.body = json.dumps({"Error": "Access denied"})
 
-        payload = req.stream.read().decode("utf-8")
+        payload = req.get_param('data')
         activity = json.loads(payload, object_hook=as_activitystream)
 
-        if activity.type == "Note":
-            obj = activity
+        if activity.object.type == "Note":
+            obj = activity.object
             activity = activities.Create(
-                to=person.uris.followers,
-                actor=person.uris.id,
+                to=user.uris.followers,
+                actor=user.uris.id,
                 object=obj
             )
 
@@ -56,32 +60,47 @@ class Outbox():
                 resp.status = falcon.HTTP_500
                 resp.body = json.dumps({"Error": "You only can create notes"})
 
-            content = activity.object.content
             image = req.get_param('image')
-            if image.filename:
+            if image != None and image.filename:
                 try:
-                    file_path = os.path.join(self.uploads, photo.media_name)
+
+                    #Search a valid name
+
+                    valid = False
+                    ident = ""
+                    while not valid:
+                        ident = str(uuid.uuid4())
+                        valid = not Photo.select().where(Photo.media_name == ident).exists()
+
+                    #Pick the images paths
+                    file_path = os.path.join(self.uploads, ident)
                     thumb, file_path = os.path.splitext(file_path)[0]+'.thumbnail', os.path.splitext(file_path)[0]+'.jpg'
+
                     #temp_file = file_path + '~'
                     #open(temp_file, 'wb').write(image.file.read())
+
+                    #Create the image and the thumbnail
                     im = Image.open(io.BytesIO(image.file.read()))
                     im.crop(DEFAULT_BOX)
                     im.resize((1080, 1080))
                     im.save(file_path)
-                    im.thumbnail(THUMBNAIL_SIZE).save(thumb, "JPG")
+
+                    im.thumbnail(THUMBNAIL_SIZE)
+                    im.save(thumb, "jpeg")
 
                     user = req.context['user']
                     filename = image.filename
-                    width, height = im.size()
+                    width, height = (1080,1080)
+                    print(activity)
                     photo = Photo.create(title=filename,
                                          user=user,
-                                         public = activity.public or True,
-                                         message = activity.message or '',
-                                         description = activity.description or '',
-                                         sensitive = activity.sensitive or '',
+                                         message = activity.object.message or '',
+                                         description = activity.object.description or '',
+                                         sensitive = activity.object.sensitive or '',
                                          media_type="Image",
                                          width = width,
                                          height=height,
+                                         media_name=ident,
                                          )
 
                 except IOError:
