@@ -82,7 +82,6 @@ class Collection(Object):
 
     def __init__(self, iterable=None, **kwargs):
         self.items = []
-
         Object.__init__(self, **kwargs)
         if iterable is None:
             return
@@ -112,7 +111,7 @@ class Collection(Object):
         return json
 
 class OrderedCollection(Collection):
-    attributes = Object.attributes + ["orderedItems", "totalItems"]
+    attributes = Object.attributes + ["orderedItems"]
     type = "OrderedCollection"
 
     @property

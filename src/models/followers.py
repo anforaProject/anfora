@@ -1,7 +1,7 @@
 from peewee import ForeignKeyField
 
-from .base import BaseModel
-from .photo import User
+from models.base import BaseModel
+from models.user import User
 
 class FollowerRelation(BaseModel):
 
