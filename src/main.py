@@ -7,13 +7,12 @@ import falcon
 from falcon_multipart.middleware import MultipartMiddleware
 from falcon_auth import FalconAuthMiddleware
 
-#Storage classes (Manage db)
-from manage_db import connect, create_tables
+from middleware import PeeweeConnectionMiddleware
 
 #Resources
 from api.v1.photos import (getPhoto, manageUserPhotos)
 from api.v1.albums import (createAlbum, getAlbum, addToAlbum)
-from api.v1.user import (authUser, getUser)
+from api.v1.user import (authUser, getUser, getFollowers)
 
 from api.v1.activityPub.inbox import (Inbox)
 from api.v1.activityPub.outbox import (Outbox)
@@ -31,8 +30,9 @@ from api.v1.server import serverInfo
 
 #Create the app
 app = falcon.API(middleware=[
+    PeeweeConnectionMiddleware(),
     MultipartMiddleware(),
-    auth_middleware
+    auth_middleware,
 ])
 
 #Get env vars
@@ -53,7 +53,4 @@ app.add_route('/api/v1/auth/', authUser())
 app.add_route(urls["user"], getUser())
 app.add_route(urls["outbox"], Outbox())
 app.add_route(urls["inbox"], Inbox())
-
-#Connect to db
-connect()
-create_tables()
+app.add_route(urls["followers"], getFollowers())

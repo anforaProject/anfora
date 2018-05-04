@@ -8,6 +8,7 @@ from falcon_auth import BasicAuthBackend
 
 from models.user import User
 from models.token import Token
+
 from auth import (auth_backend,loadUserPass)
 
 from activityPub import activities
@@ -33,7 +34,7 @@ class authUser(object):
             'admin': user.admin,
             'iat': now,
             'nbf': now,
-            'exp': now + timedelta(seconds=3600*5)
+            'exp': now + timedelta(seconds=3600*50)
         }
 
 
@@ -49,6 +50,25 @@ class getUser():
         person = User.get_or_none(username=username)
         if person:
             resp.body = json.dumps(person.to_activitystream())
+            resp.status = falcon.HTTP_200
+        else:
+            resp.status = falcon.HTTP_404
+
+class getFollowers():
+
+    auth = {
+        'exempt_methods':['GET']
+    }
+
+    def on_get(self, req, resp, username):
+        user = User.get_or_none(username=username)
+        if user:
+            followers = user.followers()
+            asList = list(followers)
+            print(asList)
+            f = activities.Collection(asList)
+            print(f)
+            resp.body=f.to_json(context=True)
             resp.status = falcon.HTTP_200
         else:
             resp.status = falcon.HTTP_404
