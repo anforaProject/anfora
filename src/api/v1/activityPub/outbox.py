@@ -12,12 +12,13 @@ from models.followers import FollowerRelation
 from activityPub import activities
 from activityPub.activities import as_activitystream
 
-from api.v1.activityPub.methods import deliver, store
+from api.v1.activityPub.methods import  store
+from tasks.tasks import deliver
+from tasks.tasks import create_image
 
 from api.v1.activityPub.methods import get_or_create_remote_user
 
-THUMBNAIL_SIZE = 320, 320
-DEFAULT_BOX = 0,0,1080, 1080
+
 class Outbox():
 
     def __init__(self):
@@ -74,24 +75,17 @@ class Outbox():
 
                     #Pick the images paths
                     file_path = os.path.join(self.uploads, ident)
-                    thumb, file_path = os.path.splitext(file_path)[0]+'.thumbnail', os.path.splitext(file_path)[0]+'.jpg'
 
                     #temp_file = file_path + '~'
                     #open(temp_file, 'wb').write(image.file.read())
 
                     #Create the image and the thumbnail
-                    im = Image.open(io.BytesIO(image.file.read()))
-                    im.crop(DEFAULT_BOX)
-                    im.resize((1080, 1080))
-                    im.save(file_path)
-
-                    im.thumbnail(THUMBNAIL_SIZE)
-                    im.save(thumb, "jpeg")
+                    create_image(io.BytesIO(image.file.read()), file_path)
 
                     user = req.context['user']
                     filename = image.filename
                     width, height = (1080,1080)
-                    print(activity)
+
                     photo = Photo.create(title=filename,
                                          user=user,
                                          message = activity.object.message or '',
@@ -109,17 +103,19 @@ class Outbox():
                     resp.body = json.dumps({"Error": "Couldn't store file"})
                     resp.status = falcon.HTTP_500
 
+                activity.object.id = photo.uris.id
+                #activity.id = store(activity, user)
+                deliver(activity)
+                resp.body = json.dumps({"Success": "Delivered successfully"})
+                resp.status = falcon.HTTP_200
+
                 #Convert to jpeg
 
             else:
                 resp.status = falcon.HTTP_500
                 resp.body = json.dumps({"Error": "No photo attached"})
 
-            activity.object.id = photo.uris.id
-            activity.id = store(activity, user)
-            deliver(activity)
-            resp.body = json.dumps({"Success": "Delivered successfully"})
-            resp.status = falcon.HTTP_200
+
 
 
         if activity.type == "Follow":

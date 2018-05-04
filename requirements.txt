@@ -6,6 +6,7 @@ falcon==1.4.1
 falcon-auth==1.1.0
 falcon-multipart==0.2.0
 gunicorn==19.7.1
+huey==1.9.1
 idna==2.6
 peewee==3.2.1
 Pillow==5.1.0
@@ -13,6 +14,7 @@ pycparser==2.18
 PyJWT==1.6.1
 python-mimeparse==1.6.0
 pytz==2018.3
+redis==2.10.6
 requests==2.18.4
 six==1.11.0
 urllib3==1.22

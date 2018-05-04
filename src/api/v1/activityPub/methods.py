@@ -48,16 +48,6 @@ def deliver_to(ap_id, activity):
         raise Exception(msg)
 
 
-def deliver(activity):
-    audience = activity.get_audience()
-    activity = activity.strip_audience()
-    print("=> audience: {}".format(audience))
-    audience = get_final_audience(audience)
-    print("delivering", audience)
-    for ap_id in audience:
-        deliver_to(ap_id, activity)
-
-
 def store(activity, person, remote=False):
     payload  = bytes(json.dumps(activity.to_json()), "utf-8")
     obj = Activity(payload=payload, person=person, remote=remote)
