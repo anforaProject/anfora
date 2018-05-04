@@ -60,3 +60,31 @@ class User(BaseModel):
         if not self.remote:
             self.ap_id = uri("user", {"username":self.username})
         return super(User, self).save(*args, **kwargs)
+
+    def followers(self):
+        from models.followers import FollowerRelation
+
+        return (User
+                .select()
+                .join(FollowerRelation, on=FollowerRelation.user)
+                .where(FollowerRelation.follows == self)
+                .order_by(User.username))
+
+    def following(self):
+        from models.followers import FollowerRelation
+
+        return (User
+                .select()
+                .join(FollowerRelation, on=FollowerRelation.follows)
+                .where(FollowerRelation.user == self)
+                .order_by(User.username))
+
+    def is_following(self, user):
+        from models.followers import FollowerRelation
+
+        return (FollowerRelation
+                .select()
+                .where(
+                    (FollowerRelation.user == self) &
+                    (FollowerRelation.follows == user))
+                .exists())
