@@ -11,7 +11,7 @@ It is being built upon the following technologies:
 * Falcon API framework
 * peewee
 
-Also is in the objectives of this project to create a decentralized social 
+Also is in the objectives of this project to create a decentralized social
 network to share photos. Similar to instagram with the technology used at mastodon.
 
 ## License
@@ -23,3 +23,22 @@ This program is free software: you can redistribute it and/or modify it under th
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License along with this program. If not, see https://www.gnu.org/licenses/.
+
+
+## Start services
+
+### Start queue
+
+  huey_consumer.py tasks.main.huey
+
+### Start server
+  ./start.sh
+
+or
+
+  uwsgi uwsgi.ini
+
+
+### Start redis
+
+  redis-server
