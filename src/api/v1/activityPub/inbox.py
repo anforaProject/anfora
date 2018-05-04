@@ -7,8 +7,10 @@ from models.photo import Photo
 from activityPub import activities
 from activityPub.activities import as_activitystream
 
-from api.v1.activityPub.methods import (deliver, store, handle_follow, handle_note)
+from api.v1.activityPub.methods import (store, handle_follow, handle_note)
 from api.v1.activityPub.methods import (get_or_create_remote_user, dereference)
+
+from tasks.tasks import deliver
 
 class Inbox():
 
