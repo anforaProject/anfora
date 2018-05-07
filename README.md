@@ -32,9 +32,6 @@ You should have received a copy of the GNU Affero General Public License along w
     huey_consumer.py tasks.main.huey
 
 ### Start server
-    ./start.sh
-
-or
 
     uwsgi uwsgi.ini
 
