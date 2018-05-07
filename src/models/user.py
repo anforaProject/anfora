@@ -3,6 +3,10 @@ import uuid
 import binascii
 import os
 
+import Crypto
+from Crypto.PublicKey import RSA
+from Crypto import Random
+
 from peewee import *
 from playhouse.shortcuts import model_to_dict
 
@@ -23,6 +27,8 @@ class User(BaseModel):
     confirmation_sent_at = DateTimeField(null=True)
     last_sign_in_at = IntegerField(null=True)
     remote = BooleanField(default=False)
+    private_key = TextField()
+    public_key = TextField()
 
     @property
     def uris(self):
@@ -59,6 +65,14 @@ class User(BaseModel):
     def save(self,*args, **kwargs):
         if not self.remote:
             self.ap_id = uri("user", {"username":self.username})
+
+        if not self.private_key:
+            #Create a pair public/private key to sign messages
+            random_generator = Random.new().read
+            key = RSA.generate(2048, random_generator)
+            self.public_key = key.publickey().exportKey().decode('utf-8')
+            self.private_key = key.exportKey().decode('utf-8')
+
         return super(User, self).save(*args, **kwargs)
 
     def followers(self):
