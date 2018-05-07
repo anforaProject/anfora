@@ -18,7 +18,7 @@ class Object(object):
 
             if isinstance(value, dict) and value.get("type"):
                 value = as_activitystream(value)
-
+            print("=> Adding {} {} ".format(key, value))
             setattr(self, key, value)
 
     def __str__(self):
@@ -81,12 +81,12 @@ class Collection(Object):
     type = "Collection"
 
     def __init__(self, iterable=None, **kwargs):
-        self.items = []
+        self._items = []
         Object.__init__(self, **kwargs)
         if iterable is None:
             return
 
-        self.items = iterable
+        self._items = iterable
 
     @property
     def items(self):
@@ -94,14 +94,16 @@ class Collection(Object):
 
     @items.setter
     def items(self, iterable):
-        for item in iterable:
-            if isinstance(item, Object):
-                self._items.append(item)
-            elif getattr(item, "to_activitystream", None):
-                item = as_activitystream(item.to_activitystream())
-                self._items.append(item)
-            else:
-                raise Exception("Invalid Activity object: {item}".format(item=item))
+        if iterable:
+            for item in iterable:
+                print("ITEM {}".format(item))
+                if isinstance(item, Object):
+                    self._items.append(item)
+                elif getattr(item, "to_activitystream", None):
+                    item = as_activitystream(item.to_activitystream())
+                    self._items.append(item)
+                else:
+                    raise Exception("Invalid Activity object: {item}".format(item=item))
 
     def to_json(self, **kwargs):
         json = Object.to_json(self, **kwargs)
