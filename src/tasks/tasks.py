@@ -18,13 +18,13 @@ def count_beans(num):
 def create_image(bytes, path):
 
     thumb = os.path.splitext(path)[0]+'.thumbnail'
-    file_path = os.path.splitext(path)[0]+'.jpg'
+    file_path = os.path.splitext(path)[0]+'.jpeg'
 
 
     im = Image.open(bytes)
     im.crop(DEFAULT_BOX)
     im.thumbnail((1080, 1080), Image.ANTIALIAS)
-    im.save(file_path)
+    im.save(file_path,'JPEG', quality=80, optimize=True, progressive=True)
 
     im.thumbnail(THUMBNAIL_SIZE, Image.ANTIALIAS)
     im.save(thumb, "jpeg")
