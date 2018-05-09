@@ -27,6 +27,7 @@ class User(BaseModel):
     confirmation_sent_at = DateTimeField(null=True)
     last_sign_in_at = IntegerField(null=True)
     remote = BooleanField(default=False)
+    private = BooleanField(default=False)
     private_key = TextField()
     public_key = TextField()
 
@@ -48,8 +49,10 @@ class User(BaseModel):
         json = {
             "type": "Person",
             "id": self.uris.id,
-            "name": self.name,
-            "preferredUsername": self.username
+            "name": self.username,
+            "preferredUsername": self.name,
+            "followers_count": self.followers().count(),
+            "following_count": self.following().count()
         }
 
         if not self.remote:

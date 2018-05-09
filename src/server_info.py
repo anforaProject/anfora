@@ -20,3 +20,7 @@ print("========")
 
 for p in Photo.select():
     print(p)
+
+print("Following test:")
+t = User.get(username="test")
+print(t.followers().count())
