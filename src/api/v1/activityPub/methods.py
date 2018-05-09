@@ -3,7 +3,6 @@ from urllib.parse import urlparse
 
 import requests
 
-from activityPub import activities
 from models.activity import Activity
 from activityPub import activities
 from activityPub.activities import as_activitystream

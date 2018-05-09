@@ -17,6 +17,8 @@ passw = Argon2().generate_password_hash("test")
 yab, created = User.get_or_create(username="test",
                                   defaults={
                                       'password':passw,
+                                      'preferredUsername': "testUser",
+                                      "name": "Yabir Test",
                                       'email':"test@gt.com",
                                       'confirmation_sent_at':datetime.datetime.now(),
                                       'last_sign_in_at':1
@@ -25,7 +27,8 @@ yab, created = User.get_or_create(username="test",
 lol = User.create(username="lol", password=passw, email="yab@g.com", confirmation_sent_at=datetime.datetime.now(),last_sign_in_at=1)
 FollowerRelation.create(
     user = lol,
-    follows = yab
+    follows = yab,
+    valid = True
 )
 """
 photos = (Photo.select().where(Photo.upload_date >= datetime.date.today()))

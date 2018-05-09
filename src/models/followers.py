@@ -1,4 +1,4 @@
-from peewee import ForeignKeyField
+from peewee import (ForeignKeyField, BooleanField)
 
 from models.base import BaseModel
 from models.user import User
@@ -7,6 +7,7 @@ class FollowerRelation(BaseModel):
 
     user = ForeignKeyField(User)
     follows = ForeignKeyField(User)
+    valid = BooleanField(default=False)
 
     class Meta:
         indexes = (

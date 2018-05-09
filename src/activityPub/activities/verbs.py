@@ -66,4 +66,6 @@ ALLOWED_TYPES.update({
     "Activity": Activity,
     "Create": Create,
     "Follow": Follow,
+    "Accept": Accept,
+    "Reject": Reject
 })
