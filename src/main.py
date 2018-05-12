@@ -6,6 +6,7 @@ import falcon
 #from middleware import RequireJSON
 from falcon_multipart.middleware import MultipartMiddleware
 from falcon_auth import FalconAuthMiddleware
+from falcon_cors import CORS
 
 from middleware import PeeweeConnectionMiddleware
 
@@ -20,6 +21,8 @@ from api.v1.activityPub.outbox import (Outbox)
 #Auth
 from auth import (auth_backend,loadUser)
 
+public_cors = CORS(allow_all_origins=True)
+
 #Auth values
 auth_middleware = FalconAuthMiddleware(auth_backend)
 
@@ -33,6 +36,7 @@ app = falcon.API(middleware=[
     PeeweeConnectionMiddleware(),
     MultipartMiddleware(),
     auth_middleware,
+    public_cors.middleware,
 ])
 
 #Get env vars
