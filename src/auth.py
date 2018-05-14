@@ -128,10 +128,10 @@ def loadUserToken(token):
     if candidate:
         return candidate.user
     else:
-        return None    
+        return None
 
-#auth_backend = TokenAuthBackend(loadUserPass)
-auth_backend = JWTAuthBackend(loadUser, "GUESSWHAT?THISISNOTSECRET")
+auth_backend = TokenAuthBackend(loadUserToken,auth_header_prefix="Bearer")
+#auth_backend = JWTAuthBackend(loadUser, "GUESSWHAT?THISISNOTSECRET")
 
 def try_logged_jwt(backend, req, resp, resource=None):
     if req.get_header('Authorization'):

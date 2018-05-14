@@ -9,7 +9,7 @@ from falcon_auth import BasicAuthBackend
 from models.user import User
 from models.token import Token
 
-from auth import (auth_backend,loadUserPass)
+from auth import (auth_backend,loadUserToken,loadUserPass)
 
 from activityPub import activities
 
@@ -26,15 +26,10 @@ class authUser(object):
             resp.status = falcon.HTTP_401
             resp.body = json.dumps({"Error": "Remote user"})
 
-        now = datetime.utcnow()
+        token = Token.create(user=user)
 
         payload = {
-            'id': user.id,
-            'username': user.username,
-            'admin': user.admin,
-            'iat': now,
-            'nbf': now,
-            'exp': now + timedelta(seconds=3600*50)
+            "token": token.key
         }
 
 
