@@ -57,6 +57,9 @@ class manageUserPhotos(object):
         'exempt_methods': ['GET']
     }
 
+    def _strip_message(self, text):
+        return text
+
     def on_get(self, req, resp, user):
 
         auth_user = try_logged_jwt(auth_backend, req, resp)
@@ -85,7 +88,7 @@ class manageUserPhotos(object):
                                  user=user,
                                  media_type="image",
                                  description=req.get_param('description'),
-                                 message=req.get_param('message'))
+                                 message=self._strip_message(req.get_param('message'))
             print(photo, self.uploads)
 
             try:

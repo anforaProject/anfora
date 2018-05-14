@@ -105,3 +105,8 @@ class User(BaseModel):
                     (FollowerRelation.user == self) &
                     (FollowerRelation.follows == user))
                 .exists())
+
+    def liked(self):
+        from models.like import Like
+
+        return Like.select().wehere(Like.user==self)
