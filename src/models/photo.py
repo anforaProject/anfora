@@ -12,8 +12,8 @@ from activityPub.helpers import (URIs, uri)
 from models.base import BaseModel
 from models.user import User
 from models.album import Album
-from models.hashtags import Hashtag
-from models.likes import Like
+
+
 
 class Photo(BaseModel):
     media_name = CharField(unique=True)
@@ -90,8 +90,10 @@ class Photo(BaseModel):
         return json.dumps(self.to_model(), default=str)
 
     def hashtags(self):
+        from models.hashtags import Hashtag
         tags = [x.tag for x in Hashtag.select().where(Hashtag.photo == self)]
         return list(map(lambda x: '#'+x, tags))
 
     def likes_count(self):
+        from models.likes import Like
         return Like.select().where(Like.photo == self).count()

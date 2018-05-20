@@ -97,7 +97,7 @@ def handle_note(activity):
     elif isinstance(activity.actor, str):
         ap_id = activity.actor
 
-    person = get_or_create_remote_person(ap_id)
+    person = get_or_create_remote_user(ap_id)
 
     note = Photo.get_or_none(ap_id=activity.object.id)
 

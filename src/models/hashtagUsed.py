@@ -4,7 +4,7 @@ from peewee import (ForeignKeyField, CharField)
 
 from models.photo import Photo
 from models.base import BaseModel
-from models.hashtag import Hashtag
+from models.hashtags import Hashtag
 
 class HashtagUsed(BaseModel):
 
