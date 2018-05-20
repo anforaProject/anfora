@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
-from __future__ import division
-
 import falcon
 import peewee
 
@@ -15,3 +12,20 @@ class PeeweeConnectionMiddleware(object):
     def process_response(self, req, resp, resource):
         if not database.is_closed():
             database.close()
+
+class CorsMiddleware(object):
+
+    def process(self, req, resp):
+         resp.set_header('access-control-allow-credentials', 'true')
+         resp.set_header('access-control-allow-methods', '*')
+         resp.set_header('access-control-allow-headers', '*')
+         resp.set_header('access-control-allow-origin', '*')
+         resp.status = falcon.HTTP_200
+
+
+    def process_response(self, req, resp, resource):
+         resp.set_header('access-control-allow-credentials', 'true')
+         resp.set_header('access-control-allow-methods', '*')
+         resp.set_header('access-control-allow-headers', 'authorization,content-type')
+         resp.set_header('access-control-allow-origin', '*')
+         resp.status = falcon.HTTP_200
