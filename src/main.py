@@ -8,7 +8,7 @@ from falcon_multipart.middleware import MultipartMiddleware
 from falcon_auth import FalconAuthMiddleware
 from falcon_cors import CORS
 
-from middleware import PeeweeConnectionMiddleware
+from middleware import (PeeweeConnectionMiddleware, CorsMiddleware)
 
 #Resources
 from api.v1.photos import (getPhoto, manageUserPhotos)
@@ -21,7 +21,10 @@ from api.v1.activityPub.outbox import (Outbox)
 #Auth
 from auth import (auth_backend,loadUser)
 
-public_cors = CORS(allow_all_origins=True)
+cors = CORS(allow_all_methods=True,
+            allow_all_origins=True,
+            allow_all_headers=True,
+            log_level='DEBUG')
 
 #Auth values
 auth_middleware = FalconAuthMiddleware(auth_backend)
@@ -34,9 +37,9 @@ from api.v1.server import serverInfo
 #Create the app
 app = falcon.API(middleware=[
     PeeweeConnectionMiddleware(),
+    CorsMiddleware(),
     MultipartMiddleware(),
     auth_middleware,
-    public_cors.middleware,
 ])
 
 #Get env vars
