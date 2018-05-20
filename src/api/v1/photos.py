@@ -88,7 +88,7 @@ class manageUserPhotos(object):
                                  user=user,
                                  media_type="image",
                                  description=req.get_param('description'),
-                                 message=self._strip_message(req.get_param('message'))
+                                 message=self._strip_message(req.get_param('message')))
             print(photo, self.uploads)
 
             try:

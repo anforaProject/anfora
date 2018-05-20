@@ -14,6 +14,9 @@ falcon-auth = "*"
 falcon-cors = "*"
 huey = "*"
 redis = "*"
+falcon-multipart = "*"
+crypto = "*"
+pycrypto = "*"
 
 [requires]
 python_version = "3.5"
