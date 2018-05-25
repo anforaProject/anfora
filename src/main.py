@@ -13,7 +13,7 @@ from middleware import (PeeweeConnectionMiddleware, CorsMiddleware)
 #Resources
 from api.v1.photos import (getPhoto, manageUserPhotos)
 from api.v1.albums import (createAlbum, getAlbum, addToAlbum)
-from api.v1.user import (authUser, getUser, getFollowers)
+from api.v1.user import (authUser, getUser, getFollowers, logoutUser)
 
 from api.v1.activityPub.inbox import (Inbox)
 from api.v1.activityPub.outbox import (Outbox)
@@ -21,13 +21,14 @@ from api.v1.activityPub.outbox import (Outbox)
 #Auth
 from auth import (auth_backend,loadUser)
 
-cors = CORS(allow_all_methods=True,
+cors = CORS(allow_origins_list=['*'],
+            allow_all_methods=True,
             allow_all_origins=True,
-            allow_all_headers=True,
-            log_level='DEBUG')
+            allow_all_headers=True
+            )
 
 #Auth values
-auth_middleware = FalconAuthMiddleware(auth_backend)
+auth_middleware = FalconAuthMiddleware(auth_backend,exempt_methods=['HEAD','OPTIONS'])
 
 #URLs
 from urls import urls
@@ -37,7 +38,7 @@ from api.v1.server import serverInfo
 #Create the app
 app = falcon.API(middleware=[
     PeeweeConnectionMiddleware(),
-    CorsMiddleware(),
+    cors.middleware,
     MultipartMiddleware(),
     auth_middleware,
 ])
@@ -61,3 +62,4 @@ app.add_route(urls["user"], getUser())
 app.add_route(urls["outbox"], Outbox())
 app.add_route(urls["inbox"], Inbox())
 app.add_route(urls["followers"], getFollowers())
+app.add_route(urls["logout"], logoutUser())
