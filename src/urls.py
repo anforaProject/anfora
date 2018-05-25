@@ -9,4 +9,5 @@ urls = {
     "user": "/@{username}",
     "media": "/media/files/original/{id}",
     "preview": "/media/files/small/{id}",
+    "logout": "/logout"
 }

@@ -36,6 +36,26 @@ class authUser(object):
         resp.status = falcon.HTTP_200
         resp.body = json.dumps({"token":auth_backend.get_auth_token(payload)})
 
+class logoutUser(object):
+
+    def on_post(self, req, resp):
+        user = req.context['user']
+
+        token = req.get_param('token').replace('Bearer','').split(' ')[-1]
+        if user.remote:
+            resp.status = falcon.HTTP_404
+            resp.body = json.dumps({"Error": "Remote user"})
+
+        token = Token.get(Token.key==token)
+
+        if user == token.user:
+            token.delete_instance()
+            resp.status = falcon.HTTP_200
+            resp.body = json.dumps({"Success":"Removed token"})
+        else:
+            resp.status = falcon.HTTP_401
+            resp.body = json.dumps({"Error": "Unauthorized user"})
+
 class getUser():
     auth = {
         'exempt_methods': ['GET']
