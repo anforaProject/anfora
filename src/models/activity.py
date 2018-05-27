@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 
 from peewee import *
 
@@ -18,7 +19,7 @@ class Activity(BaseModel):
         if self.remote:
             ap_id = self.ap_id
         else:
-            ap_id = uri("activity", self.person.username, self.id)
+            ap_id = uri("activity", {"username": self.person.username,"id": self.id})
         return URIs(id=ap_id)
 
     def to_activitystream(self):
@@ -27,4 +28,4 @@ class Activity(BaseModel):
         data.update({
             "id": self.uris.id
         })
-        return data
+        return data["object"]

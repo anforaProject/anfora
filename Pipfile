@@ -18,6 +18,7 @@ falcon-multipart = "*"
 crypto = "*"
 pycrypto = "*"
 gunicorn = "*"
+bson = "*"
 
 [requires]
 python_version = "3.5"

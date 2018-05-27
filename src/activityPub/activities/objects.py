@@ -10,16 +10,18 @@ class Object(object):
     def __init__(self, obj=None, *args, **kwargs):
         if obj:
             self.__init__(**obj.to_activitystream())
+
         for key in self.attributes:
             if key == "type":
                 continue
 
             value = kwargs.get(key)
-
             if isinstance(value, dict) and value.get("type"):
                 value = as_activitystream(value)
-            print("=> Adding {} {} ".format(key, value))
-            setattr(self, key, value)
+
+            if value != None:
+                print("Setting ", key, " to ", value)
+                setattr(self, key, value)
 
     def __str__(self):
         content = json.dumps(self, default=encode_activitystream)
@@ -34,6 +36,7 @@ class Object(object):
             if isinstance(value, Object):
                 value = value.to_json()
             values[attribute] = value
+
         to = values.get("to")
         if isinstance(to, str):
             values["to"] = [to]
@@ -72,7 +75,8 @@ class Person(Actor):
     type = "Person"
 
 class Note(Object):
-    attributes = Object.attributes + ["message", "actor","description", "sensitive"]
+    attributes = Object.attributes + ["message", "actor","description",
+    "sensitive","likes", "created_at", "media_url", "preview_url"]
     type = "Note"
 
 class Collection(Object):
@@ -86,7 +90,14 @@ class Collection(Object):
         if iterable is None:
             return
 
-        self._items = iterable
+        for item in iterable:
+            if isinstance(item, Object):
+                self._items.append(item.to_json())
+            elif getattr(item, "to_activitystream", None):
+                item = as_activitystream(item.to_activitystream())
+                self._items.append(item)
+            else:
+                raise Exception("Invalid Activity object: {item}".format(item=item))
 
     @property
     def items(self):
@@ -96,9 +107,9 @@ class Collection(Object):
     def items(self, iterable):
         if iterable:
             for item in iterable:
-                print("ITEM {}".format(item))
                 if isinstance(item, Object):
-                    self._items.append(item)
+
+                    self._items.append(item.to_json())
                 elif getattr(item, "to_activitystream", None):
                     item = as_activitystream(item.to_activitystream())
                     self._items.append(item)
@@ -107,9 +118,7 @@ class Collection(Object):
 
     def to_json(self, **kwargs):
         json = Object.to_json(self, **kwargs)
-        items = [item.to_json() if isinstance(item, Object) else item for item in self.items]
-
-        json.update({"items":items})
+        print(json)
         return json
 
 class OrderedCollection(Collection):
@@ -133,8 +142,6 @@ class OrderedCollection(Collection):
 
     def to_json(self, **kwargs):
         json = Collection.to_json(self, **kwargs)
-        json["orderedItems"] = json["items"]
-        del json["items"]
         return json
 
 
