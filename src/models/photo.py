@@ -13,6 +13,8 @@ from models.base import BaseModel
 from models.user import User
 from models.album import Album
 
+from activityPub import activities
+
 
 
 class Photo(BaseModel):
@@ -40,7 +42,7 @@ class Photo(BaseModel):
         if self.remote:
             ap_id = self.ap_id
         else:
-            ap_id = uri("photo", {"username":"self.user.username", "id":self.id})
+            ap_id = uri("photo", {"username":self.user.username, "id":self.id})
         return URIs(id=ap_id,
                     media=uri("media", {"id":self.media_name}),
                     preview=uri("preview", {"id":self.media_name})
@@ -48,17 +50,22 @@ class Photo(BaseModel):
 
     def to_activitystream(self):
         json = {
-            "type": "image",
+            "type": "Note",
             "id": self.uris.id,
             "description": self.description,
             "url": self.uris.media,
             "preview": self.uris.preview,
-            "content": self.message,
+            "message": self.message,
             "hashtags": self.hashtags,
-            "likes": self.likes_count,
+            "likes": self.likes_count(),
+            "actor": activities.Actor(self.user),
+            "sensitive": self.sensitive,
+            "created_at": self.created_at.strftime('%Y-%m-%dT%H:%M:%S'),
+            "media_url":self.uris.media,
+            "preview_url":self.uris.preview
         }
 
-        return data
+        return json
 
     def save(self,*args, **kwargs):
         if not self.media_name:

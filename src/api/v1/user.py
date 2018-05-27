@@ -20,6 +20,7 @@ class authUser(object):
     }
 
     def on_get(self, req, resp):
+        print(req.headers)
         user = req.context['user']
 
         if user.remote:

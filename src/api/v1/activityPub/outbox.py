@@ -8,6 +8,7 @@ import falcon
 from models.user import User
 from models.photo import Photo
 from models.followers import FollowerRelation
+from models.activity import Activity
 
 from activityPub import activities
 from activityPub.activities import as_activitystream
@@ -30,10 +31,10 @@ class Outbox():
 
     def on_get(self, req, resp, username):
         user = User.get_or_none(username==username)
-        objects = user.activities.select().where(remote==False).order_by(created_at.desc())
+        objects = user.photos.select().order_by(Photo.created_at.desc())
 
-        collection = activities.OrderedCollection(objects)
-        resp.body = collection.to_json(context=True)
+        collection = activities.OrderedCollection(map(activities.Note, objects))
+        resp.body = json.dumps(collection.to_json(context=True))
         resp.status = falcon.HTTP_200
 
     def on_post(self, req, resp, username):
@@ -104,8 +105,8 @@ class Outbox():
                     resp.status = falcon.HTTP_500
 
                 activity.object.id = photo.uris.id
-                #activity.id = store(activity, user)
-                deliver(activity)
+                activity.id = store(activity, user)
+                #deliver(activity)
                 resp.body = json.dumps({"Success": "Delivered successfully"})
                 resp.status = falcon.HTTP_200
 
