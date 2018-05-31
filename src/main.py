@@ -50,11 +50,7 @@ upload_folder = os.getenv('UPLOADS', '/home/yabir/killMe/uploads')
 #Routes
 app.add_route('/info', serverInfo())
 
-app.add_route('/api/v1/accounts/{user}', manageUserPhotos(upload_folder))
-app.add_route('/api/v1/accounts/{user}/albums', createAlbum())
-app.add_route('/api/v1/accounts/{user}/albums/{album}', getAlbum())
-app.add_route('/api/v1/accounts/{user}/albums/{album}/add', addToAlbum())
-
+app.add_route('/api/v1/accounts/{username}', getUser())
 app.add_route('/api/v1/users/{user}/photos/{pid}', getPhoto())
 
 app.add_route('/api/v1/auth/', authUser())

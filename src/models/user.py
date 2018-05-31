@@ -30,6 +30,8 @@ class User(BaseModel):
     private = BooleanField(default=False)
     private_key = TextField()
     public_key = TextField()
+    description = TextField(default="")
+    is_bot = BooleanField(default=False)
 
     @property
     def uris(self):
@@ -44,6 +46,35 @@ class User(BaseModel):
             inbox=uri("inbox", {"username":self.username}),
         )
 
+    def to_api(self):
+        json = {
+            'id': self.id,
+            'username': self.username,
+            'display_name': self.name,
+            'locked': self.private,
+            'created_at':self.created_at,
+            'followers_count': self.followers().count(),
+            'following_count': self.following().count(),
+            'statuses_count': self.statuses().count(),
+            'note':self.description,
+            'url': None,
+            'avatar': None,
+            'moved': None,
+            'fields':[],
+            'bot': self.is_bot
+        }
+
+        if self.remote:
+            json.update({
+                'acct':self.ap_id
+            })
+
+        else:
+            json.update({
+                'acct': self.username
+            })
+
+        return json
 
     def to_activitystream(self):
         json = {
@@ -86,6 +117,15 @@ class User(BaseModel):
                 .join(FollowerRelation, on=FollowerRelation.user)
                 .where(FollowerRelation.follows == self)
                 .order_by(User.username))
+
+    def statuses(self):
+
+        from models.photo import Photo
+
+        return (Photo.
+                select()
+                .where(Photo.user == self)
+                .order_by(Photo.created_at))
 
     def following(self):
         from models.followers import FollowerRelation
