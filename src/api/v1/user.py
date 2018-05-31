@@ -1,7 +1,7 @@
 import json
 import os
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 import falcon
 from falcon_auth import BasicAuthBackend
@@ -13,6 +13,13 @@ from auth import (auth_backend,loadUserToken,loadUserPass)
 
 from activityPub import activities
 
+def json_serial(obj):
+    """JSON serializer for objects not serializable by default json code"""
+
+    if isinstance(obj, (datetime, date)):
+        return obj.isoformat()
+    raise TypeError ("Type %s not serializable" % type(obj))
+
 class authUser(object):
 
     auth = {
@@ -20,7 +27,6 @@ class authUser(object):
     }
 
     def on_get(self, req, resp):
-        print(req.headers)
         user = req.context['user']
 
         if user.remote:
@@ -65,7 +71,7 @@ class getUser():
     def on_get(self, req, resp, username):
         person = User.get_or_none(username=username)
         if person:
-            resp.body = json.dumps(person.to_activitystream())
+            resp.body = json.dumps(person.to_api(), default=json_serial)
             resp.status = falcon.HTTP_200
         else:
             resp.status = falcon.HTTP_404
