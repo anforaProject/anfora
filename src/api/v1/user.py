@@ -43,6 +43,38 @@ class authUser(object):
         resp.status = falcon.HTTP_200
         resp.body = json.dumps({"token":auth_backend.get_auth_token(payload)})
 
+class getFollowers():
+
+    auth = {
+        'exempt_methods':['GET']
+    }
+
+    def on_get(self, req, resp, username):
+        user = User.get_or_none(username=username)
+        if user:
+            followers = [follower.to_activitystream() for follower in user.followers()]
+            f = activities.Collection(followers)
+            print(f.to_json(context=True))
+            resp.body=json.dumps(f.to_json(context=True))
+            resp.status = falcon.HTTP_200
+        else:
+            resp.status = falcon.HTTP_404
+
+
+class getUser():
+    auth = {
+        'exempt_methods': ['GET']
+    }
+
+    def on_get(self, req, resp, username):
+        person = User.get_or_none(username=username)
+        if person:
+            resp.body = json.dumps(person.to_api(), default=json_serial)
+            resp.status = falcon.HTTP_200
+        else:
+            resp.status = falcon.HTTP_404
+
+
 class logoutUser(object):
 
     def on_post(self, req, resp):
@@ -63,32 +95,27 @@ class logoutUser(object):
             resp.status = falcon.HTTP_401
             resp.body = json.dumps({"Error": "Unauthorized user"})
 
-class getUser():
+
+class getStatuses(object):
+
     auth = {
         'exempt_methods': ['GET']
     }
 
     def on_get(self, req, resp, username):
-        person = User.get_or_none(username=username)
-        if person:
-            resp.body = json.dumps(person.to_api(), default=json_serial)
-            resp.status = falcon.HTTP_200
-        else:
-            resp.status = falcon.HTTP_404
 
-class getFollowers():
-
-    auth = {
-        'exempt_methods':['GET']
-    }
-
-    def on_get(self, req, resp, username):
         user = User.get_or_none(username=username)
         if user:
-            followers = [follower.to_activitystream() for follower in user.followers()]
-            f = activities.Collection(followers)
-            print(f.to_json(context=True))
-            resp.body=json.dumps(f.to_json(context=True))
+            statuses = [x.to_model() for x in user.statuses()]
+
+            data = {
+                'statuses': statuses
+            }
+
+            resp.body = json.dumps(data)
             resp.status = falcon.HTTP_200
+
         else:
+
+            resp.body = json.dumps({"Error: No such user"})
             resp.status = falcon.HTTP_404

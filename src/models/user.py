@@ -120,12 +120,7 @@ class User(BaseModel):
 
     def statuses(self):
 
-        from models.photo import Photo
-
-        return (Photo.
-                select()
-                .where(Photo.user == self)
-                .order_by(Photo.created_at))
+        return (self.photos.order_by('created_at'))
 
     def following(self):
         from models.followers import FollowerRelation
@@ -147,6 +142,4 @@ class User(BaseModel):
                 .exists())
 
     def liked(self):
-        from models.like import Like
-
-        return Like.select().wehere(Like.user==self)
+        return self.liked_posts
