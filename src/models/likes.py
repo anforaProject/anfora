@@ -8,5 +8,5 @@ from models.user import User
 
 class Like(BaseModel):
 
-    user = ForeignKeyField(User)
-    photo = ForeignKeyField(Photo)
+    user = ForeignKeyField(User, backref='liked_posts')
+    photo = ForeignKeyField(Photo, backref='licked_by')
