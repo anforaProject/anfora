@@ -10,3 +10,4 @@ class Like(BaseModel):
 
     user = ForeignKeyField(User, backref='liked_posts')
     photo = ForeignKeyField(Photo, backref='licked_by')
+    created_at = DateTimeField(default=datetime.datetime.now)
