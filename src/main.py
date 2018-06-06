@@ -54,6 +54,8 @@ app.add_route('/info', serverInfo())
 app.add_route('/api/v1/accounts/{username}', getUser())
 app.add_route('/api/v1/accounts/{username}/statuses', getStatuses())
 
+app.add_route('/api/v1/statuses', manageUserPhotos(upload_folder))
+
 app.add_route('/api/v1/auth/', authUser())
 
 app.add_route(urls["user"], getUser())
