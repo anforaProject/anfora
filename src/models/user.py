@@ -76,6 +76,9 @@ class User(BaseModel):
 
         return json
 
+    def to_model(self):
+        return self.to_json()
+
     def to_activitystream(self):
         json = {
             "type": "Person",

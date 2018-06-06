@@ -1,6 +1,8 @@
 import json
 import os
 import logging
+import uuid
+import io
 
 import falcon
 
@@ -80,10 +82,11 @@ class manageUserPhotos(object):
 
 
     @falcon.before(max_body(MAX_SIZE))
-    def on_post(self, req, resp, user):
+    def on_post(self, req, resp):
         image = req.get_param('image')
         public = bool(req.get_param('public')) #False if None
-        payload = req.get_param('data')
+
+        user = req.context['user']
 
         if image != None and image.filename:
             try:
@@ -111,9 +114,9 @@ class manageUserPhotos(object):
 
                 photo = Photo.create(title=filename,
                                      user=user,
-                                     message = payload.message or '',
-                                     description = payload.description or '',
-                                     sensitive = payload.sensitive or '',
+                                     message = req.get_param('message') or '',
+                                     description = req.get_param('description') or '',
+                                     sensitive = req.get_param('sensitive') or '',
                                      media_type="Image",
                                      width = width,
                                      height=height,
@@ -126,14 +129,8 @@ class manageUserPhotos(object):
                 resp.body = json.dumps({"Error": "Couldn't store file"})
                 resp.status = falcon.HTTP_500
 
-            activity.object.id = photo.uris.id
-            activity.id = store(activity, user)
             resp.status = falcon.HTTP_200
 
-            except Exception as e:
-                print(e)
-                photo.delete_instance()
-                resp.status = falcon.HTTP_500
         else:
             resp.status = falcon.HTTP_500
             resp.body = json.dumps({"Error": "No photo attached"})

@@ -54,7 +54,6 @@ class Photo(BaseModel):
             "id": self.uris.id,
             "description": self.description,
             "url": self.uris.media,
-            "preview": self.uris.preview,
             "message": self.message,
             "hashtags": self.hashtags,
             "likes": self.likes_count(),
@@ -91,10 +90,24 @@ class Photo(BaseModel):
         return [model_to_dict(rel,exclude=self._BaseModel__exclude([RelationAlbumPhoto.photo, RelationAlbumPhoto.id, RelationAlbumPhoto.album.user])) for rel in query]
 
     def to_model(self):
-        return model_to_dict(self, exclude=self._BaseModel__exclude(), extra_attrs=["albums"])
+        return model_to_dict(self, exclude=self._BaseModel__exclude())
 
-    def json(self):
-        return json.dumps(self.to_model(), default=str)
+    def to_json(self):
+        data = {
+            "type": "Note",
+            "id": self.uris.id,
+            "description": self.description,
+            "preview": self.uris.preview,
+            "message": self.message,
+            "hashtags": self.hashtags,
+            "likes": self.likes_count(),
+            "actor": self.user.to_api(),
+            "sensitive": self.sensitive,
+            "created_at": self.created_at.strftime('%Y-%m-%dT%H:%M:%S'),
+            "media_url":self.uris.media,
+            "preview_url":self.uris.preview
+        }
+        return data
 
     def hashtags(self):
         from models.hashtags import Hashtag

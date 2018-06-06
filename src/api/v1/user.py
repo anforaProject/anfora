@@ -106,13 +106,13 @@ class getStatuses(object):
 
         user = User.get_or_none(username=username)
         if user:
-            statuses = [x.to_model() for x in user.statuses()]
+            statuses = [x.to_json() for x in user.statuses()]
 
             data = {
                 'statuses': statuses
             }
 
-            resp.body = json.dumps(data)
+            resp.body = json.dumps(data, default=str)
             resp.status = falcon.HTTP_200
 
         else:

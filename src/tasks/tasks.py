@@ -8,6 +8,7 @@ from api.v1.activityPub.methods import (get_final_audience, deliver_to)
 from tasks.config import huey # import the huey we instantiated in config.py
 
 THUMBNAIL_SIZE = 320, 320
+THUMBNAIL_BOX = 0,0, 320, 320
 DEFAULT_BOX = 0,0,1080, 1080
 
 @huey.task()
@@ -26,6 +27,7 @@ def create_image(bytes, path):
     im.thumbnail((1080, 1080), Image.ANTIALIAS)
     im.save(file_path,'JPEG', quality=80, optimize=True, progressive=True)
 
+    im.crop(THUMBNAIL_BOX)
     im.thumbnail(THUMBNAIL_SIZE, Image.ANTIALIAS)
     im.save(thumb, "jpeg")
 
