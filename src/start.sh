@@ -2,7 +2,7 @@
 #./clone.sh
 #python populate.py
 
-gunicorn -b :8000 main:app \
+gunicorn --bind unix:zinat.sock main:app \
 	 --keep-alive 5 \
 	 --reload \
 	 --log-level DEBUG \
