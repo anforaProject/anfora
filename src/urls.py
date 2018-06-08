@@ -7,7 +7,7 @@ urls = {
     "following": "/@{username}/following",
     "followers": "/@{username}/followers",
     "user": "/@{username}",
-    "media": "/media/files/original/{id}.jpeg",
+    "media": "/media/files/max_resolution/{id}.jpeg",
     "preview": "/media/files/small/{id}.thumbnail",
     "logout": "/logout"
 }

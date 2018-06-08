@@ -11,15 +11,18 @@ THUMBNAIL_SIZE = 320, 320
 THUMBNAIL_BOX = 0,0, 320, 320
 DEFAULT_BOX = 0,0,1080, 1080
 
+thumb_folder = "small"
+pic_folder = "max_resolution"
+
 @huey.task()
 def count_beans(num):
     print('-- counted %s beans --' % num)
 
 @huey.task()
-def create_image(bytes, path):
-
-    thumb = os.path.splitext(path)[0]+'.thumbnail'
-    file_path = os.path.splitext(path)[0]+'.jpeg'
+def create_image(bytes, path, filename):
+    print(filename)
+    thumb = os.path.join(path, thumb_folder, filename + '.thumbnail')
+    file_path = os.path.join(path, pic_folder, filename + '.jpeg')
 
 
     im = Image.open(bytes)
