@@ -40,8 +40,8 @@ from api.v1.server import serverInfo
 app = falcon.API(middleware=[
     PeeweeConnectionMiddleware(),
     cors.middleware,
+    CorsMiddleware(),
     MultipartMiddleware(),
-    auth_middleware,
 ])
 
 #Get env vars
