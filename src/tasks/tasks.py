@@ -20,7 +20,6 @@ def count_beans(num):
 
 @huey.task()
 def create_image(bytes, path, filename):
-    print(filename)
     thumb = os.path.join(path, thumb_folder, filename + '.thumbnail')
     file_path = os.path.join(path, pic_folder, filename + '.jpeg')
 
