@@ -20,7 +20,6 @@ class CorsMiddleware(object):
          resp.set_header('access-control-allow-methods', '*')
          resp.set_header('access-control-allow-headers', '*')
          resp.set_header('access-control-allow-origin', '*')
-         resp.status = falcon.HTTP_200
 
 
     def process_response(self, req, resp, resource):
@@ -28,4 +27,3 @@ class CorsMiddleware(object):
          resp.set_header('access-control-allow-methods', '*')
          resp.set_header('access-control-allow-headers', 'authorization,content-type')
          resp.set_header('access-control-allow-origin', '*')
-         resp.status = falcon.HTTP_200

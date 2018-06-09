@@ -3,6 +3,7 @@ import os
 import logging
 import uuid
 import io
+import sys
 
 import falcon
 
@@ -60,7 +61,7 @@ class manageUserPhotos(object):
         self.uploads = uploads
 
     auth = {
-        'exempt_methods': ['GET']
+        'exempt_methods': ['GET','OPTIONS']
     }
 
     def _strip_message(self, text):
@@ -80,15 +81,14 @@ class manageUserPhotos(object):
         resp.body = json.dumps(query, default=str)
         resp.status = falcon.HTTP_200
 
-
     @falcon.before(max_body(MAX_SIZE))
     def on_post(self, req, resp):
         image = req.get_param('image')
         public = bool(req.get_param('public')) #False if None
 
         user = req.context['user']
-
-        if image != None and image.filename:
+        print(image,public)
+        if image != None:
             try:
 
                 #Search a valid name
@@ -99,14 +99,12 @@ class manageUserPhotos(object):
                     ident = str(uuid.uuid4())
                     valid = not Photo.select().where(Photo.media_name == ident).exists()
 
-                #Pick the images paths
-                file_path = os.path.join(self.uploads, ident)
 
                 #temp_file = file_path + '~'
                 #open(temp_file, 'wb').write(image.file.read())
 
                 #Create the image and the thumbnail
-                create_image(io.BytesIO(image.file.read()), file_path)
+                create_image(io.BytesIO(image.file.read()),self.uploads, ident)
 
                 user = req.context['user']
                 filename = image.filename

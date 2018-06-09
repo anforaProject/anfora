@@ -29,7 +29,7 @@ cors = CORS(allow_origins_list=['*'],
             )
 
 #Auth values
-auth_middleware = FalconAuthMiddleware(auth_backend,exempt_methods=['HEAD','OPTIONS'])
+auth_middleware = FalconAuthMiddleware(auth_backend,exempt_methods=['OPTIONS'])
 
 #URLs
 from urls import urls
@@ -38,9 +38,10 @@ from api.v1.server import serverInfo
 
 #Create the app
 app = falcon.API(middleware=[
-    PeeweeConnectionMiddleware(),
     cors.middleware,
-    CorsMiddleware(),
+    auth_middleware,
+    PeeweeConnectionMiddleware(),
+
     MultipartMiddleware(),
 ])
 
