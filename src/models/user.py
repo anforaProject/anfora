@@ -46,7 +46,7 @@ class User(BaseModel):
             inbox=uri("inbox", {"username":self.username}),
         )
 
-    def to_api(self):
+    def to_json(self):
         json = {
             'id': self.id,
             'username': self.username,

@@ -52,10 +52,8 @@ class getFollowers():
     def on_get(self, req, resp, username):
         user = User.get_or_none(username=username)
         if user:
-            followers = [follower.to_activitystream() for follower in user.followers()]
-            f = activities.Collection(followers)
-            print(f.to_json(context=True))
-            resp.body=json.dumps(f.to_json(context=True))
+            followers = [follower.to_json() for follower in user.followers()]
+            resp.body=json.dumps(followers, default=str)
             resp.status = falcon.HTTP_200
         else:
             resp.status = falcon.HTTP_404
@@ -69,7 +67,7 @@ class getUser():
     def on_get(self, req, resp, username):
         person = User.get_or_none(username=username)
         if person:
-            resp.body = json.dumps(person.to_api(), default=json_serial)
+            resp.body = json.dumps(person.to_json(), default=json_serial)
             resp.status = falcon.HTTP_200
         else:
             resp.status = falcon.HTTP_404
