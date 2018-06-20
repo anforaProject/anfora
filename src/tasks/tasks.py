@@ -11,6 +11,13 @@ THUMBNAIL_SIZE = 320, 320
 THUMBNAIL_BOX = 0,0, 320, 320
 DEFAULT_BOX = 0,0,1080, 1080
 
+sizes = {
+    'square': (1080, 1080),
+    'landscape': (1920, 1080),
+    'portrait': (1080, 1350),
+    'thumbnail': (320, 320)
+}
+
 thumb_folder = "small"
 pic_folder = "max_resolution"
 
