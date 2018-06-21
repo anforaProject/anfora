@@ -15,7 +15,7 @@ def build_all_timelines():
 
         #This can be done using a zip function and 2 generators but I have more
         #access to the db. This way I'm using more memory
-        pairs = list((photo.created_at.timestamp(),photo.id) for photo in user.photos)
+        pairs = ((photo.created_at.timestamp(),photo.id) for photo in user.photos)
         pairs = [item for pair in pairs for item in pair]
         for follower in user.followers():
             tagName = "{}:hometimeline".format(follower.username)
@@ -24,8 +24,6 @@ def build_all_timelines():
     if not database.is_closed():
         database.close()
 
-def show():
+def showTimelines():
     r = redis.StrictRedis(host='localhost', port=6379)
     print(r.zrange('lol:hometimeline', 0, -1, withscores=True))
-#build_all_timelines()
-show()
