@@ -62,47 +62,6 @@ class Outbox():
                 resp.status = falcon.HTTP_500
                 resp.body = json.dumps({"Error": "You only can create notes"})
 
-            image = req.get_param('image')
-            if image != None and image.filename:
-                try:
-
-                    #Search a valid name
-
-                    valid = False
-                    ident = ""
-                    while not valid:
-                        ident = str(uuid.uuid4())
-                        valid = not Photo.select().where(Photo.media_name == ident).exists()
-
-                    #Pick the images paths
-                    file_path = os.path.join(self.uploads, ident)
-
-                    #temp_file = file_path + '~'
-                    #open(temp_file, 'wb').write(image.file.read())
-
-                    #Create the image and the thumbnail
-                    create_image(io.BytesIO(image.file.read()), file_path)
-
-                    user = req.context['user']
-                    filename = image.filename
-                    width, height = (1080,1080)
-
-                    photo = Photo.create(title=filename,
-                                         user=user,
-                                         message = activity.object.message or '',
-                                         description = activity.object.description or '',
-                                         sensitive = activity.object.sensitive or '',
-                                         media_type="Image",
-                                         width = width,
-                                         height=height,
-                                         media_name=ident,
-                                         )
-
-                except IOError:
-                    print(e)
-                    photo.delete_instance()
-                    resp.body = json.dumps({"Error": "Couldn't store file"})
-                    resp.status = falcon.HTTP_500
 
                 activity.object.id = photo.uris.id
                 activity.id = store(activity, user)
@@ -120,14 +79,12 @@ class Outbox():
 
 
         if activity.type == "Follow":
-            # if activity.object.type != "Person":
-            #     raise Exception("Sorry, you can only follow Persons objects")
 
             followed = get_or_create_remote_user(activity.object)
             user = req.context["user"]
             #print(followed.ap_id, user.username, followed.username)
             f = FollowerRelation.create(user = user, follows=followed)
-            print("=> {} starts process to follow {}".format(user.username, followed.username))
+
             activity.actor = user.uris.id
             activity.to = followed.uris.id
             #activity.id = store(activity, user)
