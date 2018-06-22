@@ -4,9 +4,11 @@ import logging
 from datetime import datetime, timedelta, date
 
 import falcon
+import redis
 from falcon_auth import BasicAuthBackend
 
 from models.user import User
+from models.photo import Photo
 from models.token import Token
 
 from auth import (auth_backend,loadUserToken,loadUserPass)
@@ -108,14 +110,28 @@ class getStatuses(object):
         if user:
             statuses = [x.to_json() for x in user.statuses()]
 
-            data = {
-                'statuses': statuses
-            }
-
-            resp.body = json.dumps(data, default=str)
+            resp.body = json.dumps(statuses, default=str)
             resp.status = falcon.HTTP_200
 
         else:
 
             resp.body = json.dumps({"Error: No such user"})
             resp.status = falcon.HTTP_404
+
+class homeTimeline(object):
+
+    def on_get(self, req, resp):
+        username = req.context['user'].username
+        r = redis.StrictRedis(host='localhost', port=6379)
+
+        local = req.get_param('local') or False
+        max_id = req.get_param('max_id') or None
+        since_id = req.get_param('since_id') or None
+        limit = req.get_param('limit') or 40
+        statuses = []
+        for post in r.zrange('{}:hometimeline'.format(username), 0, min(limit-1, 40), withscores=False):
+            statuses.append(Photo.get(id=post).to_json())
+
+        print(statuses)
+        resp.body=json.dumps(statuses, default=str)
+        resp.status=falcon.HTTP_200

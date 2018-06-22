@@ -14,10 +14,11 @@ from middleware import (PeeweeConnectionMiddleware, CorsMiddleware)
 from api.v1.photos import (getPhoto, manageUserPhotos)
 from api.v1.albums import (createAlbum, getAlbum, addToAlbum)
 from api.v1.user import (authUser, getUser, getFollowers, logoutUser,
-                            getStatuses)
+                            getStatuses, homeTimeline)
 
 from api.v1.activityPub.inbox import (Inbox)
 from api.v1.activityPub.outbox import (Outbox)
+
 
 #Auth
 from auth import (auth_backend,loadUser)
@@ -58,6 +59,9 @@ app.add_route('/api/v1/accounts/{username}/statuses', getStatuses())
 app.add_route('/api/v1/statuses', manageUserPhotos(upload_folder))
 
 app.add_route('/api/v1/auth/', authUser())
+
+app.add_route('/api/v1/timelines/home', homeTimeline())
+
 
 app.add_route(urls["user"], getUser())
 app.add_route(urls["outbox"], Outbox())
