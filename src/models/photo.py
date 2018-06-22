@@ -101,7 +101,7 @@ class Photo(BaseModel):
             "message": self.message,
             "hashtags": self.hashtags,
             "likes": self.likes_count(),
-            "actor": self.user.to_api(),
+            "actor": self.user.to_json(),
             "sensitive": self.sensitive,
             "created_at": self.created_at.strftime('%Y-%m-%dT%H:%M:%S'),
             "media_url":self.uris.media,
