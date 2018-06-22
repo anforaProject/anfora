@@ -11,10 +11,11 @@ from models.user import User
 from models.photo import Photo
 from models.album import Album
 
-from auth import (loadUser, auth_backend, try_logged_jwt)
+from pipelines.upload_media import upload_image
 
+from tasks.redis.spreadStatus import spreadStatus
 from tasks.tasks import create_image
-
+from auth import (loadUser, auth_backend, try_logged_jwt)
 
 #Get max size for uploads
 MAX_SIZE = os.getenv('MAX_SIZE', 1024*1024)
@@ -87,7 +88,6 @@ class manageUserPhotos(object):
         public = bool(req.get_param('public')) #False if None
 
         user = req.context['user']
-        print(image,public)
         if image != None:
             try:
 
@@ -108,18 +108,15 @@ class manageUserPhotos(object):
 
                 user = req.context['user']
                 filename = image.filename
-                width, height = (1080,1080)
+                dimensions = (1080,1080)
 
-                photo = Photo.create(title=filename,
-                                     user=user,
-                                     message = req.get_param('message') or '',
-                                     description = req.get_param('description') or '',
-                                     sensitive = req.get_param('sensitive') or '',
-                                     media_type="Image",
-                                     width = width,
-                                     height=height,
-                                     media_name=ident,
-                                     )
+                photo = upload_image(user, req.get_param('message'), req.get_param('description')
+                                    ,ident,req.get_param('sensitive'), dimensions, filename )
+
+                photo.save()
+                spreadStatus(photo)
+                resp.status = falcon.HTTP_200
+                resp.body = json.dumps(photo.to_json(),default=str)
 
             except IOError:
                 print(e)
@@ -127,7 +124,7 @@ class manageUserPhotos(object):
                 resp.body = json.dumps({"Error": "Couldn't store file"})
                 resp.status = falcon.HTTP_500
 
-            resp.status = falcon.HTTP_200
+
 
         else:
             resp.status = falcon.HTTP_500
