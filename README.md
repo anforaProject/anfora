@@ -29,11 +29,11 @@ You should have received a copy of the GNU Affero General Public License along w
 
 ### Start queue
 
-    huey_consumer.py tasks.main.huey
+    huey_consumer.py tasks.main.huey -m 1 -w 2
 
 ### Start server
 
-    uwsgi uwsgi.ini
+    ./start.sh
 
 
 ### Start redis
