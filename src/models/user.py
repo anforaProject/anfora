@@ -122,8 +122,8 @@ class User(BaseModel):
                 .order_by(User.username))
 
     def statuses(self):
-
-        return (self.photos.order_by('created_at'))
+        from models.photo import Photo
+        return (self.photos.order_by(Photo.created_at.desc()))
 
     def following(self):
         from models.followers import FollowerRelation
