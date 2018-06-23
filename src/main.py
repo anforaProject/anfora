@@ -19,6 +19,7 @@ from api.v1.user import (authUser, getUser, getFollowers, logoutUser,
 from api.v1.activityPub.inbox import (Inbox)
 from api.v1.activityPub.outbox import (Outbox)
 
+from server import (wellknownNodeinfo, wellknownWebfinger, nodeinfo)
 
 #Auth
 from auth import (auth_backend,loadUser)
@@ -62,6 +63,10 @@ app.add_route('/api/v1/auth/', authUser())
 
 app.add_route('/api/v1/timelines/home', homeTimeline())
 
+
+app.add_route('/.well-known/nodeinfo', wellknownNodeinfo())
+app.add_route('/.well-known/webfinger', wellknownWebfinger())
+app.add_route('/nodeinfo', nodeinfo())
 
 app.add_route(urls["user"], getUser())
 app.add_route(urls["outbox"], Outbox())
