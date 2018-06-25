@@ -1,11 +1,15 @@
 import falcon
+import json
 from falcon_auth import BasicAuthBackend
 
-from settings import {ID, NODENAME}
+from settings import (ID, NODENAME, DOMAIN)
 from release_info import VERSION
 
 from models.followers import FollowerRelation
 from models.user import User
+
+from utils.username import extractUser
+from utils.webfinger import Webfinger
 
 class serverInfo(object):
 
@@ -30,7 +34,6 @@ class wellknownNodeinfo(object):
         ]
         resp.body = json.dumps(links)
         resp.status = falcon.HTTP_200
-    )
 
 class nodeinfo(object):
 
@@ -69,4 +72,17 @@ class wellknownWebfinger(object):
 
         # For now I will assume that webfinger only asks for the actor, so resources
         # is just one element.
-        resources = req.params.items()['resource']
+        resources = req.params['resource']
+        username, domain = extractUser(resources)
+
+        if domain == DOMAIN:
+            user = User.get_or_none(username=username)
+
+            if user:
+                response = Webfinger(user).generate()
+
+                resp.body = json.dumps(response)
+                resp.status = falcon.HTTP_200
+            else:
+                resp.body = json.dumps({"Error": "Invalid username"})
+                resp.status = falcon.HTTP_404

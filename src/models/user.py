@@ -44,6 +44,7 @@ class User(BaseModel):
             followers=uri("followers", {"username":self.username}),
             outbox=uri("outbox", {"username":self.username}),
             inbox=uri("inbox", {"username":self.username}),
+            atom=uri("atom", {"username": self.username})
         )
 
     def to_json(self):

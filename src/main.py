@@ -19,7 +19,7 @@ from api.v1.user import (authUser, getUser, getFollowers, logoutUser,
 from api.v1.activityPub.inbox import (Inbox)
 from api.v1.activityPub.outbox import (Outbox)
 
-from server import (wellknownNodeinfo, wellknownWebfinger, nodeinfo)
+from api.v1.server import (wellknownNodeinfo, wellknownWebfinger, nodeinfo)
 
 #Auth
 from auth import (auth_backend,loadUser)
