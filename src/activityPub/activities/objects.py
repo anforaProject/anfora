@@ -97,11 +97,15 @@ class Collection(Object):
                 item = as_activitystream(item.to_activitystream())
                 self._items.append(item)
             else:
-                raise Exception("Invalid Activity object: {item}".format(item=item))
+                self._items.append(str(item))
 
     @property
     def items(self):
         return self._items
+
+    @property
+    def totalItems(self):
+        return len(self.items)
 
     @items.setter
     def items(self, iterable):
@@ -118,19 +122,12 @@ class Collection(Object):
 
     def to_json(self, **kwargs):
         json = Object.to_json(self, **kwargs)
-        print(json)
         return json
 
 class OrderedCollection(Collection):
     attributes = Object.attributes + ["orderedItems"]
     type = "OrderedCollection"
 
-    @property
-    def totalItems(self):
-        return len(self.items)
-    @totalItems.setter
-    def totalItems(self, value):
-        pass
 
     @property
     def orderedItems(self):
@@ -141,8 +138,9 @@ class OrderedCollection(Collection):
         self.items = iterable
 
     def to_json(self, **kwargs):
-        json = Collection.to_json(self, **kwargs)
-        return json
+        data = Collection.to_json(self, **kwargs)
+        data["totalItems"] = self.totalItems
+        return data
 
 
 ALLOWED_TYPES = {
