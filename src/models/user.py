@@ -15,23 +15,22 @@ from activityPub.helpers import (uri, URIs)
 
 class User(BaseModel):
     ap_id = CharField(null=True)
-    name = CharField(null=True)
-    username = CharField(unique=True)
-    password = CharField()
-    admin = BooleanField(default=False)
-    created_at =  DateTimeField(default=datetime.datetime.now)
-    disabled = BooleanField(default=False)
-    moderator = BooleanField(default=False)
-    confirmed = BooleanField(default=False)
-    email = CharField(unique=True, null=True)
-    confirmation_sent_at = DateTimeField(null=True)
-    last_sign_in_at = IntegerField(null=True)
-    remote = BooleanField(default=False)
-    private = BooleanField(default=False)
-    private_key = TextField()
-    public_key = TextField()
-    description = TextField(default="")
-    is_bot = BooleanField(default=False)
+    name = CharField(null=True) # Display name
+    username = CharField(unique=True) # actual username
+    password = CharField() 
+    admin = BooleanField(default=False) # True if the user is admin
+    created_at =  DateTimeField(default=datetime.datetime.now) 
+    disabled = BooleanField(default=False) # True if the user is disabled in the server
+    confirmed = BooleanField(default=False) # The user has confirmed the email
+    email = CharField(unique=True, null=True) # User's email
+    confirmation_sent_at = DateTimeField(null=True) # Moment when the confirmation email was sent
+    last_sign_in_at = IntegerField(null=True) # Last time the user signed in
+    remote = BooleanField(default=False) # The user is a remote user
+    private = BooleanField(default=False) # The account has limited access
+    private_key = TextField() # Private key used to sign AP actions
+    public_key = TextField() # Public key
+    description = TextField(default="") # Description of the profile
+    is_bot = BooleanField(default=False) # True if the account is a bot
 
     @property
     def uris(self):
@@ -62,7 +61,12 @@ class User(BaseModel):
             'avatar': None,
             'moved': None,
             'fields':[],
-            'bot': self.is_bot
+            'bot': self.is_bot,
+            'publicKey':{
+                'id': self.uris.id + '#main-key',
+                'owner': self.uris.id,
+                'publicKeyPem': self.public_key
+            }
         }
 
         if self.remote:
@@ -133,7 +137,7 @@ class User(BaseModel):
                 .select()
                 .join(FollowerRelation, on=FollowerRelation.follows)
                 .where(FollowerRelation.user == self)
-                .order_by(User.username))
+                .order_by(FollowerRelation.created_at.desc()))
 
     def is_following(self, user):
         from models.followers import FollowerRelation
