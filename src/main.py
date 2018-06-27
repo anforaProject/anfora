@@ -18,6 +18,7 @@ from api.v1.user import (authUser, getUser, getFollowers, logoutUser,
 
 from api.v1.activityPub.inbox import (Inbox)
 from api.v1.activityPub.outbox import (Outbox)
+from api.v1.activityPub.followers import (Followers)
 
 from api.v1.server import (wellknownNodeinfo, wellknownWebfinger, nodeinfo)
 
@@ -68,8 +69,11 @@ app.add_route('/.well-known/nodeinfo', wellknownNodeinfo())
 app.add_route('/.well-known/webfinger', wellknownWebfinger())
 app.add_route('/nodeinfo', nodeinfo())
 
-app.add_route(urls["user"], getUser())
+#User oubox/inbox
 app.add_route(urls["outbox"], Outbox())
 app.add_route(urls["inbox"], Inbox())
-app.add_route(urls["followers"], getFollowers())
+
+app.add_route(urls["user"], getUser())
+
+app.add_route(urls["followers"], Followers())
 app.add_route(urls["logout"], logoutUser())
