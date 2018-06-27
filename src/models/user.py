@@ -31,7 +31,8 @@ class User(BaseModel):
     public_key = TextField() # Public key
     description = TextField(default="") # Description of the profile
     is_bot = BooleanField(default=False) # True if the account is a bot
-
+    avatar = CharField(default="default.jpg")
+    
     @property
     def uris(self):
         if self.remote:
@@ -43,7 +44,8 @@ class User(BaseModel):
             followers=uri("followers", {"username":self.username}),
             outbox=uri("outbox", {"username":self.username}),
             inbox=uri("inbox", {"username":self.username}),
-            atom=uri("atom", {"username": self.username})
+            atom=uri("atom", {"username": self.username}),
+            avatar=uri("profile_image", {"name": self.avatar})
         )
 
     def to_json(self):
@@ -128,7 +130,7 @@ class User(BaseModel):
 
     def statuses(self):
         from models.photo import Photo
-        return (self.photos.order_by(Photo.created_at.desc()))
+        return self.photos.order_by(Photo.id.desc())
 
     def following(self):
         from models.followers import FollowerRelation

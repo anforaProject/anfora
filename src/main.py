@@ -14,7 +14,7 @@ from middleware import (PeeweeConnectionMiddleware, CorsMiddleware)
 from api.v1.photos import (getPhoto, manageUserPhotos)
 from api.v1.albums import (createAlbum, getAlbum, addToAlbum)
 from api.v1.user import (authUser, getUser, getFollowers, logoutUser,
-                            getStatuses, homeTimeline)
+                            getStatuses, homeTimeline, atomFeed)
 
 from api.v1.activityPub.inbox import (Inbox)
 from api.v1.activityPub.outbox import (Outbox)
@@ -74,6 +74,7 @@ app.add_route(urls["outbox"], Outbox())
 app.add_route(urls["inbox"], Inbox())
 
 app.add_route(urls["user"], getUser())
+app.add_route(urls["atom"], atomFeed())
 
 app.add_route(urls["followers"], Followers())
 app.add_route(urls["logout"], logoutUser())
