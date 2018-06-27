@@ -49,8 +49,12 @@ class Object(object):
                     values["to"].append(item.id)
 
         if context:
-            values["@context"] = "https://www.w3.org/ns/activitystreams"
 
+            context_content = ["https://www.w3.org/ns/activitystreams",
+            "https://w3id.org/security/v1"
+            ]
+
+            values["@context"] = context_content
         return values
 
 class Actor(Object):
@@ -125,9 +129,34 @@ class Collection(Object):
         return json
 
 class OrderedCollection(Collection):
-    attributes = Object.attributes + ["orderedItems"]
+    attributes = Object.attributes + ["first"]
     type = "OrderedCollection"
 
+
+    @property
+    def first(self):
+        return self.items
+
+
+    @first.setter
+    def first(self, iterable):
+        self.items = iterable
+
+    def to_json(self, **kwargs):
+        data = Collection.to_json(self, **kwargs)
+        data["totalItems"] = self.totalItems
+        return data
+
+class OrderedCollectionPage(OrderedCollection):
+    attributes = Object.attributes + ['partOf', 'next', 'id', 'orderedItems']
+    type = "OrderedCollectionPage"
+
+    @property
+    def totalItems(self):
+        if(self.items and self.items[0].type == 'OrderedCollection'):
+            return self.items[0].totalItems()
+        else:
+            return len(self.items)
 
     @property
     def orderedItems(self):
@@ -137,11 +166,10 @@ class OrderedCollection(Collection):
     def orderedItems(self, iterable):
         self.items = iterable
 
-    def to_json(self, **kwargs):
-        data = Collection.to_json(self, **kwargs)
-        data["totalItems"] = self.totalItems
-        return data
 
+    def to_json(self, **kwargs):
+        json = Object.to_json(self, **kwargs)
+        return json
 
 ALLOWED_TYPES = {
 
