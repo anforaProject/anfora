@@ -15,6 +15,8 @@ from auth import (auth_backend,loadUserToken,loadUserPass)
 
 from activityPub import activities
 
+from utils.atomFeed import generate_feed
+
 def json_serial(obj):
     """JSON serializer for objects not serializable by default json code"""
 
@@ -133,3 +135,25 @@ class homeTimeline(object):
         print(statuses)
         resp.body=json.dumps(statuses, default=str)
         resp.status=falcon.HTTP_200
+
+class atomFeed(object):
+
+
+    auth = {
+        'exempt_methods': ['GET']
+    }
+
+    def on_get(self, req, resp, username):
+        user = User.get_or_none(username=username)
+        if user:
+            if 'max_id' in req.params.keys():
+                feed = generate_feed(user, req.params['max_id'])
+            else:
+                feed = generate_feed(user)
+
+            resp.status = falcon.HTTP_200
+            resp.body = feed
+            resp.content_type = falcon.MEDIA_XML
+        else:
+
+            resp.status = falcon.HTTP_404
