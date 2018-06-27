@@ -13,9 +13,6 @@ from models.base import BaseModel
 from models.user import User
 from models.album import Album
 
-from activityPub import activities
-
-
 
 class Photo(BaseModel):
     media_name = CharField(unique=True)
@@ -57,7 +54,7 @@ class Photo(BaseModel):
             "message": self.message,
             "hashtags": self.hashtags,
             "likes": self.likes_count(),
-            "actor": activities.Actor(self.user),
+            "actor": self.user.uris.id,
             "sensitive": self.sensitive,
             "created_at": self.created_at.strftime('%Y-%m-%dT%H:%M:%S'),
             "media_url":self.uris.media,
