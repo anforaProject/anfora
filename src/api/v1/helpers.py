@@ -1,5 +1,6 @@
 import falcon
 import requests
+import redis 
 
 from Crypto.PublicKey import RSA 
 from Crypto.Signature import PKCS1_v1_5 
@@ -29,7 +30,12 @@ def max_body(limit):
 
     return hook
 
-def sign_request(key, data):
+def sign_data(key, data):
+
+    """
+    To update the digest data needs to be a bytes object.
+    """
+
     rsakey = RSA.importKey(key) 
     signer = PKCS1_v1_5.new(rsakey) 
     digest = SHA256.new() 
@@ -42,13 +48,14 @@ def get_ap_by_uri(uri):
     #What is the AP id of the user
 
     #Open a connection with redis
-    r = redis.StrictRedis(host='localhost', port=6379)
+    redis_connection = redis.StrictRedis(host='localhost', port=6379)
 
     #Try to search the uri in the redis db
 
-    obj = r.get(uri)
+    obj = redis_connection.get(uri)
 
     #If not None we have a match 
+    
     if obj:
         return obj 
         
@@ -56,7 +63,7 @@ def get_ap_by_uri(uri):
         uri = uri[1:]
     
     info = uri.split("@")
-
+    
     headers = {'Accept': 'application/json'}
     r = requests.get(f'https://{info[1]}/.well-known/webfinger?resource={uri}', headers=headers)
 
@@ -66,7 +73,7 @@ def get_ap_by_uri(uri):
         url_rel = next(filter(lambda x: 'type' in x.keys() and x['type'] == 'application/activity+json', js['links']))
         
         #Before returning the value store it in redis
-        r.set(uri, url_rel['href'], ex=86400)
+        redis_connection.set(uri, url_rel['href'], ex=86400)
 
         return url_rel['href']
     else:
