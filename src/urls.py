@@ -4,7 +4,7 @@ urls = {
     "inbox": "/users/{username}/inbox",
     "photos": "/@{username}/photos",
     "photo": "/p/{username}/{id}",
-    "following": "/@{username}/following",
+    "following": "/users/{username}/following",
     "followers": "/users/{username}/followers",
     "atom": "/users/{username}.atom",
     "user": "/users/{username}",
