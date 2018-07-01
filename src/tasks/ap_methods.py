@@ -25,3 +25,13 @@ def handle_follow(activity):
 
     else:
         print("error handling follow")
+
+@huey.task()
+def send_activity(activity, actor):
+    # Expects activity to be an already signed activity 
+    # as a python dict
+
+    date = f"{datetime.utcnow():%a, %d %b %Y %H:%M:%S} GMT"
+
+    signed_string = f'(request-target): post /inbox\nhost: mastodon.social\ndate: {date}'
+    
