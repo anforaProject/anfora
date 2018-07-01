@@ -1,6 +1,12 @@
+import requests
+
+from settings import DOMAIN
+
 from models.photo import Photo
 from models.user import User
 from activityPub import activities
+
+from api.helpers import sign_data
 
 from tasks.config import huey # import the huey we instantiated in config.py
 
@@ -26,12 +32,27 @@ def handle_follow(activity):
     else:
         print("error handling follow")
 
-@huey.task()
-def send_activity(activity, actor):
-    # Expects activity to be an already signed activity 
-    # as a python dict
+@huey.task(retries=5, retry_delay=60)
+def send_activity(activity, actor, object):
+    """
+    activity: A object ready to make json dumps and be sent.
+    actor   : An instance of User
+    object  : A string representing the url objetive of the request
+    """
 
     date = f"{datetime.utcnow():%a, %d %b %Y %H:%M:%S} GMT"
 
-    signed_string = f'(request-target): post /inbox\nhost: mastodon.social\ndate: {date}'
+
+    signed_string = f'(request-target): post /inbox\nhost: {DOMAIN}\ndate: {date}'
+    signature = sign_data(signed_string, actor.private_key)
+    keyId = actor.uris.id + '#main-key'
+    header = f'keyId="{keyId}",headers="(request-target) host date",signature="{signature}"'
+
     
+    headers = {
+        'Host': DOMAIN,
+        'Date': date,
+        'Signature': header
+    }
+
+    r = request.post(object, data=json.dumps(activity), headers=headers, timeout=(5, 20))
