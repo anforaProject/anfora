@@ -17,22 +17,10 @@ from tasks.redis.spreadStatus import spreadStatus
 from tasks.tasks import create_image
 from auth import (loadUser, auth_backend, try_logged_jwt)
 
+from api.v1.helpers import (max_body, its_me)
+
 #Get max size for uploads
 MAX_SIZE = os.getenv('MAX_SIZE', 1024*1024)
-
-
-def max_body(limit):
-
-    def hook(req, resp, resource, params):
-        length = req.content_length
-        if length is not None and length > limit:
-            msg = ('The size of the request is too large. The body must not '
-                   'exceed ' + str(limit) + ' bytes in length.')
-
-            raise falcon.HTTPRequestEntityTooLarge(
-                'Request body is too large', msg)
-
-    return hook
 
 
 class getPhoto(object):
@@ -57,9 +45,6 @@ class getPhoto(object):
 
 
 class manageUserPhotos(object):
-
-    def __init__(self, uploads):
-        self.uploads = uploads
 
     auth = {
         'exempt_methods': ['GET','OPTIONS']
@@ -104,7 +89,7 @@ class manageUserPhotos(object):
                 #open(temp_file, 'wb').write(image.file.read())
 
                 #Create the image and the thumbnail
-                create_image(io.BytesIO(image.file.read()),self.uploads, ident)
+                create_image(io.BytesIO(image.file.read()), ident)
 
                 user = req.context['user']
                 filename = image.filename
