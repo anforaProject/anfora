@@ -20,7 +20,6 @@ class Object(object):
                 value = as_activitystream(value)
 
             if value != None:
-                print("Setting ", key, " to ", value)
                 setattr(self, key, value)
 
     def __str__(self):
@@ -185,7 +184,6 @@ ALLOWED_TYPES = {
 }
 
 def as_activitystream(obj):
-    print(obj)
     type = obj.get("type")
 
     if not type:
