@@ -41,8 +41,20 @@ def get_ap_by_uri(uri):
     #Giving a uri ask server using webfinger
     #What is the AP id of the user
 
+    #Open a connection with redis
+    r = redis.StrictRedis(host='localhost', port=6379)
+
+    #Try to search the uri in the redis db
+
+    obj = r.get(uri)
+
+    #If not None we have a match 
+    if obj:
+        return obj 
+        
     if uri.startswith("@"):
         uri = uri[1:]
+    
     info = uri.split("@")
 
     headers = {'Accept': 'application/json'}
@@ -53,6 +65,9 @@ def get_ap_by_uri(uri):
         # get the url that we want, i.e. the ap id where we can call AP methods
         url_rel = next(filter(lambda x: 'type' in x.keys() and x['type'] == 'application/activity+json', js['links']))
         
+        #Before returning the value store it in redis
+        r.set(uri, url_rel['href'], ex=86400)
+
         return url_rel['href']
     else:
         return r.text
