@@ -4,6 +4,7 @@ import binascii
 import os
 
 import Crypto
+
 from Crypto.PublicKey import RSA
 from Crypto import Random
 
@@ -12,6 +13,7 @@ from playhouse.shortcuts import model_to_dict
 
 from models.base import BaseModel
 from activityPub.helpers import (uri, URIs)
+
 
 class User(BaseModel):
     ap_id = CharField(null=True)
@@ -27,11 +29,11 @@ class User(BaseModel):
     last_sign_in_at = IntegerField(null=True) # Last time the user signed in
     remote = BooleanField(default=False) # The user is a remote user
     private = BooleanField(default=False) # The account has limited access
-    private_key = TextField() # Private key used to sign AP actions
+    private_key = TextField(null=True) # Private key used to sign AP actions
     public_key = TextField() # Public key
     description = TextField(default="") # Description of the profile
     is_bot = BooleanField(default=False) # True if the account is a bot
-    avatar = CharField(default="default.jpg")
+    avatar_file = CharField(default="default.jpg")
     
     @property
     def uris(self):
@@ -45,8 +47,10 @@ class User(BaseModel):
             outbox=uri("outbox", {"username":self.username}),
             inbox=uri("inbox", {"username":self.username}),
             atom=uri("atom", {"username": self.username}),
-            avatar=uri("profile_image", {"name": self.avatar})
+            avatar=self.avatar
         )
+
+
 
     def to_json(self):
         json = {
@@ -60,7 +64,7 @@ class User(BaseModel):
             'statuses_count': self.statuses().count(),
             'note':self.description,
             'url': None,
-            'avatar': None,
+            'avatar': self.avatar,
             'moved': None,
             'fields':[],
             'bot': self.is_bot,
@@ -118,6 +122,10 @@ class User(BaseModel):
             self.private_key = key.exportKey().decode('utf-8')
 
         return super(User, self).save(*args, **kwargs)
+
+    @property
+    def avatar(self):
+        return uri("profile_image", {"name": self.avatar_file})
 
     def followers(self):
         from models.followers import FollowerRelation
