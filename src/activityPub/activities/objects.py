@@ -1,7 +1,7 @@
 import json
 import requests
 
-from .errors import ASTypeError
+from .errors import ASTypeError, ASDecodeError
 
 class Object(object):
     attributes = ["type", "id", "name", "to"]
@@ -62,10 +62,13 @@ class Actor(Object):
     attributes = Object.attributes + [
         "target",
         "preferredUsername",
+        "name",
         "following",
         "followers",
         "outbox",
         "inbox",
+        "summary",
+        "manuallyApprovesFollowers",
     ]
 
     type="Actor"
@@ -182,16 +185,17 @@ ALLOWED_TYPES = {
 }
 
 def as_activitystream(obj):
+    print(obj)
     type = obj.get("type")
 
     if not type:
         msg = "Invalid ActivityStream object, the type is missing"
-        raise errors.ASDecodeError(msg)
+        raise ASDecodeError(msg)
 
     if type in ALLOWED_TYPES:
         return ALLOWED_TYPES[type](**obj)
 
-    raise errors.ASDecodeError("Invalid Type {0}".format(type))
+    raise ASDecodeError("Invalid Type {0}".format(type))
 
 def encode_activitystream(obj):
     if isinstance(obj, Object):
