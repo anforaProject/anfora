@@ -2,10 +2,14 @@ import os
 
 from PIL import Image
 
+from settings import MEADIA_FOLDER
+
 from models.photo import Photo
 from api.v1.activityPub.methods import (get_final_audience, deliver_to)
 
 from tasks.config import huey # import the huey we instantiated in config.py
+
+from settings import (thumb_folder, pic_folder)
 
 THUMBNAIL_SIZE = 320, 320
 THUMBNAIL_BOX = 0,0, 320, 320
@@ -18,17 +22,15 @@ sizes = {
     'thumbnail': (320, 320)
 }
 
-thumb_folder = "small"
-pic_folder = "max_resolution"
-
 @huey.task()
 def count_beans(num):
     print('-- counted %s beans --' % num)
 
 @huey.task()
-def create_image(bytes, path, filename):
-    thumb = os.path.join(path, thumb_folder, filename + '.thumbnail')
-    file_path = os.path.join(path, pic_folder, filename + '.jpeg')
+def create_image(bytes, filename):
+
+    thumb = os.path.join(MEADIA_FOLDER, thumb_folder, filename + '.thumbnail')
+    file_path = os.path.join(MEADIA_FOLDER, pic_folder, filename + '.jpeg')
 
 
     im = Image.open(bytes)
