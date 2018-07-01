@@ -11,13 +11,19 @@ from models.user import User
 from models.followers import FollowerRelation
 
 def dereference(ap_id, type=None):
-    print("=> dereference {}".format(ap_id))
-    res = requests.get(ap_id)
+
+    """
+    Get user info from remote server
+    """
+
+    #Mastodon needs this header
+    headers = {'Accept': 'application/activity+json'}
+    res = requests.get(ap_id, headers=headers)
     try:
         if res.status_code != 200:
             raise Exception("Failed to dereference {0}".format(ap_id))
 
-        return json.loads(res.text, object_hook=as_activitystream)
+        return as_activitystream(res.json())
     except:
         raise Exception("Error connecting server")
 
@@ -54,18 +60,21 @@ def store(activity, person, remote=False):
     return obj.id
 
 def get_or_create_remote_user(ap_id):
+    #This function returns or create an user by it ap_id
     user = User.get_or_none(ap_id=ap_id)
     if not user:
         user = dereference(ap_id)
         hostname = urlparse(user.id).hostname
         username = "{0}@{1}".format(user.preferredUsername, hostname)
-        print(user)
         user = User.create(
-            username=username,
-            name=user.preferredUsername,
+            username=user.preferredUsername,
+            name=user.name,
             ap_id=user.id,
             remote=True,
-            password = "what"
+            password = "what",
+            description=user.summary,
+            private=user.manuallyApprovesFollowers,
+            public_key="user.public_key.publicKeyPem"
         )
     #print(user)
     return user
