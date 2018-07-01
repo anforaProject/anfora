@@ -17,6 +17,9 @@ from activityPub import activities
 
 from utils.atomFeed import generate_feed
 
+from api.v1.helpers import get_ap_by_uri
+from api.v1.activityPub.methods import get_or_create_remote_user
+
 def json_serial(obj):
     """JSON serializer for objects not serializable by default json code"""
 
@@ -157,3 +160,21 @@ class atomFeed(object):
         else:
 
             resp.status = falcon.HTTP_404
+
+
+class followAction(object):
+
+    def on_post(self, req, resp):
+        user = req.context['user']
+
+        #FIX: Check if it's uri
+        obj_id = get_ap_by_uri(req.params['uri'])
+        print(obj_id)
+        follow_object = activities.Follow(actor=user.uris.id,
+                                    object=obj_id)
+
+        d = json.dumps(follow_object.to_json(context=True))
+
+        following = get_or_create_remote_user(obj_id)
+        resp.body = json.dumps(following.to_json(), default=str)
+        resp.status = falcon.HTTP_200
