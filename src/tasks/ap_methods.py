@@ -6,7 +6,7 @@ from models.photo import Photo
 from models.user import User
 from activityPub import activities
 
-from api.helpers import sign_data
+from api.v1.helpers import sign_data
 
 from tasks.config import huey # import the huey we instantiated in config.py
 
