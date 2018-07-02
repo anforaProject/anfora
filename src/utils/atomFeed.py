@@ -1,4 +1,5 @@
 import html
+import datetime
 
 from settings import DOMAIN
 
@@ -75,7 +76,14 @@ def generate_feed(user, max_id = -1):
             .order_by(Photo.id.desc())
             .limit(limit))
 
-    lastPost = user.statuses().get()
+    user_statuses = user.statuses()
+    
+    update_date = None
+    try:
+        update_date = user.statuses().get().created_at
+    except:
+        update_date = datetime.datetime.now()
+
     statuses = []
 
     # Avoid to create multiple times this dict
@@ -105,7 +113,7 @@ def generate_feed(user, max_id = -1):
         "atom": user_uris.atom,
         "author_acct": 'acct:{}@{}'.format(user.username, DOMAIN),
         "next_url": user_uris.atom + "?max_id=" + str(last_id),
-        "update_date": lastPost.created_at,
+        "update_date": update_date,
         "avatar_url": user_uris.avatar
     }
 
