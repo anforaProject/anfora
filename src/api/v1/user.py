@@ -187,7 +187,7 @@ class followAction(object):
         signed_object.sign(user)
 
         #Create the task to send the petition
-        send_activity(signed_object.json, user)
+        send_activity(signed_object.json, user, obj_id)
 
         resp.body = json.dumps(following.to_json(), default=str)
         #resp.body = json.dumps(signed_object.json, default=str)
