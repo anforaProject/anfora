@@ -1,7 +1,7 @@
 import json
 import requests
 
-from .errors import ASTypeError
+from .errors import ASTypeError, ASDecodeError
 
 class Object(object):
     attributes = ["type", "id", "name", "to"]
@@ -20,7 +20,6 @@ class Object(object):
                 value = as_activitystream(value)
 
             if value != None:
-                print("Setting ", key, " to ", value)
                 setattr(self, key, value)
 
     def __str__(self):
@@ -49,8 +48,12 @@ class Object(object):
                     values["to"].append(item.id)
 
         if context:
-            values["@context"] = "https://www.w3.org/ns/activitystreams"
 
+            context_content = ["https://www.w3.org/ns/activitystreams",
+            "https://w3id.org/security/v1"
+            ]
+
+            values["@context"] = context_content
         return values
 
 class Actor(Object):
@@ -58,10 +61,13 @@ class Actor(Object):
     attributes = Object.attributes + [
         "target",
         "preferredUsername",
+        "name",
         "following",
         "followers",
         "outbox",
         "inbox",
+        "summary",
+        "manuallyApprovesFollowers",
     ]
 
     type="Actor"
@@ -97,11 +103,15 @@ class Collection(Object):
                 item = as_activitystream(item.to_activitystream())
                 self._items.append(item)
             else:
-                raise Exception("Invalid Activity object: {item}".format(item=item))
+                self._items.append(str(item))
 
     @property
     def items(self):
         return self._items
+
+    @property
+    def totalItems(self):
+        return len(self.items)
 
     @items.setter
     def items(self, iterable):
@@ -118,19 +128,37 @@ class Collection(Object):
 
     def to_json(self, **kwargs):
         json = Object.to_json(self, **kwargs)
-        print(json)
         return json
 
 class OrderedCollection(Collection):
-    attributes = Object.attributes + ["orderedItems"]
+    attributes = Object.attributes + ["first"]
     type = "OrderedCollection"
+
+
+    @property
+    def first(self):
+        return self.items
+
+
+    @first.setter
+    def first(self, iterable):
+        self.items = iterable
+
+    def to_json(self, **kwargs):
+        data = Collection.to_json(self, **kwargs)
+        data["totalItems"] = self.totalItems
+        return data
+
+class OrderedCollectionPage(OrderedCollection):
+    attributes = Object.attributes + ['partOf', 'next', 'id', 'orderedItems']
+    type = "OrderedCollectionPage"
 
     @property
     def totalItems(self):
-        return len(self.items)
-    @totalItems.setter
-    def totalItems(self, value):
-        pass
+        if(self.items and self.items[0].type == 'OrderedCollection'):
+            return self.items[0].totalItems()
+        else:
+            return len(self.items)
 
     @property
     def orderedItems(self):
@@ -140,10 +168,10 @@ class OrderedCollection(Collection):
     def orderedItems(self, iterable):
         self.items = iterable
 
-    def to_json(self, **kwargs):
-        json = Collection.to_json(self, **kwargs)
-        return json
 
+    def to_json(self, **kwargs):
+        json = Object.to_json(self, **kwargs)
+        return json
 
 ALLOWED_TYPES = {
 
@@ -160,12 +188,12 @@ def as_activitystream(obj):
 
     if not type:
         msg = "Invalid ActivityStream object, the type is missing"
-        raise errors.ASDecodeError(msg)
+        raise ASDecodeError(msg)
 
     if type in ALLOWED_TYPES:
         return ALLOWED_TYPES[type](**obj)
 
-    raise errors.ASDecodeError("Invalid Type {0}".format(type))
+    raise ASDecodeError("Invalid Type {0}".format(type))
 
 def encode_activitystream(obj):
     if isinstance(obj, Object):

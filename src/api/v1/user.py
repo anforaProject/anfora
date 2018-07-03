@@ -14,6 +14,14 @@ from models.token import Token
 from auth import (auth_backend,loadUserToken,loadUserPass)
 
 from activityPub import activities
+from activityPub.data_signature import LinkedDataSignature
+
+from utils.atomFeed import generate_feed
+
+from api.v1.helpers import get_ap_by_uri
+from api.v1.activityPub.methods import get_or_create_remote_user
+
+from tasks.ap_methods import send_activity
 
 def json_serial(obj):
     """JSON serializer for objects not serializable by default json code"""
@@ -133,3 +141,54 @@ class homeTimeline(object):
         print(statuses)
         resp.body=json.dumps(statuses, default=str)
         resp.status=falcon.HTTP_200
+
+class atomFeed(object):
+
+
+    auth = {
+        'exempt_methods': ['GET']
+    }
+
+    def on_get(self, req, resp, username):
+        user = User.get_or_none(username=username)
+        if user:
+            if 'max_id' in req.params.keys():
+                feed = generate_feed(user, req.params['max_id'])
+            else:
+                feed = generate_feed(user)
+
+            resp.status = falcon.HTTP_200
+            resp.body = feed
+            resp.content_type = falcon.MEDIA_XML
+        else:
+
+            resp.status = falcon.HTTP_404
+
+
+class followAction(object):
+
+    def on_post(self, req, resp):
+        user = req.context['user']
+
+        #FIX: Check if it's uri
+        obj_id = get_ap_by_uri(req.params['uri'])
+        #print(obj_id)
+        follow_object = activities.Follow(actor=user.uris.id,
+                                    object=obj_id)
+
+
+        #Follow object that needs to be send
+        signed_object = LinkedDataSignature(follow_object.to_json(context=True))
+
+        #Prepare the object that will be send as response
+        following = get_or_create_remote_user(obj_id)
+        
+        #Sign the activity object
+        signed_object.sign(user)
+
+        #Create the task to send the petition
+        send_activity(signed_object.json, user, obj_id)
+
+        resp.body = json.dumps(following.to_json(), default=str)
+        #resp.body = json.dumps(signed_object.json, default=str)
+        resp.status = falcon.HTTP_200
