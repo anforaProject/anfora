@@ -14,13 +14,16 @@ print("====================")
 print("Users:")
 for u in User.select():
     print(u.username, " con ap_id ", str(u.ap_id))
+    print(list(u.statuses()))
+    print("----")
 print("====================")
 print(User.select().count())
 print("========")
-
+print("Photos")
 for p in Photo.select():
     print(p)
 
+print("========")
 print("Following test:")
 t = User.get(username="test")
 print(t.followers().count())

@@ -33,7 +33,8 @@ class Outbox():
         user = User.get_or_none(username==username)
         objects = user.photos.select().order_by(Photo.created_at.desc())
 
-        collection = activities.OrderedCollection(map(activities.Note, objects))
+        collectionPage = activities.OrderedCollectionPage(map(activities.Note, objects))
+        collection = activities.OrderedCollection([collectionPage])
         resp.body = json.dumps(collection.to_json(context=True))
         resp.status = falcon.HTTP_200
 

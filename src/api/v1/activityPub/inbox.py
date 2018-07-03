@@ -36,11 +36,13 @@ class Inbox():
 
         activity.validate()
         print(activity)
-        if activity.type == "Create":
+        if activity.type == 'Create':
             handle_note(activity)
-        elif activity.type == "Follow":
+        elif activity.type == 'Follow':
             handle_follow(activity)
-
+        elif activity.type == 'Accept':
+            handle_accept(activity)
+            
         user = get_or_create_remote_user(ap_id=activity.actor)
         store(activity, user, remote = True)
         resp.status= falcon.HTTP_200
