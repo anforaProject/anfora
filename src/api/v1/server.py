@@ -8,7 +8,7 @@ from release_info import VERSION
 from models.followers import FollowerRelation
 from models.user import User
 
-from utils.username import extractUser
+from utils.username import extract_user
 from utils.webfinger import Webfinger
 
 class serverInfo(object):
@@ -73,7 +73,7 @@ class wellknownWebfinger(object):
         # For now I will assume that webfinger only asks for the actor, so resources
         # is just one element.
         resources = req.params['resource']
-        username, domain = extractUser(resources)
+        username, domain = extract_user(resources)
 
         if domain == DOMAIN:
             user = User.get_or_none(username=username)

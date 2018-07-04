@@ -112,5 +112,5 @@ class Photo(BaseModel):
         return list(map(lambda x: '#'+x, tags))
 
     def likes_count(self):
-        from models.likes import Like
+        from models.like import Like
         return Like.select().where(Like.photo == self).count()
