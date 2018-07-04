@@ -10,22 +10,8 @@ from activityPub.activities import as_activitystream
 from models.user import User
 from models.followers import FollowerRelation
 
-def dereference(ap_id, type=None):
+from activityPub.identity_manager import ActivityPubId
 
-    """
-    Get user info from remote server
-    """
-
-    #Mastodon needs this header
-    headers = {'Accept': 'application/activity+json'}
-    res = requests.get(ap_id, headers=headers)
-    try:
-        if res.status_code != 200:
-            raise Exception("Failed to dereference {0}".format(ap_id))
-
-        return as_activitystream(res.json())
-    except:
-        raise Exception("Error connecting server")
 
 def get_final_audience(audience):
     final_audience = []
@@ -59,26 +45,6 @@ def store(activity, person, remote=False):
     obj.save()
     return obj.id
 
-def get_or_create_remote_user(ap_id):
-    #This function returns or create an user by it ap_id
-    user = User.get_or_none(ap_id=ap_id)
-    if not user:
-        user = dereference(ap_id)
-        hostname = urlparse(user.id).hostname
-        username = "{0}@{1}".format(user.preferredUsername, hostname)
-        user = User.create(
-            username=user.preferredUsername,
-            name=user.name,
-            ap_id=user.id,
-            remote=True,
-            password = "what",
-            description=user.summary,
-            private=user.manuallyApprovesFollowers,
-            public_key="user.public_key.publicKeyPem"
-        )
-    #print(user)
-    return user
-
 def handle_follow(activity):
     followed = User.get_or_none(ap_id=activity.object)
     print("=> Handling follow")
@@ -88,7 +54,7 @@ def handle_follow(activity):
         elif isinstance(activity.actor, str):
             ap_id = activity.actor
 
-        follower = get_or_create_remote_user(ap_id)
+        follower = ActivityPubId(ap_id).get_or_create_remote_user()
         FollowerRelation.create(
             user = follower,
             follows = followed
@@ -106,7 +72,7 @@ def handle_note(activity):
     elif isinstance(activity.actor, str):
         ap_id = activity.actor
 
-    person = get_or_create_remote_user(ap_id)
+    person = ActivityPubId(ap_id).get_or_create_remote_user()
 
     note = Photo.get_or_none(ap_id=activity.object.id)
 
