@@ -1,5 +1,7 @@
 # Zinat
 
+[![Build Status](https://travis-ci.com/yabirgb/zinat.svg?branch=master)](https://travis-ci.com/yabirgb/zinat)
+
 ## About
 
 This projects aims to create a simple to use self-hosted gallery app
@@ -7,7 +9,7 @@ with a minimal footprint in the server.
 
 It is being built upon the following technologies:
 
-* Python
+* Python 3.6
 * Falcon API framework
 * peewee
 
@@ -27,6 +29,10 @@ You should have received a copy of the GNU Affero General Public License along w
 
 ## Start services
 
+### Start redis
+
+    redis-server
+
 ### Start queue
 
     huey_consumer.py tasks.main.huey -m 1 -w 2
@@ -36,6 +42,3 @@ You should have received a copy of the GNU Affero General Public License along w
     ./start.sh
 
 
-### Start redis
-
-    redis-server
