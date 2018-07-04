@@ -2,10 +2,10 @@ language: python
 python:
   - "3.6"
 install:
-  pip install pipenv
-  pipenv --python 3.6
-  pipenv install 
+  - pip install pipenv
+  - pipenv --python 3.6
+  - pipenv install 
 script:
-  pipenv shell
-  cd src/
-  python -m pytest tests/
+  - pipenv shell
+  - cd src/
+  - python -m pytest tests/
