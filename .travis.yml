@@ -6,6 +6,7 @@ install:
   - pipenv --python 3.6
   - pipenv install 
 script:
-  - pipenv shell
+  - export VENV_HOME_DIR=$(pipenv --venv)
+  - source $VENV_HOME_DIR/bin/activate
   - cd src/
   - python -m pytest tests/
