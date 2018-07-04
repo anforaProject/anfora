@@ -6,7 +6,7 @@ from peewee import *
 from models.user import User
 from models.base import BaseModel
 
-from activityPub.helpers import (URIs, uri)
+from urls import (URIs, uri)
 
 class Activity(BaseModel):
     payload = TextField()

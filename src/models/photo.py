@@ -8,7 +8,7 @@ import requests
 from peewee import *
 from playhouse.shortcuts import model_to_dict
 
-from activityPub.helpers import (URIs, uri)
+from urls import (URIs, uri)
 from models.base import BaseModel
 from models.user import User
 from models.album import Album
