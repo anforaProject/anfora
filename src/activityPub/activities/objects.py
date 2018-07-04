@@ -9,7 +9,10 @@ class Object(object):
 
     def __init__(self, obj=None, *args, **kwargs):
         if obj:
-            self.__init__(**obj.to_activitystream())
+            if not isinstance(obj, dict):
+                self.__init__(**obj.to_activitystream())
+            elif isinstance(obj, dict):
+                self.__init__(**obj)
 
         for key in self.attributes:
             if key == "type":
@@ -55,6 +58,9 @@ class Object(object):
 
             values["@context"] = context_content
         return values
+
+    def to_activitystream(self):
+        return self
 
 class Actor(Object):
 

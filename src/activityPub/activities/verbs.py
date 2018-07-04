@@ -5,9 +5,18 @@ from copy import copy
 
 from activityPub.activities import errors
 
+from utils.username import extract_user
+from models.follow_request import FollowRequest
+from models.user import User
+
 class Activity(Object):
     attributes = Object.attributes + ["actor", "object"]
     type = "Activity"
+
+    def user_from_uri(uri):
+        username, domain = extract_user(uri)
+        user = User.get_or_none(username=username)
+        return user
 
     def get_audience(self):
 
@@ -35,6 +44,9 @@ class Activity(Object):
     def validate(self):
         return
 
+    def object_uri(self):
+        return self.object
+
 class Create(Activity):
 
     type = "Create"
@@ -61,6 +73,23 @@ class Reject(Activity):
 
 class Accept(Activity):
     type = "Accept"
+
+    def __accept_follow(self):
+        target = self.user_from_uri(self.object)
+        account = self.user_form_uri(self.actor)
+
+        if target == None or target.remote:
+            return None
+
+        request = (FollowRequest
+                .select()
+                .where(
+                    (FollowRequest.account == account) &
+                    (FollowRequest.target == target))
+                .exists()
+        )
+
+        request.authorize()
 
 ALLOWED_TYPES.update({
     "Activity": Activity,

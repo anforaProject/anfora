@@ -18,6 +18,8 @@ from api.v1.albums import (createAlbum, getAlbum, addToAlbum)
 from api.v1.user import (authUser, getUser, getFollowers, logoutUser,
                             getStatuses, homeTimeline, atomFeed, followAction)
 
+from api.v1.client import VueClient
+
 from api.v1.activityPub.inbox import (Inbox)
 from api.v1.activityPub.outbox import (Outbox)
 from api.v1.activityPub.followers import (Followers)
@@ -78,3 +80,5 @@ app.add_route(urls["atom"], atomFeed())
 
 app.add_route(urls["followers"], Followers())
 app.add_route(urls["logout"], logoutUser())
+
+app.add_route('/{path}', VueClient())
