@@ -15,7 +15,7 @@ from activityPub import activities
 from activityPub.activities import as_activitystream
 
 from api.v1.activityPub.methods import (store, handle_follow, handle_note)
-from api.v1.activityPub.methods import (get_or_create_remote_user, dereference)
+from activityPub.identity_manager import ActivityPubId
 
 from tasks.tasks import deliver
 
@@ -68,6 +68,6 @@ class Inbox():
         elif activity.type == 'Accept':
             handle_accept(activity)
             
-        user = get_or_create_remote_user(ap_id=activity.actor)
+        user = ActivityPubId(activity.actor).get_or_create_remote_user()
         store(activity, user, remote = True)
         resp.status= falcon.HTTP_200

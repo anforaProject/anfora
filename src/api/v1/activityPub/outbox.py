@@ -17,7 +17,7 @@ from api.v1.activityPub.methods import  store
 from tasks.tasks import deliver
 from tasks.tasks import create_image
 
-from api.v1.activityPub.methods import get_or_create_remote_user
+from activityPub.identity_manager import ActivityPubId
 
 
 class Outbox():
@@ -81,7 +81,7 @@ class Outbox():
 
         if activity.type == "Follow":
 
-            followed = get_or_create_remote_user(activity.object)
+            followed = ActivityPubId(activity.object).get_or_create_remote_user()
             user = req.context["user"]
             #print(followed.ap_id, user.username, followed.username)
             f = FollowerRelation.create(user = user, follows=followed)

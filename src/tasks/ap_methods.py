@@ -20,7 +20,7 @@ def handle_follow(activity):
         elif isinstance(activity.actor, str):
             ap_id = activity.actor
 
-        follower = get_or_create_remote_user(ap_id)
+        follower = ActivityPubId(ap_id).get_or_create_remote_user()
         FollowerRelation.create(
             user = follower,
             follows = followed

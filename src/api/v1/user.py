@@ -19,7 +19,7 @@ from activityPub.data_signature import LinkedDataSignature
 from utils.atomFeed import generate_feed
 
 from api.v1.helpers import get_ap_by_uri
-from api.v1.activityPub.methods import get_or_create_remote_user
+from activityPub.identity_manager import ActivityPubId
 
 from tasks.ap_methods import send_activity
 
@@ -181,7 +181,7 @@ class followAction(object):
         signed_object = LinkedDataSignature(follow_object.to_json(context=True))
 
         #Prepare the object that will be send as response
-        following = get_or_create_remote_user(obj_id)
+        following = ActivityPubId(obj_id).get_or_create_remote_user()
         
         #Sign the activity object
         signed_object.sign(user)
