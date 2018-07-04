@@ -1,7 +1,8 @@
+import os
+
 import falcon
 import requests
 import redis 
-
 from Crypto.PublicKey import RSA 
 from Crypto.Signature import PKCS1_v1_5 
 from Crypto.Hash import SHA256 
@@ -67,7 +68,7 @@ def get_ap_by_uri(uri):
     headers = {'Accept': 'application/json'}
     r = requests.get(f'https://{info[1]}/.well-known/webfinger?resource={uri}', headers=headers)
 
-    if r.status_code in  [200]:
+    if r.status_code in [200]:
         js = r.json()
         # get the url that we want, i.e. the ap id where we can call AP methods
         url_rel = next(filter(lambda x: 'type' in x.keys() and x['type'] == 'application/activity+json', js['links']))
@@ -78,3 +79,8 @@ def get_ap_by_uri(uri):
         return url_rel['href']
     else:
         return r.text
+
+def load_template(name):
+    path = os.path.join('/home/yabir/killMe/zinat/src/client/dist', name)
+    with open(os.path.abspath(path), 'r') as fp:
+        return fp.read()
