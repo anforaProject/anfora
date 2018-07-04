@@ -1,6 +1,8 @@
 import re
 
-def extractUser(uri):
+from models.user import User
+
+def extract_user(uri):
 
     result = uri.split("@")
     if len(result) == 2:
