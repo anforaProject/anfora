@@ -9,4 +9,5 @@ script:
   - export VENV_HOME_DIR=$(pipenv --venv)
   - source $VENV_HOME_DIR/bin/activate
   - cd src/
+  - python populate.py
   - python -m pytest tests/
