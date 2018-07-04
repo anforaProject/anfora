@@ -12,7 +12,7 @@ from peewee import *
 from playhouse.shortcuts import model_to_dict
 
 from models.base import BaseModel
-from activityPub.helpers import (uri, URIs)
+from urls import (uri, URIs)
 
 
 class User(BaseModel):
