@@ -72,17 +72,26 @@ class wellknownWebfinger(object):
 
         # For now I will assume that webfinger only asks for the actor, so resources
         # is just one element.
+        
+        if not 'resource' in req.params.keys():
+            raise falcon.HTTPBadRequest(description="No resource was provided along the request.")
+        
         resources = req.params['resource']
+
+
         username, domain = extract_user(resources)
+
+        if username == None and domain == None:
+            raise falcon.HTTPBadRequest(description="Unable to decode resource.")
 
         if domain == DOMAIN:
             user = User.get_or_none(username=username)
 
             if user:
                 response = Webfinger(user).generate()
-
                 resp.body = json.dumps(response)
                 resp.status = falcon.HTTP_200
             else:
-                resp.body = json.dumps({"Error": "Invalid username"})
-                resp.status = falcon.HTTP_404
+                raise falcon.HTTPNotFound(description="User was not found.")
+        else:
+            raise falcon.HTTPBadRequest(description="Resouce domain doesn't match local domain.")
