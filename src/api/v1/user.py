@@ -36,6 +36,8 @@ class authUser(object):
         'backend': BasicAuthBackend(user_loader=loadUserPass)
     }
 
+    cors_enabled = False
+
     def on_get(self, req, resp):
         user = req.context['user']
 

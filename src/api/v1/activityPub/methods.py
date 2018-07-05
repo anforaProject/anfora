@@ -1,4 +1,5 @@
 import json
+import re
 from urllib.parse import urlparse
 
 import requests
@@ -83,3 +84,31 @@ def handle_note(activity):
             ap_id=activity.object.id,
             remote=True
         )
+
+class SignatureVerification:
+
+    def __init__(self):
+        self.signature_fail_reason = None
+        self.signed_request_account = None
+        
+    def verify(self, headers):
+
+        #Check if the "Signature header is present"
+        if 'signature' not in list(map(str.lower,a.keys())):
+            signature_fail_reason = "Request is not signed"
+            return signature_fail_reason
+
+        raw_signature = headers['signature']
+
+        signature_params = {}
+        regex = r'([A-Za-z]+)=\"([^\"]+)\"'
+        for element in raw_signature.split(','):
+            match = re.match(regex, element)
+            if match and len(match.groups()) == 2:
+                key, value = mathc.groups()
+                signature_params[key] = value
+        
+        ## Check if the params are valid
+
+        if not signature_params["keyId"] or not signature_params["signature"]:
+            pass
