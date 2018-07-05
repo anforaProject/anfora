@@ -19,7 +19,7 @@ from activityPub.identity_manager import ActivityPubId
 
 from tasks.tasks import deliver
 
-from src.api.v1.activityPub.methods import SignatureVerification
+from api.v1.activityPub.methods import SignatureVerification
 
 class Inbox():
 
