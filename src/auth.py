@@ -1,5 +1,5 @@
 import argon2
-from argon2.exceptions import VerificationError
+from argon2.exceptions import VerificationError, VerifyMismatchError
 from falcon_auth import TokenAuthBackend, JWTAuthBackend
 
 from models.user import User
