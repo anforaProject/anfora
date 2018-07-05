@@ -10,7 +10,7 @@ from models.album import Album
 from models.albumRelation import RelationAlbumPhoto
 from auth import (loadUser, auth_backend)
 
-class getAlbum(object):
+class getAlbum:
     
     auth = {
         'auth_disabled': True
@@ -38,7 +38,7 @@ class getAlbum(object):
 
 
         
-class createAlbum(object):
+class createAlbum:
 
     def on_post(self, req, resp, user):
         user = req.context['user'] 
@@ -55,7 +55,7 @@ class createAlbum(object):
             resp.status = falcon.HTTP_500
             resp.boyd = json.dumps({"Error": "Error creating the album"})
         
-class addToAlbum(object):
+class addToAlbum:
     def on_post(self, req, resp, album, user):
         photo = Photo.get_or_none(Photo.id == req.get_param('photo'))
         album = Album.get_or_none(Album.id == album)

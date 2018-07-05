@@ -11,7 +11,7 @@ from models.user import User
 from utils.username import extract_user
 from utils.webfinger import Webfinger
 
-class serverInfo(object):
+class serverInfo:
 
     auth = {'auth_disabled': True}
 
@@ -21,7 +21,7 @@ class serverInfo(object):
         resp.status = falcon.HTTP_200
         resp.body = json.dumps({"users": nUsers})
 
-class wellknownNodeinfo(object):
+class wellknownNodeinfo:
 
     auth = {'auth_disabled': True}
 
@@ -35,7 +35,7 @@ class wellknownNodeinfo(object):
         resp.body = json.dumps(links)
         resp.status = falcon.HTTP_200
 
-class nodeinfo(object):
+class nodeinfo:
 
     auth = {'auth_disabled':True}
 
@@ -64,7 +64,7 @@ class nodeinfo(object):
             },
         }
 
-class wellknownWebfinger(object):
+class wellknownWebfinger:
 
     auth = {'auth_disabled': True}
 
