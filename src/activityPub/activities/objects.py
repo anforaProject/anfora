@@ -3,7 +3,7 @@ import requests
 
 from .errors import ASTypeError, ASDecodeError
 
-class Object(object):
+class Object:
     attributes = ["type", "id", "name", "to"]
     type = "Object"
 

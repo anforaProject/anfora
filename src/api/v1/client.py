@@ -2,7 +2,7 @@ import falcon
 
 from api.v1.helpers import load_template
 
-class VueClient(object):
+class VueClient:
     auth = {
         'exempt_methods': ['GET']
     }

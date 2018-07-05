@@ -23,7 +23,7 @@ from api.v1.helpers import (max_body, its_me)
 MAX_SIZE = os.getenv('MAX_SIZE', 1024*1024)
 
 
-class getPhoto(object):
+class getPhoto:
 
     auth = {
         'auth_disabled': True
@@ -44,7 +44,7 @@ class getPhoto(object):
 
 
 
-class manageUserPhotos(object):
+class manageUserPhotos:
 
     auth = {
         'exempt_methods': ['GET','OPTIONS']
