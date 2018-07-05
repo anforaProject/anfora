@@ -74,6 +74,7 @@ class Actor(Object):
         "inbox",
         "summary",
         "manuallyApprovesFollowers",
+        "publicKey"
     ]
 
     type="Actor"

@@ -1,16 +1,25 @@
 import json
 import re
+import hashlib # Used to create sha256 hash of the request body
 from urllib.parse import urlparse
 
 import requests
 
-from models.activity import Activity
-from activityPub import activities
-from activityPub.activities import as_activitystream
+#Manage RSA stuff
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_OAEP
+from Crypto.Signature import PKCS1_v1_5
+from Crypto.Hash import SHA512, SHA384, SHA256
+from base64 import b64encode, b64decode
 
+#Models
+from models.activity import Activity
 from models.user import User
 from models.followers import FollowerRelation
 
+#ActivityPub things
+from activityPub import activities
+from activityPub.activities import as_activitystream
 from activityPub.identity_manager import ActivityPubId
 
 
@@ -61,7 +70,7 @@ def handle_follow(activity):
             follows = followed
         )
 
-        response = {"Type": "Accept", "Object":activity}
+        response = {'Type': 'Accept','Object':activity}
 
 
     else:
@@ -87,20 +96,29 @@ def handle_note(activity):
 
 class SignatureVerification:
 
-    def __init__(self):
+    def __init__(self,headers, method, path):
         self.signature_fail_reason = None
         self.signed_request_account = None
+        self.REQUEST_TARGET = '(request-target)'
+        self.method = method.lower()
+        self.path = path
+        self.headers = headers
+
         
-    def verify(self, headers):
+    def verify(self):
+
+        headers = self.headers
 
         #Check if the "Signature header is present"
         if 'signature' not in list(map(str.lower,a.keys())):
             signature_fail_reason = "Request is not signed"
-            return signature_fail_reason
+            return
 
         raw_signature = headers['signature']
 
         signature_params = {}
+
+        #Work with the header string to extract the information
         regex = r'([A-Za-z]+)=\"([^\"]+)\"'
         for element in raw_signature.split(','):
             match = re.match(regex, element)
@@ -110,5 +128,55 @@ class SignatureVerification:
         
         ## Check if the params are valid
 
-        if not signature_params["keyId"] or not signature_params["signature"]:
-            pass
+        if None in [signature_params.get('keyId'), signature_params.get('signature')]:
+            self.signature_fail_reason = "Incompatible request signature"
+            return 
+
+        account = ActivityPubId(signature_params['keyId']).uri_to_resource(User)
+
+        if not account:
+            self.signature_fail_reason = "Could not retrive account using keyId"
+            return
+        
+        signature = b64decode(signature_params['signature'])
+        compare_signed_string = self.build_signed_string(signature_params['headers'], headers)
+        #Verify using the public key
+        signer = PKCS1_v1_5.new(accoutn.public_key)
+        digest = SHA256.new()
+        digest.update(compare_signed_string)
+
+        if signer.verify(digest, signature):
+            self.signed_request_account = account
+            return self.signed_request_account
+        else:
+            self.signature_fail_reason = "Verification failed for {account.preferredUsername}:{account.uris.id}"
+            return
+
+
+    def build_signed_string(self,signed_headers):
+
+        headers = self.headers
+        
+        if not signed_headers:
+            signed_headers = 'date'    
+
+        headers = []
+        for header in signed_headers.split(" "):
+            string = ""
+            if header == self.REQUEST_TARGET:
+                string = f'{self.REQUEST_TARGET}: {self.method} {self.path}'
+            elif header == 'digest':
+                string = f'digest: {self.digest_body(req.body)}'
+            else:
+                f'{header}: #{headers.get(header)}'
+            headers.append(string)
+
+        return '\n'.join(headers)
+
+    def digest_body(self, body):
+        m = hashlib.sha256()
+        m.update(body.encode())
+        
+        sha_value = b64encode(m.digest())
+
+        return f'SHA-256={sha_value}'

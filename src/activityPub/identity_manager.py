@@ -1,5 +1,8 @@
 import json
 import requests
+from urllib.parse import urlparse
+
+from settings import DOMAIN
 
 #ActivityPub
 from activityPub.activities import as_activitystream
@@ -11,7 +14,10 @@ from models.followers import FollowerRelation
 class IdentityManager(object):
 
     def __init__(self, identity):
-        self.uri = identity
+        if '#' in identity:
+            self.uri = identity.split("#")[0]
+        else:
+            self.uri = identity
         
 
 class ActivityPubId(IdentityManager):
@@ -41,7 +47,7 @@ class ActivityPubId(IdentityManager):
         """
         user = User.get_or_none(ap_id=self.uri)
         if not user:
-            user = dereference(self.uri)
+            user = self.dereference(self.uri)
             hostname = urlparse(user.id).hostname
             username = "{0}@{1}".format(user.preferredUsername, hostname)
             user = User.create(
@@ -52,7 +58,23 @@ class ActivityPubId(IdentityManager):
                 password = "what",
                 description=user.summary,
                 private=user.manuallyApprovesFollowers,
-                public_key="user.public_key.publicKeyPem"
+                public_key=user.public_key['publicKeyPem']
             )
         #print(user)
         return user
+
+    def _local_uri(self, uri):
+        host = urlparse(uri).hostname
+
+        return uri == DOMAIN
+        
+
+    def uri_to_resource(self, klass):
+
+        if self._local_uri(self.uri):
+            if klass.__name__ == 'User':
+                return User.get_or_none(ap_id=self.uri)
+        else:
+            return self.get_or_create_remote_user()
+
+        

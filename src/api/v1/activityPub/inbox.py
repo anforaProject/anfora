@@ -39,38 +39,28 @@ class Inbox():
     def on_post(self, req, resp, username):
 
         #First we check the headers 
-        SignatureVerification(req.headers).verify()
+        siganture_check = SignatureVerification(req.headers, req.mehtod, req.relative_uri).verify()
 
-        #Extract the headers
-        keyId = req.get_header('keyId')
-        headers = req.get_header('headers')
-        Signature = req.get_header('signature')
-        
+        if siganture_check == None:
+            raise falcon.HTTPBadRequest(description="Error reading signature header")
+
         #Make a request to get the actor
-        r_to_keyId = requests.get(keyId, headers={'Accept': 'application/json'})
-        actor = None
-        if(r_to_keyId.status_code == 200):
-            actor = r_to_keyId.json()
-        else:
-            return falcon.HTTP_500
-
-        #Load the public key
-        signer = PKCS1_v1_5.new(actor['publicKey']['publicKeyPem'])
+        actor = as_activitystream(siganture_check)
 
         if req.content_length:
             activity = json.loads(req.stream.read().decode("utf-8"), object_hook=as_activitystream)
         else:
             activity = {}
 
-        activity.validate()
-        print(activity)
         if activity.type == 'Create':
+            pass
             handle_note(activity)
         elif activity.type == 'Follow':
+            pass
             handle_follow(activity)
         elif activity.type == 'Accept':
+            pass
             handle_accept(activity)
             
-        user = ActivityPubId(activity.actor).get_or_create_remote_user()
         store(activity, user, remote = True)
         resp.status= falcon.HTTP_202
