@@ -79,8 +79,3 @@ def get_ap_by_uri(uri):
         return url_rel['href']
     else:
         return r.text
-
-def load_template(name):
-    path = os.path.join('/home/yabir/killMe/zinat/src/client/dist', name)
-    with open(os.path.abspath(path), 'r') as fp:
-        return fp.read()
