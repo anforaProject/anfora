@@ -11,7 +11,8 @@ urls = {
     "profile_image": "/avatars/{name}",
     "media": "/media/files/max_resolution/{id}.jpeg",
     "preview": "/media/files/small/{id}.thumbnail",
-    "logout": "/logout"
+    "logout": "/logout",
+    "featured": "/users/{username}/collections/featured",
 }
 
 from models.base import BaseModel

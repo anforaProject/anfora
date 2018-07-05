@@ -47,7 +47,8 @@ class User(BaseModel):
             outbox=uri("outbox", {"username":self.username}),
             inbox=uri("inbox", {"username":self.username}),
             atom=uri("atom", {"username": self.username}),
-            avatar=self.avatar
+            avatar=self.avatar,
+            featured=uri("featured", {"username": self.username}),
         )
 
 
@@ -94,10 +95,8 @@ class User(BaseModel):
         json = {
             "type": "Person",
             "id": self.uris.id,
-            "name": self.username,
-            "preferredUsername": self.name,
-            "followers_count": self.followers().count(),
-            "following_count": self.following().count()
+            "name": self.name,
+            "preferredUsername": self.username,
         }
 
         if not self.remote:
@@ -106,6 +105,10 @@ class User(BaseModel):
                 "followers": self.uris.followers,
                 "outbox": self.uris.outbox,
                 "inbox": self.uris.inbox,
+                "publicKey": self.public_key,
+                "summary": self.description,
+                "manuallyApprovesFollowers": self.private,
+                "featured": self.uris.featured
             })
 
         return json

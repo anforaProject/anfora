@@ -79,7 +79,7 @@ class getUser():
     def on_get(self, req, resp, username):
         person = User.get_or_none(username=username)
         if person:
-            resp.body = json.dumps(person.to_json(), default=json_serial)
+            resp.body = json.dumps(person.to_activitystream(), default=json_serial)
             resp.status = falcon.HTTP_200
         else:
             resp.status = falcon.HTTP_404
