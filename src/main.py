@@ -29,6 +29,11 @@ from api.v1.server import (wellknownNodeinfo, wellknownWebfinger, nodeinfo)
 #Auth
 from auth import (auth_backend,loadUser)
 
+#URLs
+from urls import urls
+
+from api.v1.server import serverInfo
+
 cors = CORS(allow_origins_list=['*'],
             allow_all_methods=True,
             allow_all_origins=True,
@@ -38,10 +43,6 @@ cors = CORS(allow_origins_list=['*'],
 #Auth values
 auth_middleware = FalconAuthMiddleware(auth_backend,exempt_methods=['OPTIONS'])
 
-#URLs
-from urls import urls
-
-from api.v1.server import serverInfo
 
 #Create the app
 app = falcon.API(middleware=[
