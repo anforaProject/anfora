@@ -19,6 +19,8 @@ from activityPub.identity_manager import ActivityPubId
 
 from tasks.tasks import deliver
 
+from src.api.v1.activityPub.methods import SignatureVerification
+
 class Inbox():
 
     auth = {
@@ -37,6 +39,7 @@ class Inbox():
     def on_post(self, req, resp, username):
 
         #First we check the headers 
+        SignatureVerification(req.headers).verify()
 
         #Extract the headers
         keyId = req.get_header('keyId')
@@ -70,4 +73,4 @@ class Inbox():
             
         user = ActivityPubId(activity.actor).get_or_create_remote_user()
         store(activity, user, remote = True)
-        resp.status= falcon.HTTP_200
+        resp.status= falcon.HTTP_202
