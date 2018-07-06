@@ -39,7 +39,7 @@ class Inbox():
     def on_post(self, req, resp, username):
 
         #First we check the headers 
-        siganture_check = SignatureVerification(req.headers, req.mehtod, req.relative_uri).verify()
+        siganture_check = SignatureVerification(req.headers, req.mehtod, req.relative_uri, req.body).verify()
 
         if siganture_check == None:
             raise falcon.HTTPBadRequest(description="Error reading signature header")
