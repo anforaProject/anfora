@@ -47,7 +47,7 @@ class ActivityPubId(IdentityManager):
         """
         user = User.get_or_none(ap_id=self.uri)
         if not user:
-            user = self.dereference(self.uri)
+            user = self.dereference()
             hostname = urlparse(user.id).hostname
             username = "{0}@{1}".format(user.preferredUsername, hostname)
             user = User.create(
@@ -58,7 +58,7 @@ class ActivityPubId(IdentityManager):
                 password = "what",
                 description=user.summary,
                 private=user.manuallyApprovesFollowers,
-                public_key=user.public_key['publicKeyPem']
+                public_key=user.publicKey['publicKeyPem']
             )
         #print(user)
         return user
