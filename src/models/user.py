@@ -117,7 +117,7 @@ class User(BaseModel):
         if not self.remote:
             self.ap_id = uri("user", {"username":self.username})
 
-        if not self.private_key:
+        if not self.private_key and not self.public_key:
             #Create a pair public/private key to sign messages
             random_generator = Random.new().read
             key = RSA.generate(2048, random_generator)
