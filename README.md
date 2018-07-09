@@ -1,4 +1,4 @@
-# Zinat
+# Anfora
 
 [![Build Status](https://travis-ci.com/yabirgb/zinat.svg?branch=master)](https://travis-ci.com/yabirgb/zinat)
 
