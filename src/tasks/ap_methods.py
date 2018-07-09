@@ -2,7 +2,7 @@ import requests
 
 from settings import DOMAIN
 
-from models.photo import Photo
+from models.status import Status
 from models.user import User
 from activityPub import activities
 

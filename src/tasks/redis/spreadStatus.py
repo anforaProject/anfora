@@ -1,6 +1,6 @@
 import redis
 
-from models.photo import Photo
+from models.status import Status
 from models.user import User
 
 from tasks.config import huey

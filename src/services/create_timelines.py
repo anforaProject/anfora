@@ -3,7 +3,7 @@ import peewee
 
 from models.base import db as database
 from models.user import User
-from models.photo import Photo
+from models.status import Status
 
 def build_all_timelines():
     r = redis.StrictRedis(host='localhost', port=6379)

@@ -2,7 +2,7 @@ from manage_db import connect
 
 from models.followers import FollowerRelation
 from models.user import User
-from models.photo import Photo
+from models.status import Status
 
 connect()
 a = FollowerRelation.select()
@@ -19,8 +19,8 @@ for u in User.select():
 print("====================")
 print(User.select().count())
 print("========")
-print("Photos")
-for p in Photo.select():
+print("Statuss")
+for p in Status.select():
     print(p)
 
 print("========")

@@ -3,7 +3,7 @@ urls = {
     "outbox": "/users/{username}/outbox",
     "inbox": "/users/{username}/inbox",
     "photos": "/@{username}/photos",
-    "photo": "/p/{username}/{id}",
+    "status": "/p/{username}/{id}",
     "following": "/users/{username}/following",
     "followers": "/users/{username}/followers",
     "atom": "/users/{username}.atom",

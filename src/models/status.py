@@ -14,44 +14,46 @@ from models.user import User
 from models.album import Album
 
 
-class Photo(BaseModel):
-    media_name = CharField(unique=True)
+class Status(BaseModel):
     created_at = DateTimeField(default=datetime.datetime.now)
     updated_at = DateTimeField(default=datetime.datetime.now)
-    message = TextField()
-    media_type = CharField(max_length=20)
+    caption = TextField()
     public = BooleanField(default=True)
     user = ForeignKeyField(User, backref='photos')
-    text = CharField(null=True)
     sensitive = BooleanField(default=False)
-    height = IntegerField()
-    width = IntegerField()
-    description = CharField(max_length=200)
     remote = BooleanField(default = False)
     ap_id = CharField(null=True)
+    in_reply_to = ForeignKeyField('self', backref='replies', null=True)
+    story = BooleanField(default=False)
     #Need to add tagged users
 
     def __str__(self):
-        return "{} - {} - {} - {}".format(self.message, self.media_name, self.created_at, self.remote)
+        return "{} - {} - {} - {}".format(self.caption, self.media_name, self.created_at, self.remote)
 
     @property
     def uris(self):
         if self.remote:
             ap_id = self.ap_id
         else:
-            ap_id = uri("photo", {"username":self.user.username, "id":self.id})
+            ap_id = uri("status", {"username":self.user.username, "id":self.id})
         return URIs(id=ap_id,
                     media=uri("media", {"id":self.media_name}),
                     preview=uri("preview", {"id":self.media_name})
                     )
 
+    @property
+    def media(self):
+        from models.media import Media 
+
+        return self.media_object.order_by(Media.id.desc())
+
+
     def to_activitystream(self):
         json = {
             "type": "Note",
             "id": self.uris.id,
-            "description": self.description,
             "url": self.uris.media,
-            "message": self.message,
+            "message": self.caption,
             "hashtags": self.hashtags,
             "likes": self.likes_count(),
             "actor": self.user.uris.id,
@@ -69,22 +71,22 @@ class Photo(BaseModel):
             ident = ""
             while not valid:
                 ident = str(uuid.uuid4())
-                valid = not Photo.select().where(self.media_name == ident).exists()
+                valid = not Status.select().where(self.media_name == ident).exists()
 
             self.media_name = ident
 
-        return super(Photo, self).save(*args, **kwargs)
+        return super(Status, self).save(*args, **kwargs)
 
     def albums(self):
-        from models.albumRelation import RelationAlbumPhoto
+        from models.albumRelation import RelationAlbumStatus
 
-        query = (RelationAlbumPhoto
+        query = (RelationAlbumStatus
                 .select()
-                .where(RelationAlbumPhoto.photo==self)
+                .where(RelationAlbumStatus.photo==self)
         )
 
 
-        return [model_to_dict(rel,exclude=self._BaseModel__exclude([RelationAlbumPhoto.photo, RelationAlbumPhoto.id, RelationAlbumPhoto.album.user])) for rel in query]
+        return [model_to_dict(rel,exclude=self._BaseModel__exclude([RelationAlbumStatus.photo, RelationAlbumStatus.id, RelationAlbumStatus.album.user])) for rel in query]
 
     def to_model(self):
         return model_to_dict(self, exclude=self._BaseModel__exclude())
@@ -93,9 +95,9 @@ class Photo(BaseModel):
         data = {
             "type": "Note",
             "id": self.uris.id,
-            "description": self.description,
+            "description": self.caption,
             "preview": self.uris.preview,
-            "message": self.message,
+            "message": self.caption,
             "hashtags": self.hashtags,
             "likes": self.likes_count(),
             "actor": self.user.to_json(),
