@@ -8,7 +8,7 @@ import sys
 import falcon
 
 from models.user import User
-from models.photo import Photo
+from models.status import Status
 from models.album import Album
 
 from pipelines.upload_media import upload_image
@@ -23,7 +23,7 @@ from api.v1.helpers import (max_body, its_me)
 MAX_SIZE = os.getenv('MAX_SIZE', 1024*1024)
 
 
-class getPhoto:
+class getStatus:
 
     auth = {
         'auth_disabled': True
@@ -31,7 +31,7 @@ class getPhoto:
 
     def on_get(self, req, resp, pid):
         #photo = self.model.get_or_none(identifier=pid)
-        photo = Photo.get_or_none(identifier=pid)
+        photo = Status.get_or_none(identifier=pid)
 
         if photo != None:
             result = photo.json()
@@ -44,7 +44,7 @@ class getPhoto:
 
 
 
-class manageUserPhotos:
+class manageUserStatuses:
 
     auth = {
         'exempt_methods': ['GET','OPTIONS']
@@ -58,10 +58,10 @@ class manageUserPhotos:
         auth_user = try_logged_jwt(auth_backend, req, resp)
 
         if auth_user and auth_user.username == user:
-            photos = Photo.select().join(User).where(User.username == auth_user.username)
+            photos = Status.select().join(User).where(User.username == auth_user.username)
         #Must to considerer the case of friends relation
         else:
-            photos = Photo.select().where(Photo.public == True).join(User).where(User.username == user)
+            photos = Status.select().where(Status.public == True).join(User).where(User.username == user)
 
         query = [photo.to_model() for photo in photos]
         resp.body = json.dumps(query, default=str)
@@ -82,7 +82,7 @@ class manageUserPhotos:
                 ident = ""
                 while not valid:
                     ident = str(uuid.uuid4())
-                    valid = not Photo.select().where(Photo.media_name == ident).exists()
+                    valid = not Status.select().where(Status.media_name == ident).exists()
 
 
                 #temp_file = file_path + '~'

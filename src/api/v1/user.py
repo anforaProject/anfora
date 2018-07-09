@@ -8,7 +8,7 @@ import redis
 from falcon_auth import BasicAuthBackend
 
 from models.user import User
-from models.photo import Photo
+from models.status import Status
 from models.token import Token
 
 from auth import (auth_backend,loadUserToken,loadUserPass)
@@ -138,7 +138,7 @@ class homeTimeline(object):
         limit = req.get_param('limit') or 40
         statuses = []
         for post in r.zrange('{}:hometimeline'.format(username), 0, min(limit-1, 40), withscores=False):
-            statuses.append(Photo.get(id=post).to_json())
+            statuses.append(Status.get(id=post).to_json())
 
         print(statuses)
         resp.body=json.dumps(statuses, default=str)

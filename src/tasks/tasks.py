@@ -4,7 +4,7 @@ from PIL import Image
 
 from settings import MEADIA_FOLDER
 
-from models.photo import Photo
+from models.status import Status
 from api.v1.activityPub.methods import (get_final_audience, deliver_to)
 
 from tasks.config import huey # import the huey we instantiated in config.py

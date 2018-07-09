@@ -4,7 +4,7 @@ import datetime
 from settings import DOMAIN
 
 from models.user import User
-from models.photo import Photo 
+from models.status import Status 
 
 def generate_feed(user, max_id = -1):
     limit = 10
@@ -57,23 +57,23 @@ def generate_feed(user, max_id = -1):
 """
     #https://pleroma.soykaf.com/users/lain/feed.atom?max_id=11598025
     if(max_id != -1):
-        photos = (Photo
-            .select(Photo, User)
+        photos = (Status
+            .select(Status, User)
             .join(User)
             .where(
-                (Photo.user == user) & 
-                (Photo.id < max_id)
+                (Status.user == user) & 
+                (Status.id < max_id)
             )
-            .order_by(Photo.id.desc())
+            .order_by(Status.id.desc())
             .limit(limit))
     else:
-        photos = (Photo
-            .select(Photo, User)
+        photos = (Status
+            .select(Status, User)
             .join(User)
             .where(
-                (Photo.user == user)
+                (Status.user == user)
             )
-            .order_by(Photo.id.desc())
+            .order_by(Status.id.desc())
             .limit(limit))
 
     user_statuses = user.statuses()
@@ -94,7 +94,7 @@ def generate_feed(user, max_id = -1):
         data = {
             "username": user.username,
             "post_url": photo.uris.id,
-            "caption": html.escape(photo.message),
+            "caption": html.escape(photo.caption),
             "published": photo.created_at,
             "updated": photo.updated_at,
             "post_id": photo.uris.id,

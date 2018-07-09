@@ -4,10 +4,10 @@ import logging
 
 import falcon
 
-from models.photo import Photo
+from models.status import Status
 from models.user import User
 from models.album import Album
-from models.albumRelation import RelationAlbumPhoto
+from models.albumRelation import RelationAlbumStatus
 from auth import (loadUser, auth_backend)
 
 class getAlbum:
@@ -57,15 +57,15 @@ class createAlbum:
         
 class addToAlbum:
     def on_post(self, req, resp, album, user):
-        photo = Photo.get_or_none(Photo.id == req.get_param('photo'))
+        photo = Status.get_or_none(Status.id == req.get_param('photo'))
         album = Album.get_or_none(Album.id == album)
 
         print(album, photo)
 
         if album and photo:
-            RelationAlbumPhoto.create(album=album, photo=photo)
+            RelationAlbumStatus.create(album=album, photo=photo)
 
-            resp.body = json.dumps({"Result": "Photo successfully modified"})
+            resp.body = json.dumps({"Result": "Status successfully modified"})
             resp.status = falcon.HTTP_200
         else:
             resp.body = json.dumps({"Error": "Error creating relation"})

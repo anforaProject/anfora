@@ -85,10 +85,10 @@ def handle_note(activity):
 
     person = ActivityPubId(ap_id).get_or_create_remote_user()
 
-    note = Photo.get_or_none(ap_id=activity.object.id)
+    note = Status.get_or_none(ap_id=activity.object.id)
 
     if not note:
-        Photo.create(
+        Status.create(
             content=activity.object.content,
             person=person,
             ap_id=activity.object.id,

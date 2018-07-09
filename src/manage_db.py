@@ -2,8 +2,9 @@ from models.base import db
 
 from models.user import User
 from models.album import Album
-from models.photo import Photo
-from models.albumRelation import RelationAlbumPhoto
+from models.status import Status
+from models.media import Media
+from models.albumRelation import RelationAlbumStatus
 from models.token import Token
 from models.followers import FollowerRelation
 from models.activity import Activity
@@ -20,15 +21,16 @@ def create_tables():
 
     tables = [User, 
                 Album, 
-                Photo, 
+                Status, 
                 Token, 
-                RelationAlbumPhoto, 
+                RelationAlbumStatus, 
                 FollowerRelation,
                 Activity, 
                 Hashtag, 
                 HashtagUsed,
                 Like,
                 FollowRequest,
+                Media,
             ]
 
 

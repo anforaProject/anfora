@@ -2,12 +2,12 @@ from peewee import ForeignKeyField
 
 from .base import BaseModel
 from .album import Album
-from .photo import Photo
+from .status import Status
 
-class RelationAlbumPhoto(BaseModel):
+class RelationAlbumStatus(BaseModel):
 
     album = ForeignKeyField(Album)
-    photo = ForeignKeyField(Photo)
+    photo = ForeignKeyField(Status)
 
     class Meta:
         indexes = (

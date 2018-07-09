@@ -56,7 +56,7 @@ class nodeinfo:
                 "users": {
                     "total": User.select().count()
                 },
-                "localPosts": Photo.select().count()
+                "localPosts": Status.select().count()
             },
             "metadata": {
                 "sourceCode": "https://github.com/yabirgb/zinat",

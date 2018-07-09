@@ -140,8 +140,8 @@ class User(BaseModel):
                 .order_by(User.username))
 
     def statuses(self):
-        from models.photo import Photo
-        return self.photos.order_by(Photo.id.desc())
+        from models.status import Status
+        return self.photos.order_by(Status.id.desc())
 
     def following(self):
         from models.followers import FollowerRelation
