@@ -18,9 +18,9 @@ class Status(BaseModel):
     created_at = DateTimeField(default=datetime.datetime.now)
     updated_at = DateTimeField(default=datetime.datetime.now)
     caption = TextField()
-    spoiler_text = CharField(max_length=255)
-    public = BooleanField(default=True)
-    user = ForeignKeyField(User, backref='photos')
+    spoiler_text = CharField(max_length=255, null=True)
+    visibility = BooleanField(default=True)
+    user = ForeignKeyField(User, backref='statuses')
     sensitive = BooleanField(default=False)
     remote = BooleanField(default = False)
     ap_id = CharField(null=True)
@@ -30,7 +30,7 @@ class Status(BaseModel):
     #Need to add tagged users
 
     def __str__(self):
-        return "{} - {} - {} - {}".format(self.caption, self.media_name, self.created_at, self.remote)
+        return "{} - {} - {} - {}".format(self.caption, self.ap_id, self.created_at, self.remote)
 
     @property
     def uris(self):
@@ -68,14 +68,8 @@ class Status(BaseModel):
         return json
 
     def save(self,*args, **kwargs):
-        if not self.media_name:
-            valid = False
-            ident = ""
-            while not valid:
-                ident = str(uuid.uuid4())
-                valid = not Status.select().where(self.media_name == ident).exists()
-
-            self.media_name = ident
+        if not self.ap_id:
+            self.ap_id = self.uris.id
 
         return super(Status, self).save(*args, **kwargs)
 
