@@ -18,6 +18,7 @@ class Status(BaseModel):
     created_at = DateTimeField(default=datetime.datetime.now)
     updated_at = DateTimeField(default=datetime.datetime.now)
     caption = TextField()
+    spoiler_text = CharField(max_length=255)
     public = BooleanField(default=True)
     user = ForeignKeyField(User, backref='photos')
     sensitive = BooleanField(default=False)
@@ -25,6 +26,7 @@ class Status(BaseModel):
     ap_id = CharField(null=True)
     in_reply_to = ForeignKeyField('self', backref='replies', null=True)
     story = BooleanField(default=False)
+
     #Need to add tagged users
 
     def __str__(self):
@@ -37,8 +39,8 @@ class Status(BaseModel):
         else:
             ap_id = uri("status", {"username":self.user.username, "id":self.id})
         return URIs(id=ap_id,
-                    media=uri("media", {"id":self.media_name}),
-                    preview=uri("preview", {"id":self.media_name})
+                    media=[uri.uris.media for uri in self.media_object],
+                    preview=[uri.uris.preview for uri in self.media_object]
                     )
 
     @property
