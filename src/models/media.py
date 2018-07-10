@@ -34,7 +34,7 @@ class Media(BaseModel):
     def to_json(self):
         return {
             'id': self.media_name,
-            'type': self.type,
+            'type': self.media_type,
             'url': self.uris.media,
             'preview_url': self.uris.preview,
             'meta': {
