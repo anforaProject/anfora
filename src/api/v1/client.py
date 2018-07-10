@@ -1,4 +1,5 @@
 import falcon
+import os
 
 class VueClient:
     auth = {
@@ -12,7 +13,7 @@ class VueClient:
 
 
     def on_get(self, req, resp, path):
-        html = self.load_template('index.html')
+        html = self._load_template('index.html')
 
         resp.status = falcon.HTTP_200
         resp.content_type = 'text/html'
