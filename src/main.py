@@ -86,4 +86,4 @@ app.add_route(urls["atom"], atomFeed())
 app.add_route(urls["followers"], Followers())
 app.add_route(urls["logout"], logoutUser())
 
-app.add_route('/{path}', VueClient())
+#app.add_route('/{path}', VueClient())
