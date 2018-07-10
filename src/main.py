@@ -18,6 +18,8 @@ from api.v1.albums import (createAlbum, getAlbum, addToAlbum)
 from api.v1.user import (authUser, getUser, getFollowers, logoutUser,
                             getStatuses, homeTimeline, atomFeed, followAction)
 
+from api.v1.media import UploadMedia
+
 from api.v1.client import VueClient
 
 from api.v1.activityPub.inbox import (Inbox)
@@ -60,6 +62,8 @@ app.add_route('/api/v1/accounts/{username}', getUser())
 app.add_route('/api/v1/accounts/{username}/statuses', getStatuses())
 app.add_route('/api/v1/accounts/{username}/followers', getFollowers())
 app.add_route('/api/v1/statuses', manageUserStatuses())
+
+app.add_route('/api/v1/media', UploadMedia)
 
 app.add_route('/api/v1/auth/', authUser())
 
