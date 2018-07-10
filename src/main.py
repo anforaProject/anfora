@@ -13,7 +13,7 @@ from settings import MEADIA_FOLDER
 from middleware import (PeeweeConnectionMiddleware, CorsMiddleware)
 
 #Resources
-from api.v1.photos import (getStatus, manageUserStatuses)
+from api.v1.statuses import (getStatus, manageUserStatuses)
 from api.v1.albums import (createAlbum, getAlbum, addToAlbum)
 from api.v1.user import (authUser, getUser, getFollowers, logoutUser,
                             getStatuses, homeTimeline, atomFeed, followAction)

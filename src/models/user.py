@@ -62,7 +62,7 @@ class User(BaseModel):
             'created_at':self.created_at,
             'followers_count': self.followers().count(),
             'following_count': self.following().count(),
-            'statuses_count': self.statuses().count(),
+            'statuses_count': self.statuses.count(),
             'note':self.description,
             'url': None,
             'avatar': self.avatar,
@@ -141,7 +141,7 @@ class User(BaseModel):
 
     def statuses(self):
         from models.status import Status
-        return self.photos.order_by(Status.id.desc())
+        return self.statuses.order_by(Status.id.desc())
 
     def following(self):
         from models.followers import FollowerRelation
