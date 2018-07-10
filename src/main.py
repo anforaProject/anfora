@@ -63,7 +63,7 @@ app.add_route('/api/v1/accounts/{username}/statuses', getStatuses())
 app.add_route('/api/v1/accounts/{username}/followers', getFollowers())
 app.add_route('/api/v1/statuses', manageUserStatuses())
 
-app.add_route('/api/v1/media', UploadMedia)
+app.add_route('/api/v1/media', UploadMedia())
 
 app.add_route('/api/v1/auth/', authUser())
 
