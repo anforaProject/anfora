@@ -38,7 +38,13 @@ class User(BaseModel):
     @property
     def uris(self):
         if self.remote:
-            return URIs(id=self.ap_id)
+            return URIs(
+                id=self.ap_id,
+                inbox=f'{self.ap_id}/inbox',
+                outbox=f'{self.ap_id}/inbox',
+                following=f'{self.ap_id}/following',
+                followers=f'{self.ap_id}/followers'
+            )
 
         return URIs(
             id=uri("user", {"username":self.username}),
@@ -139,7 +145,7 @@ class User(BaseModel):
                 .where(FollowerRelation.follows == self)
                 .order_by(User.username))
 
-    def statuses(self):
+    def timeline(self):
         from models.status import Status
         return self.statuses.order_by(Status.id.desc())
 
@@ -164,3 +170,10 @@ class User(BaseModel):
 
     def liked(self):
         return self.liked_posts
+
+    def follow(self, target):
+        from models.followers import FollowerRelation
+
+        FollowerRelation.create(user = self, follows =target, valid=True)
+
+
