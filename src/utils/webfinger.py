@@ -29,6 +29,11 @@ class Webfinger:
     def generate_links(self):
         self.links = [
             {
+			"rel": "self",
+			"type": "application/activity+json",
+			"href": self.user.uris.id
+	    	},
+            {
             'rel': 'http://webfinger.net/rel/profile-page',
             'type': 'text/html',
             'href': self.user.uris.id
