@@ -61,8 +61,11 @@ class Status(BaseModel):
             "actor": self.user.uris.id,
             "sensitive": self.sensitive,
             "created_at": self.created_at.strftime('%Y-%m-%dT%H:%M:%S'),
-            "media_url":self.uris.media,
-            "preview_url":self.uris.preview
+            "atachment": {
+                "media_url":self.uris.media,
+                "preview_url":self.uris.preview
+            }
+
         }
 
         return json
