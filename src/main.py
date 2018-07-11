@@ -26,7 +26,7 @@ from api.v1.activityPub.inbox import (Inbox)
 from api.v1.activityPub.outbox import (Outbox)
 from api.v1.activityPub.followers import (Followers)
 
-from api.v1.server import (wellknownNodeinfo, wellknownWebfinger, nodeinfo)
+from api.v1.server import (wellknownNodeinfo, wellknownWebfinger, nodeinfo, hostMeta)
 
 #Auth
 from auth import (auth_backend,loadUser)
@@ -75,6 +75,7 @@ app.add_route('/api/v1/follows', followAction())
 app.add_route('/.well-known/nodeinfo', wellknownNodeinfo())
 app.add_route('/.well-known/webfinger', wellknownWebfinger())
 app.add_route('/nodeinfo', nodeinfo())
+app.add_route('/.well-known/host-meta', hostMeta())
 
 #User oubox/inbox
 app.add_route(urls["outbox"], Outbox())
