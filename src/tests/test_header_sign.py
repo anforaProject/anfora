@@ -1,7 +1,7 @@
 # The data for this tests was collected from  
 # https://git.pleroma.social/pleroma/pleroma/blob/develop/test/web/http_sigs/http_sig_test.exs
 
-from api.v1.activityPub.methods import SignatureVerification
+from activityPub.data_signature import SignatureVerification
 
 def test_correct_sign_with_key():
 
