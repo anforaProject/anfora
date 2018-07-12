@@ -83,7 +83,6 @@ class wellknownWebfinger:
 
         # For now I will assume that webfinger only asks for the actor, so resources
         # is just one element.
-        print(req.params)
         if not 'resource' in req.params.keys():
             raise falcon.HTTPBadRequest(description="No resource was provided along the request.")
         
