@@ -14,7 +14,7 @@ print("====================")
 print("Users:")
 for u in User.select():
     print(u.username, " con ap_id ", str(u.ap_id))
-    print(list(u.statuses()))
+    print(list(u.timeline()))
     print("----")
 print("====================")
 print(User.select().count())
