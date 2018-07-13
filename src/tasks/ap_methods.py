@@ -1,14 +1,22 @@
 import requests
+import logging 
 
 from settings import DOMAIN
 
 from models.status import Status
 from models.user import User
+
+
 from activityPub import activities
+from activityPub.data_signature import *
 
 from api.v1.helpers import sign_data
 
 from tasks.config import huey # import the huey we instantiated in config.py
+
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 @huey.task()
 def handle_follow(activity):
@@ -32,27 +40,34 @@ def handle_follow(activity):
     else:
         print("error handling follow")
 
-@huey.task(retries=5, retry_delay=60)
-def send_activity(activity, actor, object):
+#@huey.task(retries=5, retry_delay=60)
+def send_activity(activity, actor, target):
     """
     activity: A object ready to make json dumps and be sent.
     actor   : An instance of User
-    object  : A string representing the url objetive of the request
+    target  : A string representing the url objetive of the request
     """
 
-    date = f"{datetime.utcnow():%a, %d %b %Y %H:%M:%S} GMT"
+    target = f'{target}/inbox'
 
-
-    signed_string = f'(request-target): post /inbox\nhost: {DOMAIN}\ndate: {date}'
-    signature = sign_data(signed_string, actor.private_key)
-    keyId = actor.uris.id + '#main-key'
-    header = f'keyId="{keyId}",headers="(request-target) host date",signature="{signature}"'
-
-    
     headers = {
-        'Host': DOMAIN,
-        'Date': date,
-        'Signature': header
+        'date': f'{datetime.datetime.utcnow():%d-%b-%YT%H:%M:%SZ}',
+        "(request-target)": target,
+        "content-type": "application/activity+json",
+        "host": DOMAIN,                
     }
 
-    r = request.post(object, data=json.dumps(activity), headers=headers, timeout=(5, 20))
+    signature = SignatureVerification(headers, 'post', target).sign(actor)
+    headers.update({'signature': signature})
+    
+    print("=======================")
+    print(headers)
+    print(activity)
+    print(target)
+    print("=======================")
+    r = requests.post(target, data=json.dumps(activity), headers=headers)
+    print(r.text)
+    print(r.status_code)
+
+    
+    

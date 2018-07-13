@@ -111,7 +111,11 @@ class User(BaseModel):
                 "followers": self.uris.followers,
                 "outbox": self.uris.outbox,
                 "inbox": self.uris.inbox,
-                "publicKey": self.public_key,
+                "publicKey": {
+                    'publicKeyPem': self.public_key,
+                    'id': f'{self.ap_id}#main-key',
+                    'owner': self.ap_id
+                },
                 "summary": self.description,
                 "manuallyApprovesFollowers": self.private,
                 "featured": self.uris.featured

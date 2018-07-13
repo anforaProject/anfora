@@ -14,7 +14,7 @@ from models.token import Token
 from auth import (auth_backend,loadUserToken,loadUserPass)
 
 from activityPub import activities
-from activityPub.data_signature import LinkedDataSignature
+from activityPub.data_signature import LinkedDataSignature,SignatureVerification
 
 from utils.atomFeed import generate_feed
 
@@ -22,6 +22,8 @@ from api.v1.helpers import get_ap_by_uri
 from activityPub.identity_manager import ActivityPubId
 
 from tasks.ap_methods import send_activity
+
+from settings import DOMAIN
 
 def json_serial(obj):
     """JSON serializer for objects not serializable by default json code"""
@@ -184,13 +186,13 @@ class followAction(object):
 
         #Prepare the object that will be send as response
         following = ActivityPubId(obj_id).get_or_create_remote_user()
-        
+
         #Sign the activity object
         signed_object.sign(user)
 
         #Create the task to send the petition
         send_activity(signed_object.json, user, obj_id)
-
+        
         resp.body = json.dumps(following.to_json(), default=str)
         #resp.body = json.dumps(signed_object.json, default=str)
         resp.status = falcon.HTTP_200

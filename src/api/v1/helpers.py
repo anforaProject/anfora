@@ -58,7 +58,7 @@ def get_ap_by_uri(uri):
     #If not None we have a match 
     
     if obj:
-        return obj 
+        return obj.decode('utf-8')
         
     if uri.startswith("@"):
         uri = uri[1:]
@@ -78,4 +78,4 @@ def get_ap_by_uri(uri):
 
         return url_rel['href']
     else:
-        return r.text
+        return r.text.decode('utf-8')
