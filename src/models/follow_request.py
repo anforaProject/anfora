@@ -21,3 +21,6 @@ class FollowRequest(BaseModel):
 
     def reject(self):
         self.delete_instance()
+    
+    def notify(self):
+        pass

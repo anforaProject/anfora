@@ -78,8 +78,6 @@ class SignatureVerification:
         self.path = path
         self.headers = headers 
 
-        self.signature_params=self._check_headers()
-
     def _split_signature(self):
         raw_signature = self.headers['signature']
 
@@ -98,31 +96,17 @@ class SignatureVerification:
         return signature_params
 
     def _check_headers(self):
-        #Check if the "Signature header is present"
-        if 'signature' not in list(map(str.lower, self.headers.keys())):
-            signature_fail_reason = "Request is not signed"
-            return False
-
         signature_params = self._split_signature()
     
-        ## Check if the params are valid
-        if None in [signature_params.get('keyId'), signature_params.get('signature')]:
-            self.signature_fail_reason = "Incompatible request signature"
-            return False
 
         return signature_params
 
     
     def _build_signed_string(self, headers_list):
 
+        headers = []    
         
-        headers = []
-
-
-        hlist = headers_list.split(" ")
-        
-        for header in hlist:
-            string = ""
+        for header in headers_list:
             if header == self.REQUEST_TARGET:
                 string = f'{self.REQUEST_TARGET}: {self.method} {self.path}'
             else:
@@ -133,12 +117,12 @@ class SignatureVerification:
         return '\n'.join(headers)
 
     def verify(self):
-
+        self.signature_params=self._check_headers()
         account = ActivityPubId(self.signature_params['keyId']).uri_to_resource(User)
 
         if not account:
             self.signature_fail_reason = "Could not retrive account using keyId"
-            return 
+            return False
             
         if self.verify_public_key(account.public_key):
             self.signed_request_account = account
@@ -147,6 +131,7 @@ class SignatureVerification:
             return False
 
     def verify_public_key(self, key):
+        self.signature_params=self._check_headers()
         signature_params = self.signature_params
 
         #Verify using the public key
@@ -165,26 +150,27 @@ class SignatureVerification:
 
 
     def sign(self, user):
-        rsakey = RSA.importKey(creator.private_key) 
+        rsakey = RSA.importKey(user.private_key) 
         signer = PKCS1_v1_5.new(rsakey) 
         digest = SHA256.new()
 
-        as_list = list(headers.keys())
-
+        as_list = list(self.headers.keys())
         headers = self._build_signed_string(as_list)
-        digest.update(headers)
+        
+        digest.update(headers.encode())
         #sign
         sign = signer.sign(digest) 
 
         #Return encode version
         signature = b64encode(sign)
 
-        header_list = " ".join(headers.keys())
+        header_list = " ".join(self.headers.keys())
 
         dic = {
             'keyId': f'{user.ap_id}#main-key',
             'algorithm': 'rsa-sha256',
             'headers': " ".join(as_list),
+            'Signature': signature.decode('utf8')
         }
 
         return ",".join([f'{x}=\"{dic[x]}\"' for x in dic.keys()])

@@ -4,7 +4,7 @@ SUMMARY = ""
 SCHEME = "https"
 DOMAIN ="zinat.test"
 
-MEADIA_FOLDER = "/home/yabir/killMe/uploads"
+MEADIA_FOLDER = "/home/yabir/anfora/uploads"
 
 #From here is not necessary to touch anything
 BASE_URL = "{}://{}".format(SCHEME, DOMAIN)
