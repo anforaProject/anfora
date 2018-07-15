@@ -57,6 +57,47 @@ class LinkedDataSignature:
         options.update({'signatureValue': signature.decode('utf8')})
         self.json.update({'signature': options})
 
+class LinkedDataSignature:
+
+    def __init__(self, json):
+        self.json = dict(json)
+
+    def sign(self, creator):
+
+        """
+        Creator is an instance of User
+        """
+
+
+        options = {
+            'type': 'RsaSignature2017',
+            'creator': f'{creator.uris.id}#main-key',
+            'created': f'{datetime.datetime.utcnow():%d-%b-%YT%H:%M:%SZ}'
+        }
+
+        options_dic = dict(options)
+        del options_dic['type']
+
+        #Load Key
+        rsakey = RSA.importKey(creator.private_key) 
+        signer = PKCS1_v1_5.new(rsakey) 
+        digest = SHA256.new()
+
+        #Prepare data
+        data = dict(self.json).update({'signature': options_dic})
+        json_data = json.dumps(data).encode('utf8')
+        digest.update(json_data) 
+
+        #sign
+        sign = signer.sign(digest) 
+
+        #Return encode version
+        signature = b64encode(sign)
+
+        #Update the json object with the signature
+        options.update({'signatureValue': signature.decode('utf8')})
+        self.json.update({'signature': options})
+
 class SignatureVerification:
 
     """
@@ -78,6 +119,8 @@ class SignatureVerification:
         self.path = path
         self.headers = headers 
 
+        self.signature_params=self._check_headers()
+
     def _split_signature(self):
         raw_signature = self.headers['signature']
 
@@ -96,17 +139,31 @@ class SignatureVerification:
         return signature_params
 
     def _check_headers(self):
+        #Check if the "Signature header is present"
+        if 'signature' not in list(map(str.lower, self.headers.keys())):
+            signature_fail_reason = "Request is not signed"
+            return False
+
         signature_params = self._split_signature()
     
+        ## Check if the params are valid
+        if None in [signature_params.get('keyId'), signature_params.get('signature')]:
+            self.signature_fail_reason = "Incompatible request signature"
+            return False
 
         return signature_params
 
     
     def _build_signed_string(self, headers_list):
 
-        headers = []    
         
-        for header in headers_list:
+        headers = []
+
+
+        hlist = headers_list.split(" ")
+        
+        for header in hlist:
+            string = ""
             if header == self.REQUEST_TARGET:
                 string = f'{self.REQUEST_TARGET}: {self.method} {self.path}'
             else:
@@ -117,12 +174,12 @@ class SignatureVerification:
         return '\n'.join(headers)
 
     def verify(self):
-        self.signature_params=self._check_headers()
+
         account = ActivityPubId(self.signature_params['keyId']).uri_to_resource(User)
 
         if not account:
             self.signature_fail_reason = "Could not retrive account using keyId"
-            return False
+            return 
             
         if self.verify_public_key(account.public_key):
             self.signed_request_account = account
@@ -131,7 +188,6 @@ class SignatureVerification:
             return False
 
     def verify_public_key(self, key):
-        self.signature_params=self._check_headers()
         signature_params = self.signature_params
 
         #Verify using the public key
@@ -150,27 +206,26 @@ class SignatureVerification:
 
 
     def sign(self, user):
-        rsakey = RSA.importKey(user.private_key) 
+        rsakey = RSA.importKey(creator.private_key) 
         signer = PKCS1_v1_5.new(rsakey) 
         digest = SHA256.new()
 
-        as_list = list(self.headers.keys())
+        as_list = list(headers.keys())
+
         headers = self._build_signed_string(as_list)
-        
-        digest.update(headers.encode())
+        digest.update(headers)
         #sign
         sign = signer.sign(digest) 
 
         #Return encode version
         signature = b64encode(sign)
 
-        header_list = " ".join(self.headers.keys())
+        header_list = " ".join(headers.keys())
 
         dic = {
             'keyId': f'{user.ap_id}#main-key',
             'algorithm': 'rsa-sha256',
             'headers': " ".join(as_list),
-            'Signature': signature.decode('utf8')
         }
 
         return ",".join([f'{x}=\"{dic[x]}\"' for x in dic.keys()])
