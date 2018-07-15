@@ -51,7 +51,6 @@ app = falcon.API(middleware=[
     cors.middleware,
     auth_middleware,
     PeeweeConnectionMiddleware(),
-
     MultipartMiddleware(),
 ])
 
@@ -62,13 +61,10 @@ app.add_route('/api/v1/accounts/{username}', getUser())
 app.add_route('/api/v1/accounts/{username}/statuses', getStatuses())
 app.add_route('/api/v1/accounts/{username}/followers', getFollowers())
 app.add_route('/api/v1/statuses', manageUserStatuses())
-
 app.add_route('/api/v1/media', UploadMedia())
 
-app.add_route('/api/v1/auth/', authUser())
-
+app.add_route('/api/v1/auth', authUser())
 app.add_route('/api/v1/timelines/home', homeTimeline())
-
 app.add_route('/api/v1/follows', followAction())
 
 

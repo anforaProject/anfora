@@ -16,9 +16,9 @@ from urls import (uri, URIs)
 
 
 class User(BaseModel):
-    ap_id = CharField(null=True)
+    ap_id = CharField(unique=True)
     name = CharField(null=True) # Display name
-    username = CharField(unique=True) # actual username
+    username = CharField() # actual username
     password = CharField() 
     admin = BooleanField(default=False) # True if the user is admin
     created_at =  DateTimeField(default=datetime.datetime.now) 
@@ -34,6 +34,9 @@ class User(BaseModel):
     description = TextField(default="") # Description of the profile
     is_bot = BooleanField(default=False) # True if the account is a bot
     avatar_file = CharField(default="default.jpg")
+    following_count = IntegerField(default=0)
+    followers_count = IntegerField(default=0)
+
     
     @property
     def uris(self):
@@ -179,5 +182,10 @@ class User(BaseModel):
         from models.followers import FollowerRelation
 
         FollowerRelation.create(user = self, follows =target, valid=True)
+        followers_increment = User.update(User.followers_count += 1).where(User.id = target.id)
+        following_increment = User.update(User.following_count += 1).where(User.id = self.id)
+
+        following_increment.execute()
+        followers_increment.execute()
 
 
