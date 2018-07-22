@@ -29,7 +29,7 @@ class UploadMedia:
         file_path = os.path.join(MEADIA_FOLDER, pic_folder, filename + '.jpeg')
 
         im = Image.open(bytes)
-        im.save(file_path,'JPEG', quality=80, optimize=True, progressive=True)
+        im.save(file_path,'JPEG', quality=50, optimize=True, progressive=True)
 
         im.crop(self.THUMBNAIL_BOX)
         im.thumbnail(self.THUMBNAIL_SIZE, Image.ANTIALIAS)
@@ -38,7 +38,6 @@ class UploadMedia:
         return im.size[0], im.size[1], "Image"
 
     def on_post(self, req, resp):
-
         image = req.get_param('file')
 
         if image == None:
