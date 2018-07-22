@@ -19,9 +19,11 @@ crypto = "*"
 pycrypto = "*"
 gunicorn = "*"
 bson = "*"
+filters = {git = "https://github.com/anforaProject/filters.git", ref = "master"}
 
 [requires]
 python_version = "3.6"
 
 [dev-packages]
 pytest = "*"
+requests-toolbelt = "*"
