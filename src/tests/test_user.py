@@ -21,7 +21,7 @@ def test_missing_auth_header(client):
 
 def test_missing_user(client):
     params = {
-        'username': 'test2',
+        'username': 'noTest',
         'password': 'test'
     }
 
