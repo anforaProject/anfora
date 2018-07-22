@@ -26,7 +26,7 @@ class User(BaseModel):
     confirmed = BooleanField(default=False) # The user has confirmed the email
     email = CharField(unique=True, null=True) # User's email
     confirmation_sent_at = DateTimeField(null=True) # Moment when the confirmation email was sent
-    last_sign_in_at = IntegerField(null=True) # Last time the user signed in
+    last_sign_in_at = IntegerField(null=True) # Last time the user signed in epoch since
     remote = BooleanField(default=False) # The user is a remote user
     private = BooleanField(default=False) # The account has limited access
     private_key = TextField(null=True) # Private key used to sign AP actions
@@ -36,6 +36,7 @@ class User(BaseModel):
     avatar_file = CharField(default="default.jpg")
     following_count = IntegerField(default=0)
     followers_count = IntegerField(default=0)
+    statuses_count = IntegerField(default=0)
 
     
     @property
@@ -69,20 +70,15 @@ class User(BaseModel):
             'display_name': self.name,
             'locked': self.private,
             'created_at':self.created_at,
-            'followers_count': self.followers().count(),
-            'following_count': self.following().count(),
-            'statuses_count': self.statuses.count(),
+            'followers_count': self.followers_count,
+            'following_count': self.following_count,
+            'statuses_count': self.statuses_count,
             'note':self.description,
             'url': None,
             'avatar': self.avatar,
             'moved': None,
             'fields':[],
             'bot': self.is_bot,
-            'publicKey':{
-                'id': self.uris.id + '#main-key',
-                'owner': self.uris.id,
-                'publicKeyPem': self.public_key
-            }
         }
 
         if self.remote:
@@ -178,14 +174,22 @@ class User(BaseModel):
     def liked(self):
         return self.liked_posts
 
-    def follow(self, target):
+    def follow(self, target, valid=False):
+
+
+        """
+        The current user follows the target account. 
+        
+        target: An instance of User
+        valid: Boolean to force a valid Follow. This means that the user
+                doesn't have to accept the follow
+        """
+
         from models.followers import FollowerRelation
 
-        FollowerRelation.create(user = self, follows =target, valid=True)
-        followers_increment = User.update(User.followers_count += 1).where(User.id = target.id)
-        following_increment = User.update(User.following_count += 1).where(User.id = self.id)
+        FollowerRelation.create(user = self, follows =target, valid=valid)
+        followers_increment = User.update({User.followers_count: User.followers_count + 1}).where(User.id == target.id)
+        following_increment = User.update({User.following_count: User.following_count + 1}).where(User.id == self.id)
 
         following_increment.execute()
         followers_increment.execute()
-
-
