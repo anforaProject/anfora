@@ -2,9 +2,9 @@
 NODENAME = "aName"
 SUMMARY = ""
 SCHEME = "https"
-DOMAIN ="zinat.test"
+DOMAIN ="anfora.test"
 
-MEADIA_FOLDER = "/home/yabir/anfora/uploads"
+MEADIA_FOLDER = "/home/yabir/killMe/uploads"
 
 #From here is not necessary to touch anything
 BASE_URL = "{}://{}".format(SCHEME, DOMAIN)

@@ -20,11 +20,11 @@ class CorsMiddleware(object):
          resp.set_header('access-control-allow-credentials', 'true')
          resp.set_header('access-control-allow-methods', '*')
          resp.set_header('access-control-allow-headers', '*')
-         resp.set_header('access-control-allow-origin', '*')
+         resp.set_header('Access-Control-Allow-Origin', '*')
 
 
     def process_response(self, req, resp, resource):
          resp.set_header('access-control-allow-credentials', 'true')
          resp.set_header('access-control-allow-methods', '*')
          resp.set_header('access-control-allow-headers', 'authorization,content-type')
-         resp.set_header('access-control-allow-origin', '*')
+         resp.set_header('Access-Control-Allow-Origin', '*')
