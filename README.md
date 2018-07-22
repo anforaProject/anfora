@@ -1,6 +1,6 @@
 # Anfora
 
-[![Build Status](https://travis-ci.com/anforaProject/anfora.svg?branch=master)](https://travis-ci.com/yabirgb/zinat)
+[![Build Status](https://travis-ci.com/anforaProject/anfora.svg?branch=master)](https://travis-ci.com/anforaProject/anfora)
 
 ## About
 
