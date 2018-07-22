@@ -138,17 +138,12 @@ def populate_for_travis():
             confirmation_sent_at=datetime.datetime.now(),
             last_sign_in_at=1
         )
-
-        print(f"Created user {target.username}")
-
         target.follow(yab)
 
-        print("Following user")
         #crate some followers
         for j in range(i):
             if j != i:
                 user = User.get(username=f'test{j}')
-                print(f'{user.username} -> {target.username}')
                 user.follow(target, True)
 
 if os.environ.get('POPULATE', 'local') == 'travis':
