@@ -16,9 +16,9 @@ from urls import (uri, URIs)
 
 
 class User(BaseModel):
-    ap_id = CharField(null=True)
+    ap_id = CharField(unique=True)
     name = CharField(null=True) # Display name
-    username = CharField(unique=True) # actual username
+    username = CharField() # actual username
     password = CharField() 
     admin = BooleanField(default=False) # True if the user is admin
     created_at =  DateTimeField(default=datetime.datetime.now) 
@@ -26,7 +26,7 @@ class User(BaseModel):
     confirmed = BooleanField(default=False) # The user has confirmed the email
     email = CharField(unique=True, null=True) # User's email
     confirmation_sent_at = DateTimeField(null=True) # Moment when the confirmation email was sent
-    last_sign_in_at = IntegerField(null=True) # Last time the user signed in
+    last_sign_in_at = IntegerField(null=True) # Last time the user signed in epoch since
     remote = BooleanField(default=False) # The user is a remote user
     private = BooleanField(default=False) # The account has limited access
     private_key = TextField(null=True) # Private key used to sign AP actions
@@ -34,11 +34,21 @@ class User(BaseModel):
     description = TextField(default="") # Description of the profile
     is_bot = BooleanField(default=False) # True if the account is a bot
     avatar_file = CharField(default="default.jpg")
+    following_count = IntegerField(default=0)
+    followers_count = IntegerField(default=0)
+    statuses_count = IntegerField(default=0)
+
     
     @property
     def uris(self):
         if self.remote:
-            return URIs(id=self.ap_id)
+            return URIs(
+                id=self.ap_id,
+                inbox=f'{self.ap_id}/inbox',
+                outbox=f'{self.ap_id}/inbox',
+                following=f'{self.ap_id}/following',
+                followers=f'{self.ap_id}/followers'
+            )
 
         return URIs(
             id=uri("user", {"username":self.username}),
@@ -60,20 +70,15 @@ class User(BaseModel):
             'display_name': self.name,
             'locked': self.private,
             'created_at':self.created_at,
-            'followers_count': self.followers().count(),
-            'following_count': self.following().count(),
-            'statuses_count': self.statuses().count(),
+            'followers_count': self.followers_count,
+            'following_count': self.following_count,
+            'statuses_count': self.statuses_count,
             'note':self.description,
             'url': None,
             'avatar': self.avatar,
             'moved': None,
             'fields':[],
             'bot': self.is_bot,
-            'publicKey':{
-                'id': self.uris.id + '#main-key',
-                'owner': self.uris.id,
-                'publicKeyPem': self.public_key
-            }
         }
 
         if self.remote:
@@ -105,7 +110,11 @@ class User(BaseModel):
                 "followers": self.uris.followers,
                 "outbox": self.uris.outbox,
                 "inbox": self.uris.inbox,
-                "publicKey": self.public_key,
+                "publicKey": {
+                    'publicKeyPem': self.public_key,
+                    'id': f'{self.ap_id}#main-key',
+                    'owner': self.ap_id
+                },
                 "summary": self.description,
                 "manuallyApprovesFollowers": self.private,
                 "featured": self.uris.featured
@@ -139,9 +148,9 @@ class User(BaseModel):
                 .where(FollowerRelation.follows == self)
                 .order_by(User.username))
 
-    def statuses(self):
+    def timeline(self):
         from models.status import Status
-        return self.photos.order_by(Status.id.desc())
+        return self.statuses.order_by(Status.id.desc())
 
     def following(self):
         from models.followers import FollowerRelation
@@ -164,3 +173,23 @@ class User(BaseModel):
 
     def liked(self):
         return self.liked_posts
+
+    def follow(self, target, valid=False):
+
+
+        """
+        The current user follows the target account. 
+        
+        target: An instance of User
+        valid: Boolean to force a valid Follow. This means that the user
+                doesn't have to accept the follow
+        """
+
+        from models.followers import FollowerRelation
+
+        FollowerRelation.create(user = self, follows =target, valid=valid)
+        followers_increment = User.update({User.followers_count: User.followers_count + 1}).where(User.id == target.id)
+        following_increment = User.update({User.following_count: User.following_count + 1}).where(User.id == self.id)
+
+        following_increment.execute()
+        followers_increment.execute()

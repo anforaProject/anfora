@@ -10,6 +10,7 @@ import falcon
 from models.user import User
 from models.status import Status
 from models.album import Album
+from models.media import Media
 
 from pipelines.upload_media import upload_image
 
@@ -69,47 +70,35 @@ class manageUserStatuses:
 
     @falcon.before(max_body(MAX_SIZE))
     def on_post(self, req, resp):
-        image = req.get_param('image')
-        public = bool(req.get_param('public')) #False if None
 
-        user = req.context['user']
-        if image != None:
-            try:
+        if req.get_param('media_ids'):
+            user = req.context['user']
 
-                #Search a valid name
+            status = Status(
+                caption=req.get_param('status') or '',
+                visibility=bool(req.get_param('visibility')), #False if None
+                user=user,
+                sensitive=bool(req.get_param('sensitive')),
+                remote=False,
+                story=bool(req.get_param('is_story'))
+            )
 
-                valid = False
-                ident = ""
-                while not valid:
-                    ident = str(uuid.uuid4())
-                    valid = not Status.select().where(Status.media_name == ident).exists()
+            if status.sensitive:
+                status.spoliet_text=req.get_param('spoiler_text')
 
+            status.save()
 
-                #temp_file = file_path + '~'
-                #open(temp_file, 'wb').write(image.file.read())
+            if  req.get_param('media_ids') != None:
+                    for image in req.get_param('media_ids').split(','):
+                        m = Media.get_or_none(media_name=image)
+                        m.status = status
+                        m.save()
 
-                #Create the image and the thumbnail
-                create_image(io.BytesIO(image.file.read()), ident)
-
-                user = req.context['user']
-                filename = image.filename
-                dimensions = (1080,1080)
-
-                photo = upload_image(user, req.get_param('message'), req.get_param('description')
-                                    ,ident,req.get_param('sensitive'), dimensions, filename )
-
-                photo.save()
-                spreadStatus(photo)
-                resp.status = falcon.HTTP_200
-                resp.body = json.dumps(photo.to_json(),default=str)
-
-            except IOError:
-                print(e)
-                photo.delete_instance()
-                resp.body = json.dumps({"Error": "Couldn't store file"})
-                resp.status = falcon.HTTP_500
-
-
+            #Increment the number of posts uploaded
+            User.update({User.statuses_count: User.statuses_count + 1}).where(User.id == user.id)
+            #spreadStatus(photo)
+            resp.status = falcon.HTTP_200
+            resp.body = json.dumps(status.to_json(),default=str)
 
         else:
             resp.status = falcon.HTTP_500

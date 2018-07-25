@@ -1,6 +1,7 @@
 
 NODENAME = "aName"
 SUMMARY = ""
+
 SCHEME = "http"
 DOMAIN ="localhost"
 

@@ -18,17 +18,19 @@ class Status(BaseModel):
     created_at = DateTimeField(default=datetime.datetime.now)
     updated_at = DateTimeField(default=datetime.datetime.now)
     caption = TextField()
-    public = BooleanField(default=True)
-    user = ForeignKeyField(User, backref='photos')
+    spoiler_text = CharField(max_length=255, null=True)
+    visibility = BooleanField(default=True)
+    user = ForeignKeyField(User, backref='statuses')
     sensitive = BooleanField(default=False)
     remote = BooleanField(default = False)
     ap_id = CharField(null=True)
     in_reply_to = ForeignKeyField('self', backref='replies', null=True)
     story = BooleanField(default=False)
+
     #Need to add tagged users
 
     def __str__(self):
-        return "{} - {} - {} - {}".format(self.caption, self.media_name, self.created_at, self.remote)
+        return "{} - {} - {} - {}".format(self.caption, self.ap_id, self.created_at, self.remote)
 
     @property
     def uris(self):
@@ -37,8 +39,8 @@ class Status(BaseModel):
         else:
             ap_id = uri("status", {"username":self.user.username, "id":self.id})
         return URIs(id=ap_id,
-                    media=uri("media", {"id":self.media_name}),
-                    preview=uri("preview", {"id":self.media_name})
+                    media=[uri.uris.media for uri in self.media_object],
+                    preview=[uri.uris.preview for uri in self.media_object]
                     )
 
     @property
@@ -59,21 +61,18 @@ class Status(BaseModel):
             "actor": self.user.uris.id,
             "sensitive": self.sensitive,
             "created_at": self.created_at.strftime('%Y-%m-%dT%H:%M:%S'),
-            "media_url":self.uris.media,
-            "preview_url":self.uris.preview
+            "atachment": {
+                "media_url":self.uris.media,
+                "preview_url":self.uris.preview
+            }
+
         }
 
         return json
 
     def save(self,*args, **kwargs):
-        if not self.media_name:
-            valid = False
-            ident = ""
-            while not valid:
-                ident = str(uuid.uuid4())
-                valid = not Status.select().where(self.media_name == ident).exists()
-
-            self.media_name = ident
+        if not self.ap_id:
+            self.ap_id = self.uris.id
 
         return super(Status, self).save(*args, **kwargs)
 
@@ -93,19 +92,21 @@ class Status(BaseModel):
 
     def to_json(self):
         data = {
-            "type": "Note",
             "id": self.uris.id,
             "description": self.caption,
             "preview": self.uris.preview,
             "message": self.caption,
             "hashtags": self.hashtags,
             "likes": self.likes_count(),
-            "actor": self.user.to_json(),
+            "account": self.user.to_json(),
             "sensitive": self.sensitive,
             "created_at": self.created_at.strftime('%Y-%m-%dT%H:%M:%S'),
-            "media_url":self.uris.media,
-            "preview_url":self.uris.preview
+            "media_attachments":[]
         }
+
+        for media in self.media_object:
+            data['media_attachments'].append(media.to_json())
+
         return data
 
     def hashtags(self):

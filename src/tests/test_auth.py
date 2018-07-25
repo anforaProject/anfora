@@ -12,5 +12,5 @@ def client():
 
 def test_no_params(client):
 
-    response = client.simulate_get("/api/v1/auth")
+    response = client.simulate_post("/api/v1/auth")
     assert response.status == falcon.HTTP_401

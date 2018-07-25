@@ -10,11 +10,12 @@ from falcon_auth import BasicAuthBackend
 from models.user import User
 from models.status import Status
 from models.token import Token
+from models.followers import FollowerRelation
 
 from auth import (auth_backend,loadUserToken,loadUserPass)
 
 from activityPub import activities
-from activityPub.data_signature import LinkedDataSignature
+from activityPub.data_signature import LinkedDataSignature,SignatureVerification
 
 from utils.atomFeed import generate_feed
 
@@ -22,6 +23,8 @@ from api.v1.helpers import get_ap_by_uri
 from activityPub.identity_manager import ActivityPubId
 
 from tasks.ap_methods import send_activity
+
+from settings import DOMAIN
 
 def json_serial(obj):
     """JSON serializer for objects not serializable by default json code"""
@@ -31,6 +34,10 @@ def json_serial(obj):
     raise TypeError ("Type %s not serializable" % type(obj))
 
 class authUser(object):
+
+    """
+    Loggin user
+    """
 
     auth = {
         'backend': BasicAuthBackend(user_loader=loadUserPass)
@@ -55,14 +62,23 @@ class authUser(object):
         resp.status = falcon.HTTP_200
         resp.body = json.dumps({"token":auth_backend.get_auth_token(payload)})
 
+class verifyCredentials:
+
+    def on_get(self, req, resp):
+
+        user = req.context['user']
+
+        resp.body = json.dumps(user.to_json(), default=str)
+        resp.status = falcon.HTTP_200
+
 class getFollowers():
 
     auth = {
         'exempt_methods':['GET']
     }
 
-    def on_get(self, req, resp, username):
-        user = User.get_or_none(username=username)
+    def on_get(self, req, resp, id):
+        user = User.get_or_none(id=id)
         if user:
             followers = [follower.to_json() for follower in user.followers()]
             resp.body=json.dumps(followers, default=str)
@@ -76,10 +92,10 @@ class getUser():
         'exempt_methods': ['GET']
     }
 
-    def on_get(self, req, resp, username):
-        person = User.get_or_none(username=username)
+    def on_get(self, req, resp, id):
+        person = User.get_or_none(id=id)
         if person:
-            resp.body = json.dumps(person.to_activitystream(), default=json_serial)
+            resp.body = json.dumps(person.to_json(), default=json_serial)
             resp.status = falcon.HTTP_200
         else:
             resp.status = falcon.HTTP_404
@@ -108,21 +124,23 @@ class logoutUser(object):
 
 class getStatuses(object):
 
+    """
+    Retrive Statuses for an user
+    """
+
     auth = {
         'exempt_methods': ['GET']
     }
 
-    def on_get(self, req, resp, username):
+    def on_get(self, req, resp, id):
 
-        user = User.get_or_none(username=username)
+        user = User.get_or_none(id=id)
         if user:
-            statuses = [x.to_json() for x in user.statuses()]
-
+            statuses = [x.to_json() for x in user.statuses]
             resp.body = json.dumps(statuses, default=str)
             resp.status = falcon.HTTP_200
 
         else:
-
             resp.body = json.dumps({"Error: No such user"})
             resp.status = falcon.HTTP_404
 
@@ -145,14 +163,18 @@ class homeTimeline(object):
         resp.status=falcon.HTTP_200
 
 class atomFeed(object):
+    
 
+    """
+    Called when you request the atom feed 
+    """
 
     auth = {
         'exempt_methods': ['GET']
     }
 
-    def on_get(self, req, resp, username):
-        user = User.get_or_none(username=username)
+    def on_get(self, req, resp, id):
+        user = User.get_or_none(id=id)
         if user:
             if 'max_id' in req.params.keys():
                 feed = generate_feed(user, req.params['max_id'])
@@ -169,13 +191,17 @@ class atomFeed(object):
 
 class followAction(object):
 
+    """
+    Triggered when you want to follow an account in the fediverse
+    """
+
     def on_post(self, req, resp):
         user = req.context['user']
 
         #FIX: Check if it's uri
         obj_id = get_ap_by_uri(req.params['uri'])
         #print(obj_id)
-        follow_object = activities.Follow(actor=user.uris.id,
+        follow_object = activities.Follow(actor=user.uris.inbox,
                                     object=obj_id)
 
 
@@ -184,13 +210,40 @@ class followAction(object):
 
         #Prepare the object that will be send as response
         following = ActivityPubId(obj_id).get_or_create_remote_user()
-        
+
         #Sign the activity object
         signed_object.sign(user)
 
         #Create the task to send the petition
         send_activity(signed_object.json, user, obj_id)
-
+        
         resp.body = json.dumps(following.to_json(), default=str)
         #resp.body = json.dumps(signed_object.json, default=str)
         resp.status = falcon.HTTP_200
+
+
+class followingAccounts:
+
+    auth = {
+        'exempt_methos': ['GET']
+    }
+
+    def __init__(self):
+        self.MAX_ELEMENTS = 40
+
+    def on_get(self, req, resp, id):
+
+        max_id = req.get_param('max_ids')
+        since_id = req.get_param('since_id')
+        limit = req.get_param('limit') or self.MAX_ELEMENT
+
+        if max_id and since_id:
+            follows = User.select().join(FollowerRelation, on=FollowerRelation.follows).where(FollowerRelation.user.id == id, User.id > since_id, User.id < max_id).limit(limit)
+        elif max_id:
+            follows = User.select().join(FollowerRelation, on=FollowerRelation.follows).where(FollowerRelation.user.id == id, User.id < max_id).limit(limit)
+        elif since_id:
+            follows = User.select().join(FollowerRelation, on=FollowerRelation.follows).where(FollowerRelation.user.id == id, User.id > since_id).limit(limit)
+        else:
+            follows = User.select().join(FollowerRelation, on=FollowerRelation.follows).where(FollowerRelation.user.id == id).limit(limit)
+
+

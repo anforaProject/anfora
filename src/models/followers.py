@@ -9,7 +9,10 @@ class FollowerRelation(BaseModel):
 
     user = ForeignKeyField(User)
     follows = ForeignKeyField(User)
-    valid = BooleanField(default=False)
+    valid = BooleanField(default=False) #Whether the follow request has been authored
+    muting = BooleanField(default=False)
+    muting_notifications = BooleanField(default=False)
+    domain_blocking = BooleanField(default=False)
     created_at = DateTimeField(default=datetime.datetime.now)
 
     class Meta:

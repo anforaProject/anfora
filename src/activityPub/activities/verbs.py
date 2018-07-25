@@ -74,27 +74,14 @@ class Reject(Activity):
 class Accept(Activity):
     type = "Accept"
 
-    def __accept_follow(self):
-        target = self.user_from_uri(self.object)
-        account = self.user_form_uri(self.actor)
-
-        if target == None or target.remote:
-            return None
-
-        request = (FollowRequest
-                .select()
-                .where(
-                    (FollowRequest.account == account) &
-                    (FollowRequest.target == target))
-                .exists()
-        )
-
-        request.authorize()
+class RsaSignature2017(Activity):
+    type = "RsaSignature2017"
 
 ALLOWED_TYPES.update({
     "Activity": Activity,
     "Create": Create,
     "Follow": Follow,
     "Accept": Accept,
-    "Reject": Reject
+    "Reject": Reject,
+    "RsaSignature2017": RsaSignature2017
 })
