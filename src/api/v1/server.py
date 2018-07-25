@@ -7,6 +7,7 @@ from release_info import VERSION
 
 from models.followers import FollowerRelation
 from models.user import User
+from models.status import Status
 
 from utils.username import extract_user
 from utils.webfinger import Webfinger
@@ -54,11 +55,11 @@ class nodeinfo:
 
         resp.append_header("Content-Type","application/json; profile=http://nodeinfo.diaspora.software/ns/schema/2.0#")
 
-        {
+        response = {
             "version": "2.0",
             "software": {
-                "name": "zinat",
-                "version": "zinat {}".format(VERSION),
+                "name": "Anfora",
+                "version": "Anfora {}".format(VERSION),
             },
             "protocols": ["activitypub"],
             "services": {"inbound": [], "outbound": []},
@@ -70,10 +71,14 @@ class nodeinfo:
                 "localPosts": Status.select().count()
             },
             "metadata": {
-                "sourceCode": "https://github.com/yabirgb/zinat",
+                "sourceCode": "https://github.com/anforaProject/anfora",
                 "nodeName": NODENAME,
             },
         }
+
+        resp.body = json.dumps(response)
+        resp.status = falcon.HTTP_200
+
 
 class wellknownWebfinger:
 
