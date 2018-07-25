@@ -1,4 +1,5 @@
 import redis
+import os
 
 from models.status import Status
 from models.user import User
@@ -7,7 +8,7 @@ from tasks.config import huey
 
 @huey.task()
 def spreadStatus(photo):
-    r = redis.StrictRedis(host='localhost', port=6379)
+    r = redis.StrictRedis(host=os.environ['REDIS_HOST'])
     time = photo.created_at.timestamp()
 
     #Populate all the followers timelines
