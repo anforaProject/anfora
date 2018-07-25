@@ -8,7 +8,7 @@ from tasks.config import huey
 
 @huey.task()
 def spreadStatus(photo):
-    r = redis.StrictRedis(host=os.environ['REDIS_HOST'])
+    r = redis.StrictRedis(host=os.environ.get('REDIS_HOST', 'localhost'))
     time = photo.created_at.timestamp()
 
     #Populate all the followers timelines
