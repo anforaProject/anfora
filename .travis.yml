@@ -8,6 +8,7 @@ install:
 script:
   - export VENV_HOME_DIR=$(pipenv --venv)
   - export POPULATE=travis
+  - export REDIS_HOST=localhost
   - source $VENV_HOME_DIR/bin/activate
   - cd src/
   - python populate.py

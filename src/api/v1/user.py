@@ -148,7 +148,7 @@ class homeTimeline(object):
 
     def on_get(self, req, resp):
         username = req.context['user'].username
-        r = redis.StrictRedis(host=os.environ['REDIS_HOST'])
+        r = redis.StrictRedis(host=os.environ.get('REDIS_HOST', 'localhost'))
 
         local = req.get_param('local') or False
         max_id = req.get_param('max_id') or None

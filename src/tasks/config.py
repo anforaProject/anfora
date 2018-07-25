@@ -1,4 +1,4 @@
 from huey import RedisHuey
 import os
 
-huey = RedisHuey(host=os.environ['REDIS_HOST'])
+huey = RedisHuey(host=os.environ.get('REDIS_HOST', 'localhost'))

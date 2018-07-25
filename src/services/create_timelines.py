@@ -7,7 +7,7 @@ from models.user import User
 from models.status import Status
 
 def build_all_timelines():
-    r = redis.StrictRedis(host=os.environ['REDIS_HOST'])
+    r = redis.StrictRedis(host=os.environ.get('REDIS_HOST', 'localhost'))
     database.connect()
     users = User.select()
     total = users.count()
@@ -26,5 +26,5 @@ def build_all_timelines():
         database.close()
 
 def showTimelines():
-    r = redis.StrictRedis(host=os.environ['REDIS_HOST'])
+    r = redis.StrictRedis(host=os.environ.get('REDIS_HOST', 'localhost'))
     print(r.zrange('lol:hometimeline', 0, -1, withscores=True))
