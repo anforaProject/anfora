@@ -94,6 +94,8 @@ class manageUserStatuses:
                         m.status = status
                         m.save()
 
+            #Increment the number of posts uploaded
+            User.update({User.statuses_count: User.statuses_count + 1}).where(User.id == user.id)
             #spreadStatus(photo)
             resp.status = falcon.HTTP_200
             resp.body = json.dumps(status.to_json(),default=str)
