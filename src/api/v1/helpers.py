@@ -58,7 +58,7 @@ def get_ap_by_uri(uri):
     #If not None we have a match 
     
     if obj:
-        return obj 
+        return obj.decode('utf-8')
         
     if uri.startswith("@"):
         uri = uri[1:]

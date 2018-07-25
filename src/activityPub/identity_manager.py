@@ -11,10 +11,10 @@ from activityPub.activities import as_activitystream
 from models.user import User
 from models.followers import FollowerRelation
 
-class IdentityManager(object):
+class IdentityManager:
 
     def __init__(self, identity):
-        if '#' in identity:
+        if "#" in identity:
             self.uri = identity.split("#")[0]
         else:
             self.uri = identity

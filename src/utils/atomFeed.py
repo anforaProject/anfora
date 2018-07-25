@@ -76,11 +76,11 @@ def generate_feed(user, max_id = -1):
             .order_by(Status.id.desc())
             .limit(limit))
 
-    user_statuses = user.statuses()
+    user_statuses = user.timeline()
     
     update_date = None
     try:
-        update_date = user.statuses().get().created_at
+        update_date = user.timeline().get().created_at
     except:
         update_date = datetime.datetime.now()
 
