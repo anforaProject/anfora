@@ -78,4 +78,4 @@ def get_ap_by_uri(uri):
 
         return url_rel['href']
     else:
-        return r.text.decode('utf-8')
+        return r.text
