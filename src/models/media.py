@@ -31,13 +31,21 @@ class Media(BaseModel):
             preview=uri("preview", {"id":self.media_name})
         )
 
+    def __str__(self):
+        return f'{self.id} - {self.media_name}'
+
     def to_json(self):
         return {
             'id': self.media_name,
-            'type': self.media_type,
             'url': self.uris.media,
             'preview_url': self.uris.preview,
             'meta': {
+                'original':{
+                    'width': self.width,
+                    'height': self.height,
+                    'size': f'{self.width}x{self.height}',
+                    'aspect': self.width/self.height
+                },
                 'focus': {
                     'x': self.focus_x,
                     'y': self.focus_y
@@ -45,3 +53,10 @@ class Media(BaseModel):
             },
             'description': self.description
         }
+
+    def to_activitystrem(self):
+        json = {
+            "type": "Document"      
+        }
+
+        return json
