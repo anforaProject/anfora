@@ -1,8 +1,8 @@
 
 NODENAME = "aName"
 SUMMARY = ""
-SCHEME = "https"
-DOMAIN ="zinat.test"
+SCHEME = "http"
+DOMAIN ="localhost"
 
 MEADIA_FOLDER = "/home/yabir/killMe/uploads"
 
