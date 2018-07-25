@@ -49,7 +49,7 @@ def get_ap_by_uri(uri):
     #What is the AP id of the user
 
     #Open a connection with redis
-    redis_connection = redis.StrictRedis(host='localhost', port=6379)
+    redis_connection = redis.StrictRedis(host=os.environ['REDIS_HOST'])
 
     #Try to search the uri in the redis db
 

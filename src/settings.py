@@ -1,8 +1,9 @@
 
 NODENAME = "aName"
 SUMMARY = ""
-SCHEME = "https"
-DOMAIN ="anfora.test"
+
+SCHEME = "http"
+DOMAIN ="localhost"
 
 MEADIA_FOLDER = "/home/yabir/killMe/uploads"
 
