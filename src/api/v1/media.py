@@ -14,7 +14,7 @@ from models.media import Media
 class UploadMedia:
 
     def __init__(self):
-        self.THUMBNAIL_SIZE = 320, 320
+        self.THUMBNAIL_SIZE = 640, 640
         self.THUMBNAIL_BOX = 0,0, 320, 320
         self.sizes = {
             'square': (1080, 1080),
@@ -29,9 +29,8 @@ class UploadMedia:
         file_path = os.path.join(MEADIA_FOLDER, pic_folder, filename + '.jpeg')
 
         im = Image.open(bytes)
-        im.save(file_path,'JPEG', quality=50, optimize=True, progressive=True)
+        im.save(file_path,'JPEG', quality=60, optimize=True, progressive=True)
 
-        im.crop(self.THUMBNAIL_BOX)
         im.thumbnail(self.THUMBNAIL_SIZE, Image.ANTIALIAS)
         im.save(thumb, "jpeg")
 
