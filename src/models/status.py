@@ -92,19 +92,21 @@ class Status(BaseModel):
 
     def to_json(self):
         data = {
-            "type": "Note",
             "id": self.uris.id,
             "description": self.caption,
             "preview": self.uris.preview,
             "message": self.caption,
             "hashtags": self.hashtags,
             "likes": self.likes_count(),
-            "actor": self.user.to_json(),
+            "account": self.user.to_json(),
             "sensitive": self.sensitive,
             "created_at": self.created_at.strftime('%Y-%m-%dT%H:%M:%S'),
-            "media_url":self.uris.media,
-            "preview_url":self.uris.preview
+            "media_attachments":[]
         }
+
+        for media in self.media_object:
+            data['media_attachments'].append(media.to_json())
+
         return data
 
     def hashtags(self):
