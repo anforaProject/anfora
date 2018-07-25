@@ -1,12 +1,13 @@
 import redis
 import peewee
+import os
 
 from models.base import db as database
 from models.user import User
 from models.status import Status
 
 def build_all_timelines():
-    r = redis.StrictRedis(host='localhost', port=6379)
+    r = redis.StrictRedis(host=os.environ['REDIS_HOST'])
     database.connect()
     users = User.select()
     total = users.count()
@@ -25,5 +26,5 @@ def build_all_timelines():
         database.close()
 
 def showTimelines():
-    r = redis.StrictRedis(host='localhost', port=6379)
+    r = redis.StrictRedis(host=os.environ['REDIS_HOST'])
     print(r.zrange('lol:hometimeline', 0, -1, withscores=True))
