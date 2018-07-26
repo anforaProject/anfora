@@ -2,8 +2,8 @@
 NODENAME = "aName"
 SUMMARY = ""
 
-SCHEME = "http"
-DOMAIN ="localhost"
+SCHEME = "https"
+DOMAIN ="anfora.test"
 
 MEADIA_FOLDER = "/home/yabir/killMe/uploads"
 
@@ -14,3 +14,5 @@ ID=BASE_URL
 thumb_folder="small"
 pic_folder="max_resolution"
 icon="icons"
+
+salt_code = "whySoSalty?"

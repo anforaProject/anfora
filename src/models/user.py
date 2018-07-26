@@ -2,8 +2,10 @@ import datetime
 import uuid
 import binascii
 import os
+import io
 
 import Crypto
+from PIL import Image
 
 from Crypto.PublicKey import RSA
 from Crypto import Random
@@ -13,6 +15,12 @@ from playhouse.shortcuts import model_to_dict
 
 from models.base import BaseModel
 from urls import (uri, URIs)
+
+#Generate pixeled avatars
+from avatar_gen.pixel_avatar import PixelAvatar
+from hashids import Hashids
+from settings import (MEADIA_FOLDER, salt_code)
+
 
 
 class User(BaseModel):
@@ -33,7 +41,7 @@ class User(BaseModel):
     public_key = TextField() # Public key
     description = TextField(default="") # Description of the profile
     is_bot = BooleanField(default=False) # True if the account is a bot
-    avatar_file = CharField(default="default.jpg")
+    avatar_file = CharField(null=True)
     following_count = IntegerField(default=0)
     followers_count = IntegerField(default=0)
     statuses_count = IntegerField(default=0)
@@ -57,7 +65,6 @@ class User(BaseModel):
             outbox=uri("outbox", {"username":self.username}),
             inbox=uri("inbox", {"username":self.username}),
             atom=uri("atom", {"username": self.username}),
-            avatar=self.avatar,
             featured=uri("featured", {"username": self.username}),
         )
 
@@ -132,6 +139,23 @@ class User(BaseModel):
             key = RSA.generate(2048, random_generator)
             self.public_key = key.publickey().exportKey().decode('utf-8')
             self.private_key = key.exportKey().decode('utf-8')
+
+        if not self.avatar_file:
+
+            hashid = Hashids(salt=salt_code, min_length=6)
+
+            try:
+                possible_id = User.select().order_by(User.id.desc()).get().id
+            except:
+                possible_id = 0
+            filename = hashid.encode(possible_id)
+
+            pixel_avatar = PixelAvatar(rows=10, columns=10)
+            image_byte_array = pixel_avatar.get_image(size=128, string=self.ap_id, filetype="jpeg")
+            file_path = os.path.join(MEADIA_FOLDER, 'avatars', filename + '.jpeg')
+            image = Image.open(io.BytesIO(image_byte_array))
+            image.save(file_path)
+            self.avatar_file = f'{filename}.jpeg'
 
         return super(User, self).save(*args, **kwargs)
 

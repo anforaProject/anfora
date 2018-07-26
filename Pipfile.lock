@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "4a889f484177c2720964a9b5eb8ffa1d913d18504ea414fe076b412604caa309"
+            "sha256": "4220f0525c3bd8751dd3127b6042d1e28fa9439e9d31debadd6879079ccf5e18"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -44,6 +44,9 @@
             ],
             "index": "pypi",
             "version": "==18.1.0"
+        },
+        "avatar": {
+            "git": "https://github.com/lsdlab/avatar-gen.git"
         },
         "bson": {
             "hashes": [
@@ -141,10 +144,6 @@
             "index": "pypi",
             "version": "==0.2.0"
         },
-        "filters": {
-            "git": "https://github.com/anforaProject/filters.git",
-            "ref": "master"
-        },
         "gunicorn": {
             "hashes": [
                 "sha256:aa8e0b40b4157b36a5df5e599f45c9c76d6af43845ba3b3b0efe2c70473c2471",
@@ -153,12 +152,19 @@
             "index": "pypi",
             "version": "==19.9.0"
         },
-        "huey": {
+        "hashids": {
             "hashes": [
-                "sha256:74f0ac78ed4eb15b8bad2555487c2a56378fe8407c71acaa5c07cd3bbfae97f6"
+                "sha256:6539b892a426e75747a9c0ad69409e9566f9c21b79310fc3424b5b6726f28da6"
             ],
             "index": "pypi",
-            "version": "==1.10.0"
+            "version": "==1.2.0"
+        },
+        "huey": {
+            "hashes": [
+                "sha256:b9a653d7dc77c57122b98a3b0eebb0d0c94779610759e4fbd1038f8fa4644495"
+            ],
+            "index": "pypi",
+            "version": "==1.10.1"
         },
         "idna": {
             "hashes": [
