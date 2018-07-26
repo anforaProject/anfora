@@ -136,7 +136,7 @@ class getStatuses(object):
 
         user = User.get_or_none(id=id)
         if user:
-            statuses = [x.to_json() for x in user.statuses]
+            statuses = [x.to_json() for x in user.statuses.order_by(Status.created_at.desc())]
             resp.body = json.dumps(statuses, default=str)
             resp.status = falcon.HTTP_200
 
