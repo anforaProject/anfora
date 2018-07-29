@@ -1,18 +1,11 @@
-
-NODENAME = "aName"
+NODENAME = "Anfora"
 SUMMARY = ""
-
-SCHEME = "https"
-DOMAIN ="anfora.test"
-
-MEADIA_FOLDER = "/home/yabir/killMe/uploads"
-
-#From here is not necessary to touch anything
-BASE_URL = "{}://{}".format(SCHEME, DOMAIN)
+SCHEME = "http"
+DOMAIN ="localhost"
+BASE_URL ="http://localhost"
 ID=BASE_URL
-
+MEDIA_FOLDER = "/home/yabir/killMe/uploads"
 thumb_folder="small"
 pic_folder="max_resolution"
 icon="icons"
-
-salt_code = "whySoSalty?"
+salt_code="whySoSalty?"
