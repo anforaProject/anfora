@@ -2,7 +2,7 @@ import os
 
 from PIL import Image
 
-from settings import MEADIA_FOLDER
+from settings import MEDIA_FOLDER
 
 from models.status import Status
 from api.v1.activityPub.methods import (get_final_audience, deliver_to)
@@ -29,8 +29,8 @@ def count_beans(num):
 @huey.task()
 def create_image(bytes, filename):
 
-    thumb = os.path.join(MEADIA_FOLDER, thumb_folder, filename + '.thumbnail')
-    file_path = os.path.join(MEADIA_FOLDER, pic_folder, filename + '.jpeg')
+    thumb = os.path.join(MEDIA_FOLDER, thumb_folder, filename + '.thumbnail')
+    file_path = os.path.join(MEDIA_FOLDER, pic_folder, filename + '.jpeg')
 
 
     im = Image.open(bytes)

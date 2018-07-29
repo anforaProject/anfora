@@ -19,7 +19,7 @@ from urls import (uri, URIs)
 #Generate pixeled avatars
 from avatar_gen.pixel_avatar import PixelAvatar
 from hashids import Hashids
-from settings import (MEADIA_FOLDER, salt_code)
+from settings import (MEDIA_FOLDER, salt_code)
 
 
 
@@ -74,6 +74,7 @@ class User(BaseModel):
         json = {
             'id': self.id,
             'username': self.username,
+            'name': self.name,
             'display_name': self.name,
             'locked': self.private,
             'created_at':self.created_at,
@@ -152,7 +153,7 @@ class User(BaseModel):
 
             pixel_avatar = PixelAvatar(rows=10, columns=10)
             image_byte_array = pixel_avatar.get_image(size=128, string=self.ap_id, filetype="jpeg")
-            file_path = os.path.join(MEADIA_FOLDER, 'avatars', filename + '.jpeg')
+            file_path = os.path.join(MEDIA_FOLDER, 'avatars', filename + '.jpeg')
             image = Image.open(io.BytesIO(image_byte_array))
             image.save(file_path)
             self.avatar_file = f'{filename}.jpeg'
