@@ -58,11 +58,11 @@ class manageUserStatuses:
 
         auth_user = try_logged_jwt(auth_backend, req, resp)
 
-        if auth_user and auth_user.username == user:
-            photos = Status.select().join(User).where(User.username == auth_user.username)
+        if auth_user and auth_user.id == user:
+            photos = Status.select().join(User).where(User.username == auth_user.username).order_by(Status.created_at.desc())
         #Must to considerer the case of friends relation
         else:
-            photos = Status.select().where(Status.public == True).join(User).where(User.username == user)
+            photos = Status.select().join(User).where(User.username == user).where(Status.public == True).order_by(Status.created_at.desc())
 
         query = [photo.to_model() for photo in photos]
         resp.body = json.dumps(query, default=str)

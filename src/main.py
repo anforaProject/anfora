@@ -8,7 +8,7 @@ from falcon_multipart.middleware import MultipartMiddleware
 from falcon_auth import FalconAuthMiddleware
 from falcon_cors import CORS
 
-from settings import MEADIA_FOLDER
+from settings import MEDIA_FOLDER
 
 from middleware import (PeeweeConnectionMiddleware, CorsMiddleware)
 
