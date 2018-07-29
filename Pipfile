@@ -21,6 +21,7 @@ gunicorn = "*"
 bson = "*"
 avatar = {git = "https://github.com/lsdlab/avatar-gen.git"}
 hashids = "*"
+pyyaml = "*"
 
 [requires]
 python_version = "3.6"
