@@ -130,6 +130,30 @@ class User(BaseModel):
 
         return json
 
+    def _create_avatar_id(self):
+        hashid = Hashids(salt=salt_code, min_length=6)
+
+        try:
+            possible_id = User.select().order_by(User.id.desc()).get().id
+        except:
+            possible_id = 0
+
+        return hashid.encode(possible_id)
+
+    def _crate_avatar_file(self, image):
+        """
+        image - A byte array with the image
+        """
+
+        filename = self._create_avatar_id()
+        image = io.BytesIO(image)
+        im = Image.open(image)
+        im.thumbnail((400, 400), Image.ANTIALIAS)
+        file_path = os.path.join(MEDIA_FOLDER, 'avatars', filename + '.jpeg')
+        im.save(file_path, 'jpeg')
+
+        return f'{filename}.jpeg'
+
     def save(self,*args, **kwargs):
         if not self.remote:
             self.ap_id = uri("user", {"username":self.username})
@@ -142,23 +166,16 @@ class User(BaseModel):
             self.private_key = key.exportKey().decode('utf-8')
 
         if not self.avatar_file:
-
-            hashid = Hashids(salt=salt_code, min_length=6)
-
-            try:
-                possible_id = User.select().order_by(User.id.desc()).get().id
-            except:
-                possible_id = 0
-            filename = hashid.encode(possible_id)
-
             pixel_avatar = PixelAvatar(rows=10, columns=10)
-            image_byte_array = pixel_avatar.get_image(size=128, string=self.ap_id, filetype="jpeg")
-            file_path = os.path.join(MEDIA_FOLDER, 'avatars', filename + '.jpeg')
-            image = Image.open(io.BytesIO(image_byte_array))
-            image.save(file_path)
-            self.avatar_file = f'{filename}.jpeg'
+            image_byte_array = pixel_avatar.get_image(size=400, string=self.ap_id, filetype="jpeg")
+            
+            self.avatar_file = self._crate_avatar_file(image_byte_array)
 
         return super(User, self).save(*args, **kwargs)
+
+    def update_avatar(self, image):
+        return self._crate_avatar_file(image)
+        
 
     @property
     def avatar(self):
