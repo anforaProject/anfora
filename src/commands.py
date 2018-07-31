@@ -21,7 +21,7 @@ parser.add_argument('-s', '--settings',
                     action='store_const',
                     const="settings")
 
-parser.add_argument('--config', required=True, help="path to config file")
+parser.add_argument('--config', required=False, help="path to config file")
 
 args = parser.parse_args()
 if args.command == 'timelines':
