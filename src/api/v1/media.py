@@ -29,7 +29,7 @@ class UploadMedia:
         file_path = os.path.join(MEDIA_FOLDER, pic_folder, filename + '.jpeg')
 
         im = Image.open(bytes)
-        im.save(file_path,'JPEG', quality=60, optimize=True, progressive=True)
+        im.save(file_path, 'JPEG', quality=80, optimize=True, progressive=True)
 
         im.thumbnail(self.THUMBNAIL_SIZE, Image.ANTIALIAS)
         im.save(thumb, "jpeg")

@@ -148,6 +148,7 @@ class User(BaseModel):
         filename = self._create_avatar_id()
         image = io.BytesIO(image)
         im = Image.open(image)
+        im = im.convert('RGB')
         im.thumbnail((400, 400), Image.ANTIALIAS)
         file_path = os.path.join(MEDIA_FOLDER, 'avatars', filename + '.jpeg')
         im.save(file_path, 'jpeg')

@@ -93,6 +93,9 @@ class manageCredentials:
         if 'locked' in req.params:
             user.private = bool(req.get_param('locked'))
 
+        if 'bot' in req.params:
+            user.bot = bool(req.get_param('bot'))
+
         if 'avatar' in req.params:
             image = req.get_param('avatar')
             user.avatar_file = user.update_avatar(image.file.read())
