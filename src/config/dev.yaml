@@ -6,6 +6,10 @@ server_description: ''
 scheme: 'https'
 domain: 'anfora.test'
 
+# Positition
+
+root_path: '/home/yabir/killme/anfora'
+
 # Storage
 
 media_folder: '/home/yabir/killMe/uploads'

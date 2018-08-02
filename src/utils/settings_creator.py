@@ -14,7 +14,8 @@ def create_settings(filen):
         f'thumb_folder="{settings.get("thumb_folder")}"\n'
         f'pic_folder="{settings.get("image_folder")}"\n'
         f'icon="{settings.get("icons_folder")}"\n'
-        f'salt_code="{settings.get("salt_code")}"'
+        f'salt_code="{settings.get("salt_code")}"\n'
+        f'ROOT_PATH = "{settings.get("root_path")}"\n'
     )
 
     return template 
