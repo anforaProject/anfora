@@ -8,7 +8,7 @@ urls = {
     "followers": "/users/{username}/followers",
     "atom": "/users/{username}.atom",
     "user": "/users/{username}",
-    "profile_image": "/avatars/{name}",
+    "profile_image": "/media/files/avatars/{name}",
     "media": "/media/files/max_resolution/{id}.jpeg",
     "preview": "/media/files/small/{id}.thumbnail",
     "logout": "/logout",
