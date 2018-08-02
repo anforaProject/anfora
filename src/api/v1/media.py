@@ -6,7 +6,7 @@ import uuid
 
 from PIL import Image
 
-from settings import (MEADIA_FOLDER, thumb_folder, pic_folder)
+from settings import (MEDIA_FOLDER, thumb_folder, pic_folder)
 
 from models.media import Media
 
@@ -25,11 +25,11 @@ class UploadMedia:
 
     def create_image(self, bytes, filename):
 
-        thumb = os.path.join(MEADIA_FOLDER, thumb_folder, filename + '.thumbnail')
-        file_path = os.path.join(MEADIA_FOLDER, pic_folder, filename + '.jpeg')
+        thumb = os.path.join(MEDIA_FOLDER, thumb_folder, filename + '.thumbnail')
+        file_path = os.path.join(MEDIA_FOLDER, pic_folder, filename + '.jpeg')
 
         im = Image.open(bytes)
-        im.save(file_path,'JPEG', quality=60, optimize=True, progressive=True)
+        im.save(file_path, 'JPEG', quality=80, optimize=True, progressive=True)
 
         im.thumbnail(self.THUMBNAIL_SIZE, Image.ANTIALIAS)
         im.save(thumb, "jpeg")
