@@ -3,6 +3,8 @@ from argparse import ArgumentParser
 from services.create_timelines import *
 from utils.settings_creator import create_settings_file
 
+from manage_db import (connect, create_tables)
+
 parser = ArgumentParser()
 parser.add_argument("-t", "--timelines", dest="command",
                     help="Build timelines in the redis database", 
@@ -23,6 +25,12 @@ parser.add_argument('-s', '--settings',
 
 parser.add_argument('--config', required=False, help="path to config file")
 
+parser.add_argument('-d', '--syncdb',
+                    dest="command",
+                    help="created database",
+                    action="store_const",
+                    const="db")
+
 args = parser.parse_args()
 if args.command == 'timelines':
     build_all_timelines()
@@ -30,5 +38,8 @@ elif args.command == 'show':
     showTimelines()
 elif args.command == 'settings' and args.config:
     create_settings_file(args.config)
+elif args.command == 'db':
+    connect()
+    create_tables()
 else:
     print("No command found")
