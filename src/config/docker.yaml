@@ -6,6 +6,9 @@ server_description: ''
 scheme: 'http'
 domain: 'localhost'
 
+# Positition
+root_path: '/home/yabir/killme/anfora'
+
 # Storage
 
 media_folder: '/home/yabir/killMe/uploads'
