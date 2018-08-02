@@ -24,7 +24,7 @@ from activityPub.identity_manager import ActivityPubId
 
 from tasks.ap_methods import send_activity
 
-from settings import DOMAIN
+from settings import (DOMAIN, MEDIA_FOLDER)
 
 def json_serial(obj):
     """JSON serializer for objects not serializable by default json code"""
@@ -71,6 +71,43 @@ class verifyCredentials:
         resp.body = json.dumps(user.to_json(), default=str)
         resp.status = falcon.HTTP_200
 
+class manageCredentials:
+
+    def on_patch(self, req, resp):
+        user = req.context['user']
+
+        errors = []
+
+        if 'display_name' in req.params:
+            if len(req.get_param('display_name')) <= 31: 
+                user.name = req.get_param('display_name')
+            else:
+                errors.append('display_name length exceeded.')
+        
+        if 'note' in req.params:
+            if len(req.get_param('note')) <= 160:
+                user.description = req.get_param('note')
+            else:
+                errors.append('Note length exceeded.')
+
+        if 'locked' in req.params:
+            user.private = bool(req.get_param('locked'))
+
+        if 'bot' in req.params:
+            user.bot = bool(req.get_param('bot'))
+
+        if 'avatar' in req.params:
+            image = req.get_param('avatar')
+            user.avatar_file = user.update_avatar(image.file.read())
+        
+        if not errors:
+            user.save()
+            resp.status = falcon.HTTP_200
+            resp.body = json.dumps(user.to_json(), default=str)
+        else:
+            resp.status = falcon.HTTP_UNPROCESSABLE_ENTITY
+            resp.body = json.dumps(errors)
+            
 class getFollowers():
 
     auth = {
@@ -136,7 +173,7 @@ class getStatuses(object):
 
         user = User.get_or_none(id=id)
         if user:
-            statuses = [x.to_json() for x in user.statuses]
+            statuses = [x.to_json() for x in user.statuses.order_by(Status.created_at.desc())]
             resp.body = json.dumps(statuses, default=str)
             resp.status = falcon.HTTP_200
 

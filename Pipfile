@@ -19,7 +19,9 @@ crypto = "*"
 pycrypto = "*"
 gunicorn = "*"
 bson = "*"
-filters = {git = "https://github.com/anforaProject/filters.git", ref = "master"}
+avatar = {git = "https://github.com/lsdlab/avatar-gen.git"}
+hashids = "*"
+pyyaml = "*"
 
 [requires]
 python_version = "3.6"
