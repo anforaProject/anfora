@@ -1,0 +1,18 @@
+# Public data
+application_name: 'Anfora'
+server_description: ''
+
+# http config
+scheme: 'https'
+domain: 'anfora.test'
+
+# Storage
+
+media_folder: '/home/yabir/killMe/uploads'
+thumb_folder: 'small'
+image_folder: 'max_resolution'
+icons_folder: 'icons'
+
+# Uri salt
+
+salt_code: 'whySoSalty?'

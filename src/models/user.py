@@ -2,8 +2,10 @@ import datetime
 import uuid
 import binascii
 import os
+import io
 
 import Crypto
+from PIL import Image
 
 from Crypto.PublicKey import RSA
 from Crypto import Random
@@ -13,6 +15,12 @@ from playhouse.shortcuts import model_to_dict
 
 from models.base import BaseModel
 from urls import (uri, URIs)
+
+#Generate pixeled avatars
+from avatar_gen.pixel_avatar import PixelAvatar
+from hashids import Hashids
+from settings import (MEDIA_FOLDER, salt_code)
+
 
 
 class User(BaseModel):
@@ -33,7 +41,7 @@ class User(BaseModel):
     public_key = TextField() # Public key
     description = TextField(default="") # Description of the profile
     is_bot = BooleanField(default=False) # True if the account is a bot
-    avatar_file = CharField(default="default.jpg")
+    avatar_file = CharField(null=True)
     following_count = IntegerField(default=0)
     followers_count = IntegerField(default=0)
     statuses_count = IntegerField(default=0)
@@ -57,7 +65,6 @@ class User(BaseModel):
             outbox=uri("outbox", {"username":self.username}),
             inbox=uri("inbox", {"username":self.username}),
             atom=uri("atom", {"username": self.username}),
-            avatar=self.avatar,
             featured=uri("featured", {"username": self.username}),
         )
 
@@ -67,6 +74,7 @@ class User(BaseModel):
         json = {
             'id': self.id,
             'username': self.username,
+            'name': self.name,
             'display_name': self.name,
             'locked': self.private,
             'created_at':self.created_at,
@@ -122,6 +130,31 @@ class User(BaseModel):
 
         return json
 
+    def _create_avatar_id(self):
+        hashid = Hashids(salt=salt_code, min_length=6)
+
+        try:
+            possible_id = User.select().order_by(User.id.desc()).get().id
+        except:
+            possible_id = 0
+
+        return hashid.encode(possible_id)
+
+    def _crate_avatar_file(self, image):
+        """
+        image - A byte array with the image
+        """
+
+        filename = self._create_avatar_id()
+        image = io.BytesIO(image)
+        im = Image.open(image)
+        im = im.convert('RGB')
+        im.thumbnail((400, 400), Image.ANTIALIAS)
+        file_path = os.path.join(MEDIA_FOLDER, 'avatars', filename + '.jpeg')
+        im.save(file_path, 'jpeg')
+
+        return f'{filename}.jpeg'
+
     def save(self,*args, **kwargs):
         if not self.remote:
             self.ap_id = uri("user", {"username":self.username})
@@ -133,7 +166,17 @@ class User(BaseModel):
             self.public_key = key.publickey().exportKey().decode('utf-8')
             self.private_key = key.exportKey().decode('utf-8')
 
+        if not self.avatar_file:
+            pixel_avatar = PixelAvatar(rows=10, columns=10)
+            image_byte_array = pixel_avatar.get_image(size=400, string=self.ap_id, filetype="jpeg")
+            
+            self.avatar_file = self._crate_avatar_file(image_byte_array)
+
         return super(User, self).save(*args, **kwargs)
+
+    def update_avatar(self, image):
+        return self._crate_avatar_file(image)
+        
 
     @property
     def avatar(self):
