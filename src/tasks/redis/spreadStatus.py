@@ -2,7 +2,7 @@ import redis
 import os
 
 from models.status import Status
-from models.user import User
+from models.user import UserProfile
 
 from tasks.config import huey
 

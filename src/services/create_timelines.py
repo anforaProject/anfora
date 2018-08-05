@@ -3,13 +3,13 @@ import peewee
 import os
 
 from models.base import db as database
-from models.user import User
+from models.user import UserProfile
 from models.status import Status
 
 def build_all_timelines():
     r = redis.StrictRedis(host=os.environ.get('REDIS_HOST', 'localhost'))
     database.connect()
-    users = User.select()
+    users = UserProfile.select()
     total = users.count()
     for index,user in enumerate(users):
         print("Distributing {}'s timeline. {} of {}".format(user.username, index, total))

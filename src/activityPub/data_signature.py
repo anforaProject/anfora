@@ -14,7 +14,7 @@ from base64 import b64encode, b64decode
 
 from activityPub.identity_manager import ActivityPubId
 
-from models.user import User
+from models.user import UserProfile
 
 class LinkedDataSignature:
 

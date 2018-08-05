@@ -4,7 +4,7 @@ import logging
 from settings import DOMAIN
 
 from models.status import Status
-from models.user import User
+from models.user import UserProfile
 
 
 from activityPub import activities
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 @huey.task()
 def handle_follow(activity):
-    followed = User.get_or_none(ap_id=activity.object)
+    followed = UserProfile.get_or_none(ap_id=activity.object)
     print("=> Handling follow")
     if followed:
         if isinstance(activity.actor, activities.Actor):
