@@ -3,7 +3,7 @@ import datetime
 
 from settings import DOMAIN
 
-from models.user import User
+from models.user import UserProfile
 from models.status import Status 
 
 def generate_feed(user, max_id = -1):

@@ -10,7 +10,7 @@ from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256 
 from base64 import b64encode, b64decode
 
-from models.user import User
+from models.user import UserProfile
 from models.status import Status
 
 from activityPub import activities

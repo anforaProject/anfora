@@ -23,7 +23,7 @@ from settings import (MEDIA_FOLDER, salt_code)
 
 
 
-class User(BaseModel):
+class UserProfile(BaseModel):
     ap_id = CharField(unique=True)
     name = CharField(null=True) # Display name
     username = CharField() # actual username
@@ -134,7 +134,7 @@ class User(BaseModel):
         hashid = Hashids(salt=salt_code, min_length=6)
 
         try:
-            possible_id = User.select().order_by(User.id.desc()).get().id
+            possible_id = UserProfile.select().order_by(UserProfile.id.desc()).get().id
         except:
             possible_id = 0
 
@@ -172,7 +172,7 @@ class User(BaseModel):
             
             self.avatar_file = self._crate_avatar_file(image_byte_array)
 
-        return super(User, self).save(*args, **kwargs)
+        return super(UserProfile, self).save(*args, **kwargs)
 
     def update_avatar(self, image):
         return self._crate_avatar_file(image)
@@ -185,11 +185,11 @@ class User(BaseModel):
     def followers(self):
         from models.followers import FollowerRelation
 
-        return (User
+        return (UserProfile
                 .select()
                 .join(FollowerRelation, on=FollowerRelation.user)
                 .where(FollowerRelation.follows == self)
-                .order_by(User.username))
+                .order_by(UserProfile.username))
 
     def timeline(self):
         from models.status import Status
@@ -231,8 +231,8 @@ class User(BaseModel):
         from models.followers import FollowerRelation
 
         FollowerRelation.create(user = self, follows =target, valid=valid)
-        followers_increment = User.update({User.followers_count: User.followers_count + 1}).where(User.id == target.id)
-        following_increment = User.update({User.following_count: User.following_count + 1}).where(User.id == self.id)
+        followers_increment = UserProfile.update({UserProfile.followers_count: UserProfile.followers_count + 1}).where(UserProfile.id == target.id)
+        following_increment = UserProfile.update({UserProfile.following_count: UserProfile.following_count + 1}).where(UserProfile.id == self.id)
 
         following_increment.execute()
         followers_increment.execute()

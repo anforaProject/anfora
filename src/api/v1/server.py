@@ -6,7 +6,7 @@ from settings import (ID, NODENAME, DOMAIN, SCHEME)
 from release_info import VERSION
 
 from models.followers import FollowerRelation
-from models.user import User
+from models.user import UserProfile
 from models.status import Status
 
 from utils.username import extract_user
@@ -17,7 +17,7 @@ class serverInfo:
     auth = {'auth_disabled': True}
 
     def on_get(self, req, resp):
-        nUsers = User.select().count()
+        nUsers = UserProfile.select().count()
 
         resp.status = falcon.HTTP_200
         resp.body = json.dumps({"users": nUsers})
@@ -66,7 +66,7 @@ class nodeinfo:
             "openRegistrations": False,
             "usage": {
                 "users": {
-                    "total": User.select().count()
+                    "total": UserProfile.select().count()
                 },
                 "localPosts": Status.select().count()
             },
@@ -100,7 +100,7 @@ class wellknownWebfinger:
             raise falcon.HTTPBadRequest(description="Unable to decode resource.")
 
         if domain == DOMAIN:
-            user = User.get_or_none(username=username)
+            user = UserProfile.get_or_none(username=username)
 
             if user:
                 response = Webfinger(user).generate()

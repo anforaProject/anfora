@@ -15,8 +15,9 @@ const pool = new Pool({
 
 const server = new Hapi.server()
 
-const accountFromToken = (token, req, next) =>{
-    
+async function accountFromToken(token){
+    const text = "select * from token inner join userprofile on userprofile.id = token.user_id where token.key = $1"
+    return pool.query(text, [token])
 }
 
 const start = async () => {
@@ -33,7 +34,9 @@ const start = async () => {
             const isValid = true
 
             const credentials = { token };
-            const artifacts = { test: 'info' };
+
+            user = await accountFromToken("155d65450328a7fbf4915bb0a829ee7cadf4a631")[0]
+            const artifacts = { user: 'info' };
 
             return { isValid, credentials, artifacts };
         }
@@ -47,3 +50,14 @@ const start = async () => {
         }
     })
 }
+
+/*
+accountFromToken("155d65450328a7fbf4915bb0a829ee7cadf4a631").then(res=>{
+    console.log(res.rows)
+})
+*/
+
+accountFromToken("155d65450328a7fbf4915bb0a829ee7cadf4a631").then(res=>{
+    console.log(res.rows[0])
+})
+pool.end()

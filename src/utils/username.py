@@ -1,6 +1,6 @@
 import re
 
-from models.user import User
+from models.user import UserProfile
 
 def extract_user(uri):
 

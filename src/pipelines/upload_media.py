@@ -2,7 +2,7 @@ import io
 import sys
 
 from models.status import Status
-from models.user import User
+from models.user import UserProfile
 
 
 def upload_image(user, message, description, ident

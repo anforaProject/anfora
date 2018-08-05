@@ -3,12 +3,12 @@ import datetime
 from peewee import (ForeignKeyField, BooleanField, DateTimeField)
 
 from models.base import BaseModel
-from models.user import User
+from models.user import UserProfile
 
 class FollowerRelation(BaseModel):
 
-    user = ForeignKeyField(User)
-    follows = ForeignKeyField(User)
+    user = ForeignKeyField(UserProfile)
+    follows = ForeignKeyField(UserProfile)
     valid = BooleanField(default=False) #Whether the follow request has been authored
     muting = BooleanField(default=False)
     muting_notifications = BooleanField(default=False)
