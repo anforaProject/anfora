@@ -1,0 +1,24 @@
+{
+  "name": "anfora",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:anforaProject/anfora.git",
+  "author": "Yabir <yabirgb@gmail.com>",
+  "license": "AGPL-3.0",
+  "dependencies": {
+    "hapi": "^17.5.3",
+    "hapi-auth-bearer-token": "^6.0.1",
+    "nes": "^9.0.1",
+    "pg": "^7.4.3",
+    "redis": "^2.8.0",
+    "throng": "^4.0.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0"
+  },
+  "babel": {
+    "presets": [
+      "env"
+    ]
+  }
+}

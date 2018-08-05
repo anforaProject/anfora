@@ -25,12 +25,13 @@ def create_tables():
                 Token, 
                 RelationAlbumStatus, 
                 FollowerRelation,
-                Activity, 
+                Activity,
+                Comment, 
                 Hashtag, 
                 HashtagUsed,
                 Like,
                 FollowRequest,
-                Media,
+                Media
             ]
 
 
