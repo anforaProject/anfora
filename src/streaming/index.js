@@ -13,9 +13,9 @@ const pool = new Pool({
     port: 5432,
   })
 
-const server = new Hapi.server()
+const server = new Hapi.server({port: 4000})
 
-async function accountFromToken(token){
+accountFromToken = (token) => {
     const text = "select * from token inner join userprofile on userprofile.id = token.user_id where token.key = $1"
     return pool.query(text, [token])
 }
@@ -31,24 +31,32 @@ const start = async () => {
 
             // here is where you validate your token
             // comparing with token from your database for example
-            const isValid = true
-
-            const credentials = { token };
-
-            user = await accountFromToken("155d65450328a7fbf4915bb0a829ee7cadf4a631")[0]
-            const artifacts = { user: 'info' };
-
-            return { isValid, credentials, artifacts };
+            return accountFromToken(token).then(
+                res=>{
+                    const isValid = res.rows.length !== 0;
+                    const credentials = { token };
+                    const artifacts = { user: res.rows[0] };
+                    return { isValid, credentials, artifacts };
+                }
+            )  
         }
     });
 
     server.route({
         method: 'GET',
-        path: '/api/v1/timelines/home',
+        path: '/api/v1/streaming/user',
         config: {
+            auth: 'simple',
             id: 'homeTimeline'
+        },
+        handler: async function (request, h) {
+            return {info: 'success!'}
         }
     })
+
+    await server.start();
+
+    return server;
 }
 
 /*
@@ -60,4 +68,12 @@ accountFromToken("155d65450328a7fbf4915bb0a829ee7cadf4a631").then(res=>{
 accountFromToken("155d65450328a7fbf4915bb0a829ee7cadf4a631").then(res=>{
     console.log(res.rows[0])
 })
-pool.end()
+
+start()
+.then((server) => console.log(`Server listening on ${server.info.uri}`))
+.catch(err => {
+
+    console.error(err);
+    process.exit(1);
+})
+
