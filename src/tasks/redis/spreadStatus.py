@@ -7,14 +7,15 @@ from models.user import UserProfile
 from tasks.config import huey
 
 @huey.task()
-def spreadStatus(photo):
+def spread_status(status):
     r = redis.StrictRedis(host=os.environ.get('REDIS_HOST', 'localhost'))
-    time = photo.created_at.timestamp()
+    time = status.created_at.timestamp()
 
     #Populate all the followers timelines
-    for follower in photo.user.followers():
-        tagName = "{}:hometimeline".format(follower.username)
-        r.zadd(tagName, time, photo.id)
+    for follower in status.user.followers():
+        tagName = "feed:home:{}".format(follower.id)
+        r.zadd(tagName, status.id, time)
+        r.publish(f'timeline:{follower.id}', f'CREATE {status.id}')
 
     #Add id to the own timeline
-    r.zadd("{}:hometimeline".format(photo.user.username), time, photo.id)
+    r.zadd("feed:home:{}".format(status.user.id), time, status.id)
