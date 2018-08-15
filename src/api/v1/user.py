@@ -33,7 +33,7 @@ def json_serial(obj):
         return obj.isoformat()
     raise TypeError ("Type %s not serializable" % type(obj))
 
-class authUser(object):
+class authUser:
 
     """
     Loggin user
@@ -181,23 +181,6 @@ class getStatuses(object):
             resp.body = json.dumps({"Error: No such user"})
             resp.status = falcon.HTTP_404
 
-class homeTimeline(object):
-
-    def on_get(self, req, resp):
-        username = req.context['user'].username
-        r = redis.StrictRedis(host=os.environ.get('REDIS_HOST', 'localhost'))
-
-        local = req.get_param('local') or False
-        max_id = req.get_param('max_id') or None
-        since_id = req.get_param('since_id') or None
-        limit = req.get_param('limit') or 40
-        statuses = []
-        for post in r.zrange('{}:hometimeline'.format(username), 0, min(limit-1, 40), withscores=False):
-            statuses.append(Status.get(id=post).to_json())
-
-        print(statuses)
-        resp.body=json.dumps(statuses, default=str)
-        resp.status=falcon.HTTP_200
 
 class atomFeed(object):
     

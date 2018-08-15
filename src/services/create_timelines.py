@@ -19,7 +19,7 @@ def build_all_timelines():
         pairs = ((photo.created_at.timestamp(),photo.id) for photo in user.photos)
         pairs = [item for pair in pairs for item in pair]
         for follower in user.followers():
-            tagName = "{}:hometimeline".format(follower.username)
+            tagName = "feed:hometimeline:{}".format(follower.id)
             r.zadd(tagName, *pairs)
 
     if not database.is_closed():
@@ -27,4 +27,4 @@ def build_all_timelines():
 
 def showTimelines():
     r = redis.StrictRedis(host=os.environ.get('REDIS_HOST', 'localhost'))
-    print(r.zrange('lol:hometimeline', 0, -1, withscores=True))
+    print(r.zrange('feed:hometimeline:test0', 0, -1, withscores=True))
