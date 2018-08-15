@@ -14,7 +14,7 @@ from models.media import Media
 
 from pipelines.upload_media import upload_image
 
-from tasks.redis.spreadStatus import spreadStatus
+from tasks.redis.spreadStatus import spread_status
 from tasks.tasks import create_image
 from auth import (loadUser, auth_backend, try_logged_jwt)
 
@@ -96,7 +96,7 @@ class manageUserStatuses:
 
             #Increment the number of posts uploaded
             UserProfile.update({UserProfile.statuses_count: UserProfile.statuses_count + 1}).where(UserProfile.id == user.id)
-            #spreadStatus(photo)
+            spread_status(status)
             resp.status = falcon.HTTP_200
             resp.body = json.dumps(status.to_json(),default=str)
 

@@ -16,8 +16,10 @@ from middleware import (PeeweeConnectionMiddleware, CorsMiddleware)
 from api.v1.statuses import (getStatus, manageUserStatuses)
 from api.v1.albums import (createAlbum, getAlbum, addToAlbum)
 from api.v1.user import (authUser, getUser, getFollowers, logoutUser,
-                            getStatuses, homeTimeline, atomFeed, followAction, 
+                            getStatuses, atomFeed, followAction, 
                             manageCredentials,verifyCredentials)
+
+from api.v1.timelines import (homeTimeline)
 
 from api.v1.media import UploadMedia
 
