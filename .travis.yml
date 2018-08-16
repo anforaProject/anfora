@@ -15,6 +15,9 @@ script:
   - export REDIS_HOST=localhost
   - source $VENV_HOME_DIR/bin/activate
   - mkdir $TRAVIS_BUILD_DIR/uploads
+  - mkdir $TRAVIS_BUILD_DIR/uploads/avatars
+  - mkdir $TRAVIS_BUILD_DIR/uploads/max_resolution
+  - mkdir $TRAVIS_BUILD_DIR/uploads/small
   - cd src/
   - python commands.py --travis-config
   - python commands.py -s --config config/tests.yaml
