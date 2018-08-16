@@ -64,8 +64,9 @@ class UserProfile(BaseModel):
             followers=uri("followers", {"username":self.username}),
             outbox=uri("outbox", {"username":self.username}),
             inbox=uri("inbox", {"username":self.username}),
-            atom=uri("atom", {"username": self.username}),
+            atom=uri("atom", {"id": self.id}),
             featured=uri("featured", {"username": self.username}),
+            avatar=uri('profile_image', {"name": self.avatar_file})
         )
 
 

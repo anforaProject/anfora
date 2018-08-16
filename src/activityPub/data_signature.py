@@ -175,7 +175,7 @@ class SignatureVerification:
 
     def verify(self):
 
-        account = ActivityPubId(self.signature_params['keyId']).uri_to_resource(User)
+        account = ActivityPubId(self.signature_params['keyId']).uri_to_resource(UserProfile)
 
         if not account:
             self.signature_fail_reason = "Could not retrive account using keyId"
