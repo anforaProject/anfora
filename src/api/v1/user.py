@@ -7,7 +7,7 @@ import falcon
 import redis
 from falcon_auth import BasicAuthBackend
 
-from models.user import User
+from models.user import UserProfile
 from models.status import Status
 from models.token import Token
 from models.followers import FollowerRelation
@@ -33,7 +33,7 @@ def json_serial(obj):
         return obj.isoformat()
     raise TypeError ("Type %s not serializable" % type(obj))
 
-class authUser(object):
+class authUser:
 
     """
     Loggin user
@@ -91,10 +91,10 @@ class manageCredentials:
                 errors.append('Note length exceeded.')
 
         if 'locked' in req.params:
-            user.private = bool(req.get_param('locked'))
+            user.private = req.get_param('locked') in ['true']
 
         if 'bot' in req.params:
-            user.bot = bool(req.get_param('bot'))
+            user.bot = req.get_param('bot') in ['true']
 
         if 'avatar' in req.params:
             image = req.get_param('avatar')
@@ -115,7 +115,7 @@ class getFollowers():
     }
 
     def on_get(self, req, resp, id):
-        user = User.get_or_none(id=id)
+        user = UserProfile.get_or_none(id=id)
         if user:
             followers = [follower.to_json() for follower in user.followers()]
             resp.body=json.dumps(followers, default=str)
@@ -130,7 +130,7 @@ class getUser():
     }
 
     def on_get(self, req, resp, id):
-        person = User.get_or_none(id=id)
+        person = UserProfile.get_or_none(id=id)
         if person:
             resp.body = json.dumps(person.to_json(), default=json_serial)
             resp.status = falcon.HTTP_200
@@ -171,7 +171,7 @@ class getStatuses(object):
 
     def on_get(self, req, resp, id):
 
-        user = User.get_or_none(id=id)
+        user = UserProfile.get_or_none(id=id)
         if user:
             statuses = [x.to_json() for x in user.statuses.order_by(Status.created_at.desc())]
             resp.body = json.dumps(statuses, default=str)
@@ -181,23 +181,6 @@ class getStatuses(object):
             resp.body = json.dumps({"Error: No such user"})
             resp.status = falcon.HTTP_404
 
-class homeTimeline(object):
-
-    def on_get(self, req, resp):
-        username = req.context['user'].username
-        r = redis.StrictRedis(host=os.environ.get('REDIS_HOST', 'localhost'))
-
-        local = req.get_param('local') or False
-        max_id = req.get_param('max_id') or None
-        since_id = req.get_param('since_id') or None
-        limit = req.get_param('limit') or 40
-        statuses = []
-        for post in r.zrange('{}:hometimeline'.format(username), 0, min(limit-1, 40), withscores=False):
-            statuses.append(Status.get(id=post).to_json())
-
-        print(statuses)
-        resp.body=json.dumps(statuses, default=str)
-        resp.status=falcon.HTTP_200
 
 class atomFeed(object):
     
@@ -211,7 +194,7 @@ class atomFeed(object):
     }
 
     def on_get(self, req, resp, id):
-        user = User.get_or_none(id=id)
+        user = UserProfile.get_or_none(id=id)
         if user:
             if 'max_id' in req.params.keys():
                 feed = generate_feed(user, req.params['max_id'])
@@ -275,12 +258,12 @@ class followingAccounts:
         limit = req.get_param('limit') or self.MAX_ELEMENT
 
         if max_id and since_id:
-            follows = User.select().join(FollowerRelation, on=FollowerRelation.follows).where(FollowerRelation.user.id == id, User.id > since_id, User.id < max_id).limit(limit)
+            follows = UserProfile.select().join(FollowerRelation, on=FollowerRelation.follows).where(FollowerRelation.user.id == id, UserProfile.id > since_id, UserProfile.id < max_id).limit(limit)
         elif max_id:
-            follows = User.select().join(FollowerRelation, on=FollowerRelation.follows).where(FollowerRelation.user.id == id, User.id < max_id).limit(limit)
+            follows = UserProfile.select().join(FollowerRelation, on=FollowerRelation.follows).where(FollowerRelation.user.id == id, UserProfile.id < max_id).limit(limit)
         elif since_id:
-            follows = User.select().join(FollowerRelation, on=FollowerRelation.follows).where(FollowerRelation.user.id == id, User.id > since_id).limit(limit)
+            follows = UserProfile.select().join(FollowerRelation, on=FollowerRelation.follows).where(FollowerRelation.user.id == id, UserProfile.id > since_id).limit(limit)
         else:
-            follows = User.select().join(FollowerRelation, on=FollowerRelation.follows).where(FollowerRelation.user.id == id).limit(limit)
+            follows = UserProfile.select().join(FollowerRelation, on=FollowerRelation.follows).where(FollowerRelation.user.id == id).limit(limit)
 
 

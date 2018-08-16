@@ -5,3 +5,4 @@ include/*
 __pycache__
 share/*
 *.pyc
+node_modules/*

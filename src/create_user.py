@@ -1,4 +1,4 @@
-from models.user import User
+from models.user import UserProfile
 from auth import Argon2
 import datetime
 
@@ -21,7 +21,7 @@ email = input("Enter a email: ")
 
 passw = Argon2().generate_password_hash(password)
 
-User.create(
+UserProfile.create(
             username=username,
             password=passw,
             name=name,
