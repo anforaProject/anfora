@@ -6,22 +6,22 @@ import falcon
 from models.user import UserProfile
 from models.status import Status 
 
+from utils.timeline_manager import TimelineManager
+
 class homeTimeline(object):
 
     def on_get(self, req, resp):
-        id = req.context['user'].id
+        user = req.context['user']
         r = redis.StrictRedis(host=os.environ.get('REDIS_HOST', 'localhost'))
 
         local = req.get_param('local') or False
         max_id = req.get_param('max_id') or None
         since_id = req.get_param('since_id') or None
-        limit = req.get_param('limit') or 40
+        limit = req.get_param('limit') or 20
         statuses = []
 
-        feed = 'feed:home:{}'.format(id)
-        print(feed)
-        for post in r.zrevrangebyscore(feed, 207, 0, score_cast_func = int):
-            statuses.append(Status.get(id=post).to_json())
-        print(statuses)
+        for post in TimelineManager(user).query(since_id=since_id, max_id=max_id, local=True, limit=limit):
+            statuses.append(Status.get(id=int(post)).to_json())
+
         resp.body=json.dumps(statuses, default=str)
         resp.status=falcon.HTTP_200
