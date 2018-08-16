@@ -1,0 +1,3 @@
+{application_name: Anfora, domain: anfora.test, icons_folder: icons, image_folder: max_resolution,
+  media_folder: /home/yabir/anfora/uploads, root_path: /home/yabir/anfora, salt_code: 'whySoSalty?',
+  scheme: https, server_description: '', thumb_folder: small}

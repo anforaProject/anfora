@@ -8,7 +8,7 @@ from settings import DOMAIN
 from activityPub.activities import as_activitystream
 
 #Models
-from models.user import User
+from models.user import UserProfile
 from models.followers import FollowerRelation
 
 class IdentityManager:
@@ -45,12 +45,12 @@ class ActivityPubId(IdentityManager):
         """ 
             Returns an instance of User after looking for it using it's ap_id
         """
-        user = User.get_or_none(ap_id=self.uri)
+        user = UserProfile.get_or_none(ap_id=self.uri)
         if not user:
             user = self.dereference()
             hostname = urlparse(user.id).hostname
             username = "{0}@{1}".format(user.preferredUsername, hostname)
-            user = User.create(
+            user = UserProfile.create(
                 username=user.preferredUsername,
                 name=user.name,
                 ap_id=user.id,
@@ -73,7 +73,7 @@ class ActivityPubId(IdentityManager):
 
         if self._local_uri(self.uri):
             if klass.__name__ == 'User':
-                return User.get_or_none(ap_id=self.uri)
+                return UserProfile.get_or_none(ap_id=self.uri)
         else:
             return self.get_or_create_remote_user()
 

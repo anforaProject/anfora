@@ -1,6 +1,6 @@
 from models.base import db
 
-from models.user import User
+from models.user import UserProfile
 from models.album import Album
 from models.status import Status
 from models.media import Media
@@ -19,18 +19,19 @@ def connect():
 
 def create_tables():
 
-    tables = [User, 
+    tables = [UserProfile, 
                 Album, 
                 Status, 
                 Token, 
                 RelationAlbumStatus, 
                 FollowerRelation,
-                Activity, 
+                Activity,
+                Comment, 
                 Hashtag, 
                 HashtagUsed,
                 Like,
                 FollowRequest,
-                Media,
+                Media
             ]
 
 

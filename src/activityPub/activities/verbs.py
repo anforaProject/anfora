@@ -7,7 +7,7 @@ from activityPub.activities import errors
 
 from utils.username import extract_user
 from models.follow_request import FollowRequest
-from models.user import User
+from models.user import UserProfile
 
 class Activity(Object):
     attributes = Object.attributes + ["actor", "object"]
@@ -15,7 +15,7 @@ class Activity(Object):
 
     def user_from_uri(uri):
         username, domain = extract_user(uri)
-        user = User.get_or_none(username=username)
+        user = UserProfile.get_or_none(username=username)
         return user
 
     def get_audience(self):
