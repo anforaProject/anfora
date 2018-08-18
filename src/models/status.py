@@ -53,7 +53,7 @@ class Status(BaseModel):
     def to_activitystream(self):
         json = {
             "type": "Note",
-            "id": self.uris.id,
+            "id": self.id,
             "url": self.uris.media,
             "message": self.caption,
             "hashtags": self.hashtags,
