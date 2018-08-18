@@ -16,7 +16,7 @@ def build_all_timelines():
 
         #This can be done using a zip function and 2 generators but I have more
         #access to the db. This way I'm using more memory
-        pairs = ((photo.created_at.timestamp(),photo.id) for photo in user.photos)
+        pairs = ((photo.id,photo.id) for photo in user.photos)
         pairs = [item for pair in pairs for item in pair]
         for follower in user.followers():
             tagName = "feed:hometimeline:{}".format(follower.id)
