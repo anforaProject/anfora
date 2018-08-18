@@ -24,6 +24,7 @@ hashids = "*"
 pyyaml = "*"
 colorama = "*"
 "psycopg2-binary" = "*"
+python-magic = "*"
 
 [requires]
 python_version = "3.6"
