@@ -107,21 +107,7 @@ class manageCredentials:
         else:
             resp.status = falcon.HTTP_UNPROCESSABLE_ENTITY
             resp.body = json.dumps(errors)
-            
-class getFollowers():
-
-    auth = {
-        'exempt_methods':['GET']
-    }
-
-    def on_get(self, req, resp, id):
-        user = UserProfile.get_or_none(id=id)
-        if user:
-            followers = [follower.to_json() for follower in user.followers()]
-            resp.body=json.dumps(followers, default=str)
-            resp.status = falcon.HTTP_200
-        else:
-            resp.status = falcon.HTTP_404
+        
 
 
 class getUser():
@@ -241,11 +227,25 @@ class followAction(object):
         #resp.body = json.dumps(signed_object.json, default=str)
         resp.status = falcon.HTTP_200
 
+class getFollowers:
+
+    auth = {
+        'exempt_methods':['GET']
+    }
+
+    def on_get(self, req, resp, id):
+        user = UserProfile.get_or_none(id=id)
+        if user:
+            followers = [follower.to_json() for follower in user.followers()]
+            resp.body=json.dumps(followers, default=str)
+            resp.status = falcon.HTTP_200
+        else:
+            resp.status = falcon.HTTP_404
 
 class followingAccounts:
 
     auth = {
-        'exempt_methos': ['GET']
+        'exempt_methods': ['GET']
     }
 
     def __init__(self):
@@ -255,7 +255,7 @@ class followingAccounts:
 
         max_id = req.get_param('max_ids')
         since_id = req.get_param('since_id')
-        limit = req.get_param('limit') or self.MAX_ELEMENT
+        limit = req.get_param('limit') or self.MAX_ELEMENTS
 
         if max_id and since_id:
             follows = UserProfile.select().join(FollowerRelation, on=FollowerRelation.follows).where(FollowerRelation.user.id == id, UserProfile.id > since_id, UserProfile.id < max_id).limit(limit)
@@ -264,6 +264,8 @@ class followingAccounts:
         elif since_id:
             follows = UserProfile.select().join(FollowerRelation, on=FollowerRelation.follows).where(FollowerRelation.user.id == id, UserProfile.id > since_id).limit(limit)
         else:
-            follows = UserProfile.select().join(FollowerRelation, on=FollowerRelation.follows).where(FollowerRelation.user.id == id).limit(limit)
+            follows = FollowerRelation.select().join(UserProfile, on=FollowerRelation.user).where(FollowerRelation.follows.id == id).limit(limit).order_by(FollowerRelation.id.desc())
 
-
+        following = [follow.follows.to_json() for follow in follows]
+        resp.body=json.dumps(following, default=str) 
+        resp.satatus=falcon.HTTP_200
