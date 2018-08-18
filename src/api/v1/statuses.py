@@ -95,7 +95,7 @@ class manageUserStatuses:
                         m.save()
 
             #Increment the number of posts uploaded
-            UserProfile.update({UserProfile.statuses_count: UserProfile.statuses_count + 1}).where(UserProfile.id == user.id)
+            UserProfile.update({UserProfile.statuses_count: UserProfile.statuses_count + 1}).where(UserProfile.id == user.id).execute()
             spread_status(status)
             resp.status = falcon.HTTP_200
             resp.body = json.dumps(status.to_json(),default=str)
