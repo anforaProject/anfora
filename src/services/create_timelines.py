@@ -16,10 +16,15 @@ def build_all_timelines():
 
         #This can be done using a zip function and 2 generators but I have more
         #access to the db. This way I'm using more memory
-        pairs = ((photo.id,photo.id) for photo in user.photos)
+        pairs = ((photo.id,photo.id) for photo in user.statuses)
         pairs = [item for pair in pairs for item in pair]
         for follower in user.followers():
-            tagName = "feed:hometimeline:{}".format(follower.id)
+            if pairs:
+                tagName = "feed:home:{}".format(follower.id)
+                r.zadd(tagName, *pairs)
+        
+        if pairs:
+            tagName = "feed:home:{}".format(user.id)
             r.zadd(tagName, *pairs)
 
     if not database.is_closed():
@@ -27,4 +32,4 @@ def build_all_timelines():
 
 def showTimelines():
     r = redis.StrictRedis(host=os.environ.get('REDIS_HOST', 'localhost'))
-    print(r.zrange('feed:hometimeline:test0', 0, -1, withscores=True))
+    print(r.zrange('feed:home:test0', 0, -1, withscores=True))

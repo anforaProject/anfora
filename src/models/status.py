@@ -34,6 +34,7 @@ class Status(BaseModel):
 
     @property
     def uris(self):
+        from models.media import Media
         if self.remote:
             ap_id = self.ap_id
         else:
@@ -56,7 +57,7 @@ class Status(BaseModel):
             "id": self.id,
             "url": self.uris.media,
             "message": self.caption,
-            "hashtags": self.hashtags,
+            #"hashtags": self.hashtags,
             "likes": self.likes_count(),
             "actor": self.user.uris.id,
             "sensitive": self.sensitive,

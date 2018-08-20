@@ -19,9 +19,12 @@ class homeTimeline(object):
         since_id = req.get_param('since_id') or None
         limit = req.get_param('limit') or 20
         statuses = []
-
+        errors = 0
         for post in TimelineManager(user).query(since_id=since_id, max_id=max_id, local=True, limit=limit):
-            statuses.append(Status.get(id=int(post)).to_json())
-
+            try:
+                statuses.append(Status.get(id=int(post)).to_json())
+            except:
+                errors += 1
+        
         resp.body=json.dumps(statuses, default=str)
         resp.status=falcon.HTTP_200
