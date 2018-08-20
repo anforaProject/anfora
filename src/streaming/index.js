@@ -1,14 +1,15 @@
 var express = require('express');
 var app = express();
-var expressWs = require('express-ws')(app);
 var cors = require('cors')
 let sseExpress = require('sse-express');
 var passport = require('passport')
 var BearerStrategy = require('passport-http-bearer').Strategy;
+var redis = require('redis');
 
 
 //DB
 const { Pool, Client } = require('pg')
+
 
 const pool = new Pool({
     user: 'postgres',
@@ -38,33 +39,43 @@ passport.use(new BearerStrategy(
 
 app.use(cors())
  
-app.get('/',
-    passport.authenticate('bearer', { session: false }),
+app.get('/',sseExpress(),
     function(req, res, next){
-        console.log(req.user.username, req.testing);
-        res.end();
+        res.sse({
+            event: "Connected",
+            data: {
+                welcomeMsg: "hi"
+            }
+        });
     }
 );
 
-app.get('/updates',passport.authenticate('bearer', { session: false }), sseExpress(),  function(req, res) {
-    res.sse({
-        event: 'connected',
-        data: {
-          welcomeMsg: 'Hello world!'
-        }
-    });
-    setInterval(function(){
-        let i = 0;
+
+app.get('/api/v1/streaming/user',sseExpress(), passport.authenticate('bearer', { session: false }),  function(req, res) {
+    
+    var prefix = "timeline";
+    var id = req.user.id;
+
+    var channel = `${prefix}:${id}`;
+    
+    
+
+    //Create connection to redis
+    var sub = redis.createClient();
+
+    sub.subscribe(channel);
+    console.log("Connected to " + channel)
+    sub.on("message", function(resource, message) {
         res.sse({
-            event: 'update',
-            data:{
-                int: i,
-                user: req.user.username
-            }
-        })  
-        i += 1;
-        console.log("pulse")
-    }, 3000)
+            event: message.substr(0,message.indexOf(' ')),
+            data: message.substr(message.indexOf(' ')+1)
+        });
+    });
+
+
+    req.on("close", function() {
+        sub.unsubscribe();
+    });
     
 });
 
