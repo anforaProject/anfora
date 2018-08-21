@@ -100,6 +100,6 @@ class TimelineManager:
             else:
                 ids = []
         elif not since_id and not max_id:
-            ids = self.r.zrange(timeline_name, 0, limit, score_cast_func=int)
+            ids = self.r.zrevrange(timeline_name, 0, limit, score_cast_func=int)
             
         return ids
