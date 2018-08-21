@@ -34,8 +34,9 @@ You should have received a copy of the GNU Affero General Public License along w
     redis-server
 
 ### Start queue
-
-    huey_consumer.py tasks.main.huey -m 1 -w 4
+    
+    cd src
+    pipenv run huey_consumer.py tasks.main.huey -m 1 -w 4
 
 ### Start server
 
