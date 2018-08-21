@@ -19,3 +19,10 @@ icons_folder: 'icons'
 # Uri salt
 
 salt_code: 'whySoSalty?'
+
+# DB
+
+db_user: 'anforaUser'
+db_port: '5432'
+db_host: 'localhost'
+db_name: 'anforadb'
