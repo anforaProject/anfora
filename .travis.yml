@@ -4,7 +4,6 @@ python:
 services:
   - postgresql
 before_script:
-  - psql -c 'create database anforadb;' -U postgres
   - psql -c 'CREATE USER anforaUser CREATEDB;' -U postgres
 install:
   - pip install pipenv
@@ -22,5 +21,6 @@ script:
   - cd src/
   - python commands.py --travis-config
   - python commands.py -s --config config/tests.yaml
+  - python commands.py -d
   - python populate.py
   - python -m pytest tests/
