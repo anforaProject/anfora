@@ -19,7 +19,7 @@ from urls import (uri, URIs)
 #Generate pixeled avatars
 from avatar_gen.pixel_avatar import PixelAvatar
 from hashids import Hashids
-from settings import (MEDIA_FOLDER, salt_code)
+from settings import (MEDIA_FOLDER, salt_code, icon)
 
 
 
@@ -151,7 +151,7 @@ class UserProfile(BaseModel):
         im = Image.open(image)
         im = im.convert('RGB')
         im.thumbnail((400, 400), Image.ANTIALIAS)
-        file_path = os.path.join(MEDIA_FOLDER, 'avatars', filename + '.jpeg')
+        file_path = os.path.join(MEDIA_FOLDER, icon, filename + '.jpeg')
         im.save(file_path, 'jpeg')
 
         return f'{filename}.jpeg'
