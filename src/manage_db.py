@@ -19,9 +19,7 @@ from models.like import Like
 from models.follow_request import FollowRequest
 
 def create_db():
-    con = psycopg2.connect(dbname='postgres',
-        user=DB_USER, host=DB_HOST, port=DB_PORT
-        )
+    con = psycopg2.connect(dbname='postgres',user="postgres", host=DB_HOST, port=DB_PORT)
     con.autocommit = True
     cursor = con.cursor()
     cursor.execute(f"SELECT COUNT(*) = 0 FROM pg_catalog.pg_database WHERE datname = '{DB_NAME}'")
