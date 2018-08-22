@@ -6,7 +6,7 @@ from playhouse.postgres_ext import PostgresqlExtDatabase
 db = PostgresqlExtDatabase(
     DB_NAME,  # Required by Peewee.
     user=DB_USER,  # Will be passed directly to psycopg2.
-    host='localhost',  # Ditto.
+    host=DB_HOST,  # Ditto.
     port=DB_PORT,
 )
 
