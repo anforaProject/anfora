@@ -1,6 +1,10 @@
 language: python
 python:
   - "3.6"
+services:
+  - postgresql
+before_script:
+  - psql -c 'CREATE USER anforaUser CREATEDB;' -U postgres
 install:
   - pip install pipenv
   - pipenv --python 3.6
@@ -10,6 +14,13 @@ script:
   - export POPULATE=travis
   - export REDIS_HOST=localhost
   - source $VENV_HOME_DIR/bin/activate
+  - mkdir $TRAVIS_BUILD_DIR/uploads
+  - mkdir $TRAVIS_BUILD_DIR/uploads/avatars
+  - mkdir $TRAVIS_BUILD_DIR/uploads/max_resolution
+  - mkdir $TRAVIS_BUILD_DIR/uploads/small
   - cd src/
+  - python commands.py --travis-config
+  - python commands.py -s --config config/tests.yaml
+  - python commands.py -d
   - python populate.py
   - python -m pytest tests/

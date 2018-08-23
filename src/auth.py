@@ -2,7 +2,7 @@ import argon2
 from argon2.exceptions import VerificationError, VerifyMismatchError
 from falcon_auth import TokenAuthBackend, JWTAuthBackend
 
-from models.user import User
+from models.user import UserProfile
 from models.token import Token
 
 
@@ -109,7 +109,7 @@ class Argon2(object):
             return False
 
 def loadUserPass(username, password):
-    candidate = User.get_or_none(username=username)
+    candidate = UserProfile.get_or_none(username=username)
 
     if candidate != None:
         if Argon2().check_password_hash(candidate.password, password):
@@ -118,13 +118,13 @@ def loadUserPass(username, password):
             return None
 
 def loadUser(payload):
-    candidate = User.get_or_none(username=payload['user']['username'])
+    candidate = UserProfile.get_or_none(username=payload['user']['username'])
     return candidate
 
 
 def loadUserToken(token):
     candidate = Token.get_or_none(key=token)
-
+    
     if candidate:
         return candidate.user
     else:

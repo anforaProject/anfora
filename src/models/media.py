@@ -14,7 +14,7 @@ class Media(BaseModel):
     status = ForeignKeyField(Status, backref='media_object', null=True)
     created_at = DateTimeField(default=datetime.datetime.now)
     updated_at = DateTimeField(default=datetime.datetime.now)
-    media_name = UUIDField(unique=True)  
+    media_name = CharField(unique=True)  
     height = IntegerField()
     width = IntegerField()
     focus_x = FloatField()

@@ -10,7 +10,7 @@ import argon2
 from falcon import testing
 
 from auth import Argon2
-from models.user import User
+from models.user import UserProfile
 from models.status import Status
 from models.followers import FollowerRelation
 from manage_db import (connect, create_tables)
@@ -51,8 +51,8 @@ create_tables()
 
 passw = Argon2().generate_password_hash("test")
 
-#yab = User.create(username="yab")
-yab, created = User.get_or_create(username="test",
+#yab = UserProfile.create(username="yab")
+yab, created = UserProfile.get_or_create(username="test",
                                   defaults={
                                       'password':passw,
                                       "name": "Yabir Test",
@@ -62,7 +62,7 @@ yab, created = User.get_or_create(username="test",
                                   })
 def populate_db():
     for i in range(15):
-        target = User.create(
+        target = UserProfile.create(
             username=f'test{i}',
             password=passw,
             name=f'test#{i}',
@@ -79,7 +79,7 @@ def populate_db():
         #crate some followers
         for j in range(i):
             if j != i:
-                user = User.get(username=f'test{j}')
+                user = UserProfile.get(username=f'test{j}')
                 print(f'{user.username} -> {target.username}')
                 user.follow(target, True)
 
@@ -130,7 +130,7 @@ def populate_db():
 
 def populate_for_travis():
     for i in range(15):
-        target = User.create(
+        target = UserProfile.create(
             username=f'test{i}',
             password=passw,
             name=f'test#{i}',
@@ -143,7 +143,7 @@ def populate_for_travis():
         #crate some followers
         for j in range(i):
             if j != i:
-                user = User.get(username=f'test{j}')
+                user = UserProfile.get(username=f'test{j}')
                 user.follow(target, True)
 
 if os.environ.get('POPULATE', 'local') == 'travis':

@@ -5,7 +5,7 @@ import logging
 import falcon
 
 from models.status import Status
-from models.user import User
+from models.user import UserProfile
 from models.album import Album
 from models.albumRelation import RelationAlbumStatus
 from auth import (loadUser, auth_backend)
