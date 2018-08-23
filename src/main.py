@@ -16,8 +16,10 @@ from middleware import (PeeweeConnectionMiddleware, CorsMiddleware)
 from api.v1.statuses import (getStatus, manageUserStatuses)
 from api.v1.albums import (createAlbum, getAlbum, addToAlbum)
 from api.v1.user import (authUser, getUser, getFollowers, logoutUser,
-                            getStatuses, homeTimeline, atomFeed, followAction, 
-                            manageCredentials,verifyCredentials)
+                            getStatuses, atomFeed, followAction, 
+                            manageCredentials,verifyCredentials, followingAccounts)
+
+from api.v1.timelines import (homeTimeline)
 
 from api.v1.media import UploadMedia
 
@@ -62,6 +64,7 @@ app.add_route('/info', serverInfo())
 app.add_route('/api/v1/accounts/{id}', getUser())
 app.add_route('/api/v1/accounts/{id}/statuses', getStatuses())
 app.add_route('/api/v1/accounts/{id}/followers', getFollowers())
+app.add_route('/api/v1/accounts/{id}/following', followingAccounts())
 app.add_route('/api/v1/accounts/update_credentials', manageCredentials())
 app.add_route('/api/v1/statuses', manageUserStatuses())
 app.add_route('/api/v1/media', UploadMedia())

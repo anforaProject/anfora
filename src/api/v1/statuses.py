@@ -7,14 +7,14 @@ import sys
 
 import falcon
 
-from models.user import User
+from models.user import UserProfile
 from models.status import Status
 from models.album import Album
 from models.media import Media
 
 from pipelines.upload_media import upload_image
 
-from tasks.redis.spreadStatus import spreadStatus
+from tasks.redis.spreadStatus import spread_status
 from tasks.tasks import create_image
 from auth import (loadUser, auth_backend, try_logged_jwt)
 
@@ -59,10 +59,10 @@ class manageUserStatuses:
         auth_user = try_logged_jwt(auth_backend, req, resp)
 
         if auth_user and auth_user.id == user:
-            photos = Status.select().join(User).where(User.username == auth_user.username).order_by(Status.created_at.desc())
+            photos = Status.select().join(User).where(UserProfile.username == auth_user.username).order_by(Status.created_at.desc())
         #Must to considerer the case of friends relation
         else:
-            photos = Status.select().join(User).where(User.username == user).where(Status.public == True).order_by(Status.created_at.desc())
+            photos = Status.select().join(User).where(UserProfile.username == user).where(Status.public == True).order_by(Status.created_at.desc())
 
         query = [photo.to_model() for photo in photos]
         resp.body = json.dumps(query, default=str)
@@ -95,8 +95,8 @@ class manageUserStatuses:
                         m.save()
 
             #Increment the number of posts uploaded
-            User.update({User.statuses_count: User.statuses_count + 1}).where(User.id == user.id)
-            #spreadStatus(photo)
+            UserProfile.update({UserProfile.statuses_count: UserProfile.statuses_count + 1}).where(UserProfile.id == user.id).execute()
+            spread_status(status)
             resp.status = falcon.HTTP_200
             resp.body = json.dumps(status.to_json(),default=str)
 

@@ -10,7 +10,7 @@ from playhouse.shortcuts import model_to_dict
 
 from urls import (URIs, uri)
 from models.base import BaseModel
-from models.user import User
+from models.user import UserProfile
 from models.album import Album
 
 
@@ -20,7 +20,7 @@ class Status(BaseModel):
     caption = TextField()
     spoiler_text = CharField(max_length=255, null=True)
     visibility = BooleanField(default=True)
-    user = ForeignKeyField(User, backref='statuses')
+    user = ForeignKeyField(UserProfile, backref='statuses')
     sensitive = BooleanField(default=False)
     remote = BooleanField(default = False)
     ap_id = CharField(null=True)
@@ -34,6 +34,7 @@ class Status(BaseModel):
 
     @property
     def uris(self):
+        from models.media import Media
         if self.remote:
             ap_id = self.ap_id
         else:
@@ -53,10 +54,10 @@ class Status(BaseModel):
     def to_activitystream(self):
         json = {
             "type": "Note",
-            "id": self.uris.id,
+            "id": self.id,
             "url": self.uris.media,
             "message": self.caption,
-            "hashtags": self.hashtags,
+            #"hashtags": self.hashtags,
             "likes": self.likes_count(),
             "actor": self.user.uris.id,
             "sensitive": self.sensitive,

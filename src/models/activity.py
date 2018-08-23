@@ -3,7 +3,7 @@ import json
 
 from peewee import *
 
-from models.user import User
+from models.user import UserProfile
 from models.base import BaseModel
 
 from urls import (URIs, uri)
@@ -11,7 +11,7 @@ from urls import (URIs, uri)
 class Activity(BaseModel):
     payload = TextField()
     created_at = DateTimeField(default = datetime.now)
-    person = ForeignKeyField(User, backref='activities')
+    person = ForeignKeyField(UserProfile, backref='activities')
     remote = BooleanField(default=False)
 
     @property

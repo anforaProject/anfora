@@ -22,7 +22,9 @@ bson = "*"
 avatar = {git = "https://github.com/lsdlab/avatar-gen.git"}
 hashids = "*"
 pyyaml = "*"
-"psycopg2" = "*"
+colorama = "*"
+"psycopg2-binary" = "*"
+python-magic = "*"
 
 [requires]
 python_version = "3.6"

@@ -1,6 +1,6 @@
 from settings import DOMAIN
 
-from models.user import User
+from models.user import UserProfile
 
 class Webfinger:
 

@@ -34,11 +34,17 @@ You should have received a copy of the GNU Affero General Public License along w
     redis-server
 
 ### Start queue
-
-    huey_consumer.py tasks.main.huey -m 1 -w 2
+    
+    cd src
+    pipenv run huey_consumer.py tasks.main.huey -m 1 -w 4
 
 ### Start server
 
-    ./start.sh
+    cd src
+    pipenv run gunicorn --bind 0.0.0.0:3000 main:app --keep-alive 5 --log-level DEBUG --workers 8 --threads=4
 
+### Start streaming
+
+    cd src
+    node streaming/index.js
 

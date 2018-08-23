@@ -6,7 +6,7 @@ import logging
 from settings import DOMAIN
 
 #Models
-from models.user import User
+from models.user import UserProfile
 from models.followers import FollowerRelation
 from models.follow_request import FollowRequest
 
@@ -53,7 +53,7 @@ def store(activity, person, remote=False):
     return obj.id
 
 def handle_follow(activity):
-    followed = User.get_or_none(ap_id=activity.object)
+    followed = UserProfile.get_or_none(ap_id=activity.object)
 
     if followed:
         ap_id = ""

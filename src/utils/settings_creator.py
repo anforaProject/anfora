@@ -1,4 +1,5 @@
 import yaml
+import os
 
 def create_settings(filen):
     settings = yaml.load(open(filen))
@@ -16,6 +17,10 @@ def create_settings(filen):
         f'icon="{settings.get("icons_folder")}"\n'
         f'salt_code="{settings.get("salt_code")}"\n'
         f'ROOT_PATH = "{settings.get("root_path")}"\n'
+        f'DB_USER = "{settings.get("db_user")}"\n'
+        f'DB_PORT = "{settings.get("db_port")}"\n'
+        f'DB_HOST = "{settings.get("db_host")}"\n'
+        f'DB_NAME = "{settings.get("db_name")}"\n'
     )
 
     return template 
@@ -27,3 +32,15 @@ def create_settings_file(filen='config/docker.yaml', settings_path='settings.py'
         f.write(settings)
 
 #create_settings_file('/home/yabir/killMe/anfora/src/config/dev.yaml')
+
+def travis_setup():
+    fileb = open("config/tests.yaml")
+    settings = yaml.load(fileb)
+    fileb.close()
+    
+    path = os.environ.get('TRAVIS_BUILD_DIR')
+    settings["root_path"] = path
+    settings["media_folder"] = os.path.join(path, 'uploads')
+    fileb = open("config/tests.yaml", "w")
+    yaml.dump(settings, fileb)
+    fileb.close()
