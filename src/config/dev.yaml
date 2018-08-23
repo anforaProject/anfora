@@ -8,11 +8,11 @@ domain: 'anfora.test'
 
 # Positition
 
-root_path: '/home/yabir/killMe/anfora'
+root_path: '/home/yabir/anfora'
 
 # Storage
 
-media_folder: '/home/yabir/killMe/uploads'
+media_folder: '/home/yabir/uploads'
 thumb_folder: 'small'
 image_folder: 'max_resolution'
 icons_folder: 'icons'
