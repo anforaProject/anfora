@@ -1,4 +1,4 @@
-- [@Andy](http://deviantart.com/andrescuccaro) - Logo idea
+- [@Andy](http://deviantart.com/andrescuccaro) - Logo first idea
 - [@dansup](https://mastodon.social/@dansup) - A lot of things
 - [@Maarten](https://mastodon.nl/@muurtegel) - Logo design
 - [@Swedneck](https://gitlab.com/swedneck) - Help with the installation process.
