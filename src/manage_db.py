@@ -17,6 +17,7 @@ from models.comment import Comment
 from models.hashtag_used import HashtagUsed
 from models.like import Like
 from models.follow_request import FollowRequest
+from models.report import Report 
 
 def create_db():
     con = psycopg2.connect(dbname='postgres',user="postgres", host=DB_HOST, port=DB_PORT)
@@ -45,7 +46,8 @@ def create_tables():
                 HashtagUsed,
                 Like,
                 FollowRequest,
-                Media
+                Media,
+                Report
             ]
 
 

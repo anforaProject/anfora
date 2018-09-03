@@ -21,6 +21,8 @@ from avatar_gen.pixel_avatar import PixelAvatar
 from hashids import Hashids
 from settings import (MEDIA_FOLDER, salt_code)
 
+class User(BaseModel):
+    pass
 
 
 class UserProfile(BaseModel):
@@ -28,7 +30,6 @@ class UserProfile(BaseModel):
     name = CharField(null=True) # Display name
     username = CharField() # actual username
     password = CharField() 
-    admin = BooleanField(default=False) # True if the user is admin
     created_at =  DateTimeField(default=datetime.datetime.now) 
     disabled = BooleanField(default=False) # True if the user is disabled in the server
     confirmed = BooleanField(default=False) # The user has confirmed the email
@@ -41,6 +42,7 @@ class UserProfile(BaseModel):
     public_key = TextField() # Public key
     description = TextField(default="") # Description of the profile
     is_bot = BooleanField(default=False) # True if the account is a bot
+    is_admin = BooleanField(default=False) # True if the user is admin
     avatar_file = CharField(null=True)
     following_count = IntegerField(default=0)
     followers_count = IntegerField(default=0)

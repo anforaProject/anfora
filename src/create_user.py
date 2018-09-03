@@ -28,7 +28,7 @@ UserProfile.create(
             email=email,
             confirmation_sent_at=datetime.datetime.now(),
             last_sign_in_at=1,
-            admin=admin
+            is_admin=admin
         )
 
 print("User created successfuly")
