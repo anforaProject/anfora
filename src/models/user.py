@@ -22,36 +22,67 @@ from hashids import Hashids
 from settings import (MEDIA_FOLDER, salt_code)
 
 class User(BaseModel):
-    pass
-
-
-class UserProfile(BaseModel):
-    ap_id = CharField(unique=True)
-    name = CharField(null=True) # Display name
-    username = CharField() # actual username
-    password = CharField() 
+    username = CharField(unique=True)
+    password = CharField()
     created_at =  DateTimeField(default=datetime.datetime.now) 
-    disabled = BooleanField(default=False) # True if the user is disabled in the server
-    confirmed = BooleanField(default=False) # The user has confirmed the email
+    is_bot = BooleanField(default=False) # True if the account is a bot
+    is_admin = BooleanField(default=False) # True if the user is admin
     email = CharField(unique=True, null=True) # User's email
+    confirmed = BooleanField(default=False) # The user has confirmed the email
     confirmation_sent_at = DateTimeField(null=True) # Moment when the confirmation email was sent
     last_sign_in_at = IntegerField(null=True) # Last time the user signed in epoch since
-    remote = BooleanField(default=False) # The user is a remote user
-    private = BooleanField(default=False) # The account has limited access
+    is_private = BooleanField(default=False) # The account has limited access
+
+class UserProfile(BaseModel):
+    id = IntegerField(primary_key=True)
+    ap_id = CharField(unique=True)
+    name = CharField(null=True) # Display name     
+    disabled = BooleanField(default=False) # True if the user is disabled in the server
+    is_remote = BooleanField(default=False) # The user is a remote user
     private_key = TextField(null=True) # Private key used to sign AP actions
     public_key = TextField() # Public key
     description = TextField(default="") # Description of the profile
-    is_bot = BooleanField(default=False) # True if the account is a bot
-    is_admin = BooleanField(default=False) # True if the user is admin
     avatar_file = CharField(null=True)
     following_count = IntegerField(default=0)
     followers_count = IntegerField(default=0)
     statuses_count = IntegerField(default=0)
-
+    user = ForeignKeyField(User, backref='profile')
     
     @property
+    def username(self):
+        return self.user.username
+    
+    @property
+    def private(self):
+        return self.user.private
+    
+
+    def save(self,*args, **kwargs):
+        if not self.is_remote:
+            self.ap_id = uri("user", {"username":self.username})
+
+        if not self.id:
+            self.id = self.user.id
+
+        if not self.private_key and not self.public_key:
+            #Create a pair public/private key to sign messages
+            random_generator = Random.new().read
+            key = RSA.generate(2048, random_generator)
+            self.public_key = key.publickey().exportKey().decode('utf-8')
+            self.private_key = key.exportKey().decode('utf-8')
+
+        if not self.avatar_file:
+            pixel_avatar = PixelAvatar(rows=10, columns=10)
+            image_byte_array = pixel_avatar.get_image(size=400, string=self.ap_id, filetype="jpeg")
+            
+            self.avatar_file = self._crate_avatar_file(image_byte_array)
+
+        return super(UserProfile, self).save(*args, **kwargs)
+
+
+    @property
     def uris(self):
-        if self.remote:
+        if self.is_remote:
             return URIs(
                 id=self.ap_id,
                 inbox=f'{self.ap_id}/inbox',
@@ -92,7 +123,7 @@ class UserProfile(BaseModel):
             'bot': self.is_bot,
         }
 
-        if self.remote:
+        if self.is_remote:
             json.update({
                 'acct':self.ap_id
             })
@@ -157,25 +188,6 @@ class UserProfile(BaseModel):
         im.save(file_path, 'jpeg')
 
         return f'{filename}.jpeg'
-
-    def save(self,*args, **kwargs):
-        if not self.remote:
-            self.ap_id = uri("user", {"username":self.username})
-
-        if not self.private_key and not self.public_key:
-            #Create a pair public/private key to sign messages
-            random_generator = Random.new().read
-            key = RSA.generate(2048, random_generator)
-            self.public_key = key.publickey().exportKey().decode('utf-8')
-            self.private_key = key.exportKey().decode('utf-8')
-
-        if not self.avatar_file:
-            pixel_avatar = PixelAvatar(rows=10, columns=10)
-            image_byte_array = pixel_avatar.get_image(size=400, string=self.ap_id, filetype="jpeg")
-            
-            self.avatar_file = self._crate_avatar_file(image_byte_array)
-
-        return super(UserProfile, self).save(*args, **kwargs)
 
     def update_avatar(self, image):
         return self._crate_avatar_file(image)
