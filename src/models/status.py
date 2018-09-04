@@ -19,14 +19,16 @@ class Status(BaseModel):
     updated_at = DateTimeField(default=datetime.datetime.now)
     caption = TextField()
     spoiler_text = CharField(max_length=255, null=True)
-    visibility = BooleanField(default=True)
+    is_public = BooleanField(default=True)
     user = ForeignKeyField(UserProfile, backref='statuses')
     sensitive = BooleanField(default=False)
     remote = BooleanField(default = False)
     ap_id = CharField(null=True)
     in_reply_to = ForeignKeyField('self', backref='replies', null=True)
-    story = BooleanField(default=False)
-
+    is_story = BooleanField(default=False)
+    favourites_count = IntegerField(default=0)
+    reblogs_count = IntegerField(default=0)
+    replies_count = IntegerField(default=0)
     #Need to add tagged users
 
     def __str__(self):
