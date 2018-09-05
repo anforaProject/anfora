@@ -17,7 +17,8 @@ from api.v1.statuses import (getStatus, manageUserStatuses)
 from api.v1.albums import (createAlbum, getAlbum, addToAlbum)
 from api.v1.user import (authUser, getUser, getFollowers, logoutUser,
                             getStatuses, atomFeed, followAction, 
-                            manageCredentials,verifyCredentials, followingAccounts)
+                            manageCredentials,verifyCredentials, 
+                            followingAccounts, registerUser)
 
 from api.v1.timelines import (homeTimeline)
 
@@ -74,6 +75,7 @@ app.add_route('/api/v1/accounts/verify_credentials', verifyCredentials())
 app.add_route('/api/v1/timelines/home', homeTimeline())
 app.add_route('/api/v1/follows', followAction())
 
+app.add_route('/api/v1/register', registerUser())
 
 app.add_route('/.well-known/nodeinfo', wellknownNodeinfo())
 app.add_route('/.well-known/webfinger', wellknownWebfinger())

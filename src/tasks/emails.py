@@ -1,12 +1,12 @@
 import smtplib  
-from email.MIMEMultipart import MIMEMultipart
-from email.MIMEText import MIMEText
-from email.MIMEImage import MIMEImage
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
 
 from itsdangerous import URLSafeTimedSerializer
 
 from settings import (salt_code, SECRET, BASE_URL, 
-                        SMTP_SERVER, SMTP_PORT, SMTP_LOGIN, SMTP_PASSWORD
+                        SMTP_SERVER, SMTP_PORT, SMTP_LOGIN, SMTP_PASSWORD,
                         SMTP_FROM_ADDRESS)
 from tasks.config import huey
 

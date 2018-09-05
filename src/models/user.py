@@ -53,8 +53,8 @@ class UserProfile(BaseModel):
         return self.user.username
     
     @property
-    def private(self):
-        return self.user.private
+    def is_private(self):
+        return self.user.is_private
     
 
     def save(self,*args, **kwargs):
@@ -110,8 +110,8 @@ class UserProfile(BaseModel):
             'username': self.username,
             'name': self.name,
             'display_name': self.name,
-            'locked': self.private,
-            'created_at':self.created_at,
+            'locked': self.is_private,
+            'created_at':self.user.created_at,
             'followers_count': self.followers_count,
             'following_count': self.following_count,
             'statuses_count': self.statuses_count,
@@ -120,7 +120,7 @@ class UserProfile(BaseModel):
             'avatar': self.avatar,
             'moved': None,
             'fields':[],
-            'bot': self.is_bot,
+            'bot': self.user.is_bot,
         }
 
         if self.is_remote:
@@ -204,7 +204,7 @@ class UserProfile(BaseModel):
                 .select()
                 .join(FollowerRelation, on=FollowerRelation.user)
                 .where(FollowerRelation.follows == self)
-                .order_by(UserProfile.username))
+                .order_by(UserProfile.id))
 
     def timeline(self):
         from models.status import Status

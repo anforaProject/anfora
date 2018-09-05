@@ -1,6 +1,7 @@
 import yaml
 import os
 import binascii
+import bcrypt
 
 def create_settings(filen):
     settings = yaml.load(open(filen))
@@ -16,24 +17,26 @@ def create_settings(filen):
         f'thumb_folder="{settings.get("thumb_folder")}"\n'
         f'pic_folder="{settings.get("image_folder")}"\n'
         f'icon="{settings.get("icons_folder")}"\n'
-        f'salt_code="{settings.get("salt_code")}"\n'
+        f'salt_code="{str(bcrypt.gensalt())}"\n'
         f'SECRET = "{binascii.hexlify(os.urandom(64)).decode()}"\n'
         f'ROOT_PATH = "{settings.get("root_path")}"\n'
         f'DB_USER = "{settings.get("db_user")}"\n'
         f'DB_PORT = "{settings.get("db_port")}"\n'
         f'DB_HOST = "{settings.get("db_host")}"\n'
         f'DB_NAME = "{settings.get("db_name")}"\n'
-        f'EMAIL_ENABLED = "{settings.get("email_enabled")}"\n'
+        f'EMAIL_ENABLED = {settings.get("email_enabled")}\n'
     )
 
     if settings.get("email_enabled"):
         smtp_config = (
-            f'SMTP_SERVER = "{settings.get("smtp_server")}"'
-            f'SMTP_PORT = {settings.get("smtp_port")}'
-            f'SMTP_LOGIN = "{settings.get("smtp_login")}"'
-            f'SMTP_PASSWORD = "{settings.get("smtp_password")}"'
-            f'SMTP_FROM_ADDRESS = "{settings.get("smtp_adress")}"'
+            f'SMTP_SERVER = "{settings.get("smtp_server")}"\n'
+            f'SMTP_PORT = {settings.get("smtp_port")}\n'
+            f'SMTP_LOGIN = "{settings.get("smtp_login")}"\n'
+            f'SMTP_PASSWORD = "{settings.get("smtp_password")}"\n'
+            f'SMTP_FROM_ADDRESS = "{settings.get("smtp_adress")}"\n'
         )
+
+        template += smtp_config
 
     return template 
 

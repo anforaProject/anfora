@@ -23,7 +23,7 @@ from utils.atomFeed import generate_feed
 from api.v1.helpers import get_ap_by_uri
 from activityPub.identity_manager import ActivityPubId
 
-from managers.user_manager import UserManager
+from managers.user_manager import new_user
 
 from tasks.ap_methods import send_activity
 
@@ -50,8 +50,9 @@ class authUser:
 
     def on_get(self, req, resp):
         user = req.context['user']
+        print(user, type(user))
 
-        if user.remote:
+        if user.is_remote:
             resp.status = falcon.HTTP_401
             resp.body = json.dumps({"Error": "Remote user"})
 
@@ -133,7 +134,7 @@ class logoutUser(object):
         user = req.context['user']
 
         token = req.get_param('token').replace('Bearer','').split(' ')[-1]
-        if user.remote:
+        if user.is_remote:
             resp.status = falcon.HTTP_404
             resp.body = json.dumps({"Error": "Remote user"})
 
@@ -289,14 +290,18 @@ class registerUser:
         free = User.select().where(username=username).count() == 0
 
         if valid_password and free:
-            profile = UserManager.new_user(
-                username = username, 
-                password = password, 
-                email = parseaddr(email)[1]
-            )
+            try:
+                profile = new_user(
+                    username = username, 
+                    password = password, 
+                    email = parseaddr(email)[1]
+                )
 
-            resp.status = falcon.HTTP_202
-            resp.body = json.dumps(profile.to_json())
+                resp.status = falcon.HTTP_202
+                resp.body = json.dumps(profile.to_json())
+            except:
+                resp.status = falcon.HTTP_400
+                resp.body = json.dumps({"Error": "Bad data"})
         else:
             resp.status = falcon.HTTP_400
             resp.body = json.dumps({"Error": "Bad password"})

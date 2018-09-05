@@ -1,5 +1,7 @@
+import bcrypt
+
+from settings import salt_code
 from models.user import User, UserProfile
-from auth import Argon2
 from tasks.emails import send_activation_email
 
 class UserManager:
@@ -7,12 +9,13 @@ class UserManager:
     def __init__(self, user):
         self.user = user 
 
-def new_user(username, password, email, is_admin, 
-            is_private, is_remote, confirmed=False):
+def new_user(username, password, email,
+             is_remote = False, confirmed=False, is_private = False, 
+             is_admin=False):
     
     # Hash the password
 
-    passw = Argon2().generate_password_hash(password)
+    passw = bcrypt.hashpw(password, salt_code)
 
     # First we create the actual user
 
@@ -20,7 +23,9 @@ def new_user(username, password, email, is_admin,
         username = username,
         password = passw,
         email = email, 
-        confirmed = confirmed
+        confirmed = confirmed,
+        is_admin = is_admin,
+        is_private = is_private
     )
 
     # Now we create the profile
@@ -29,7 +34,7 @@ def new_user(username, password, email, is_admin,
         id = user.id,
         disabled = True,
         is_remote = is_remote,
-        user = uesr
+        user = user
     )
 
     # Send the confirmation email

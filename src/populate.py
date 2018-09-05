@@ -15,6 +15,8 @@ from models.status import Status
 from models.followers import FollowerRelation
 from manage_db import (connect, create_tables)
 
+from managers.user_manager import new_user
+
 
 from main import app
 
@@ -52,14 +54,16 @@ create_tables()
 passw = Argon2().generate_password_hash("test")
 
 #yab = UserProfile.create(username="yab")
-yab, created = UserProfile.get_or_create(username="test",
-                                  defaults={
-                                      'password':passw,
-                                      "name": "Yabir Test",
-                                      'email':"test@gt.com",
-                                      'confirmation_sent_at':datetime.datetime.now(),
-                                      'last_sign_in_at':1
-                                  })
+yab = new_user(
+        username = "test", 
+        password = passw, 
+        email = "yab@gmail.com",
+        confirmed=True,
+        is_admin = True,
+        is_remote=False,
+        is_private=False
+    )
+"""
 def populate_db():
     for i in range(15):
         target = UserProfile.create(
@@ -150,3 +154,4 @@ if os.environ.get('POPULATE', 'local') == 'travis':
     populate_for_travis()
 else:
     populate_db()
+"""

@@ -1,10 +1,14 @@
-from models.user import UserProfile
-from auth import Argon2
 import datetime
+import bcrypt
+
+from models.user import UserProfile
+from managers.user_manager import new_user
+from auth import Argon2
+from settings import salt_code
+
+
 
 username = input("Enter username: ")
-name = input("Enter a name to display: ")
-
 admin = input("Should the user be an admin? [y/n]")
 
 while(admin.lower() != 'y' and admin.lower() != 'n'):
@@ -19,16 +23,16 @@ while(password != password2):
 
 email = input("Enter a email: ")
 
-passw = Argon2().generate_password_hash(password)
+passw = bcrypt.hashpw(password, salt_code)
 
-UserProfile.create(
-            username=username,
-            password=passw,
-            name=name,
-            email=email,
-            confirmation_sent_at=datetime.datetime.now(),
-            last_sign_in_at=1,
-            is_admin=admin
-        )
+new_user(
+        username = username, 
+        password = passw, 
+        email = email,
+        confirmed=True,
+        is_admin = admin,
+        is_remote=False,
+        is_private=False
+    )
 
 print("User created successfuly")

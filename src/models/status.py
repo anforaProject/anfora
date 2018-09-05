@@ -119,4 +119,4 @@ class Status(BaseModel):
 
     def likes_count(self):
         from models.like import Like
-        return Like.select().where(Like.photo == self).count()
+        return Like.select().where(Like.status == self).count()
