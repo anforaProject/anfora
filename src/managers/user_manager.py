@@ -8,7 +8,7 @@ class UserManager:
         self.user = user 
 
 def new_user(username, password, email, is_admin, 
-            is_bot, is_private, is_remote, confirmed=False):
+            is_private, is_remote, confirmed=False):
     
     # Hash the password
 
@@ -19,10 +19,7 @@ def new_user(username, password, email, is_admin,
     user = User.create(
         username = username,
         password = passw,
-        is_bot = is_bot,
-        is_admin = is_admin,
         email = email, 
-        is_private = is_private,
         confirmed = confirmed
     )
 

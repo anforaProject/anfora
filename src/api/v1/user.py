@@ -2,6 +2,7 @@ import json
 import os
 import logging
 from datetime import datetime, timedelta, date
+from email.utils import parseaddr
 
 import falcon
 import redis
@@ -21,6 +22,8 @@ from utils.atomFeed import generate_feed
 
 from api.v1.helpers import get_ap_by_uri
 from activityPub.identity_manager import ActivityPubId
+
+from managers.user_manager import UserManager
 
 from tasks.ap_methods import send_activity
 
@@ -269,3 +272,31 @@ class followingAccounts:
         following = [follow.follows.to_json() for follow in follows]
         resp.body=json.dumps(following, default=str) 
         resp.satatus=falcon.HTTP_200
+
+class registerUser:
+    auth = {
+        'exempt_methods':['POST']
+    }
+
+    def on_post(self, req, resp):
+        username = req.get_param('username')
+        password = req.get_param('password')
+        confirmation = req.get_param('password_confirmation')
+        email = req.get_param('email')
+
+        valid_password = password == confirmation
+
+        free = User.select().where(username=username).count() == 0
+
+        if valid_password and free:
+            profile = UserManager.new_user(
+                username = username, 
+                password = password, 
+                email = parseaddr(email)[1]
+            )
+
+            resp.status = falcon.HTTP_202
+            resp.body = json.dumps(profile.to_json())
+        else:
+            resp.status = falcon.HTTP_400
+            resp.body = json.dumps({"Error": "Bad password"})

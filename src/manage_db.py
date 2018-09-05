@@ -4,7 +4,7 @@ from settings import (DB_USER, DB_NAME, DB_PORT, DB_HOST)
 
 from models.base import db
 
-from models.user import UserProfile
+from models.user import UserProfile, User
 from models.album import Album
 from models.status import Status
 from models.media import Media
@@ -34,7 +34,9 @@ def connect():
     db.connect()
 
 def create_tables():
-    tables = [UserProfile, 
+    tables = [
+                User,
+                UserProfile, 
                 Album, 
                 Status, 
                 Token, 
