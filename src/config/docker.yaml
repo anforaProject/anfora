@@ -26,3 +26,13 @@ db_user: 'anforaUser'
 db_port: '5432'
 db_host: 'localhost'
 db_name: 'anforadb'
+
+#email
+
+email_enabled: y # "y" for yes - "n" for no
+
+smtp_server: ''
+smtp_port: ''
+smtp_login: ''
+smtp_password: ''
+smtp_adress: ''
