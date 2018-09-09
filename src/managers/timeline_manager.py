@@ -15,7 +15,8 @@ class TimelineManager:
         self.user = user
         
         # Timelines names
-        self.HOME_TIMELINE = "feed:home:{}"
+        self.HOME_TIMELINE = 'feed:home:{}'
+        self.NOTIFICATIONS = 'feed:notifications:{}'
 
         # Timelines sizes
 
@@ -37,6 +38,18 @@ class TimelineManager:
 
 
         self.r.zadd(timeline_name, status.id, status.id)
+
+    def push_notification(self, notification):
+
+        """
+        Push a notification to the user's notifications timeline
+
+        notification: an instance of Notification
+
+        """
+
+        timeline_name = self.NOTIFICATIONS.format(self.user.id)
+        self.r.zadd(timeline_name, notification.id, notification.id)
 
 
     def range_home(self, count=0, offset=0, limit = -1):
