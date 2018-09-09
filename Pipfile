@@ -25,6 +25,10 @@ pyyaml = "*"
 colorama = "*"
 "psycopg2-binary" = "*"
 python-magic = "*"
+pip = "*"
+itsdangerous = "*"
+peewee-migrate = "*"
+py-bcrypt = "*"
 
 [requires]
 python_version = "3.6"
