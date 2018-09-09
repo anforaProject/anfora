@@ -17,8 +17,8 @@ class Notification(BaseModel):
     def json(self):
         
         return {
-            'id': self.id
-            'account': self.user.json(),
+            'id': self.id,
+            'account': self.user.to_json(),
             'status': self.status.to_json(),
             'type': self.notification_type,
             'created_at': self.created_at,
