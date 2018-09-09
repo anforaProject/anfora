@@ -6,7 +6,7 @@ import falcon
 from models.user import UserProfile
 from models.status import Status 
 
-from utils.timeline_manager import TimelineManager
+from managers.timeline_manager import TimelineManager
 
 class homeTimeline(object):
 
