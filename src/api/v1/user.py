@@ -297,8 +297,12 @@ class registerUser:
                     email = parseaddr(email)[1]
                 )
 
-                resp.status = falcon.HTTP_202
-                resp.body = json.dumps(profile.to_json())
+                if not profile:
+                    resp.status = falcon.HTTP_402
+                    resp.body = json.dumps({"Error": "Wrong username. Valid characters are number, ascii letters and (.) (_)"})
+                else:
+                    resp.status = falcon.HTTP_202
+                    resp.body = json.dumps(profile.to_json())
             except:
                 resp.status = falcon.HTTP_400
                 resp.body = json.dumps({"Error": "Bad data"})

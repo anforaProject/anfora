@@ -1,4 +1,5 @@
 import bcrypt
+import re 
 
 from settings import salt_code
 from models.user import User, UserProfile
@@ -9,10 +10,23 @@ class UserManager:
     def __init__(self, user):
         self.user = user 
 
+def valid_username(username):
+    regex = r'[\w\d_.]+$'
+    return re.match(r, username) != None
+
 def new_user(username, password, email,
              is_remote = False, confirmed=False, is_private = False, 
              is_admin=False):
+
+    """
+        Returns False or UserProfile
+    """
     
+    # Verify username
+
+    if not valid_username(username):
+        return False
+
     # Hash the password
 
     passw = bcrypt.hashpw(password, salt_code)
@@ -34,7 +48,8 @@ def new_user(username, password, email,
         id = user.id,
         disabled = True,
         is_remote = is_remote,
-        user = user
+        user = user,
+        name = username
     )
 
     # Send the confirmation email
