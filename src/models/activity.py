@@ -11,7 +11,7 @@ from urls import (URIs, uri)
 class Activity(BaseModel):
     payload = TextField()
     created_at = DateTimeField(default = datetime.now)
-    person = ForeignKeyField(UserProfile, backref='activities')
+    person = ForeignKeyField(UserProfile, backref='activities', on_delete='CASCADE')
     remote = BooleanField(default=False)
 
     @property

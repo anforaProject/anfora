@@ -33,6 +33,9 @@ class User(BaseModel):
     last_sign_in_at = IntegerField(null=True) # Last time the user signed in epoch since
     is_private = BooleanField(default=False) # The account has limited access
 
+    def __repr__(self):
+        return self.username
+
 class UserProfile(BaseModel):
     id = IntegerField(primary_key=True)
     ap_id = CharField(unique=True)
@@ -46,7 +49,7 @@ class UserProfile(BaseModel):
     following_count = IntegerField(default=0)
     followers_count = IntegerField(default=0)
     statuses_count = IntegerField(default=0)
-    user = ForeignKeyField(User, backref='profile')
+    user = ForeignKeyField(User, backref='profile', on_delete='CASCADE')
     
     @property
     def username(self):

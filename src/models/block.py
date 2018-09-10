@@ -8,6 +8,6 @@ from models.user import UserProfile
 
 class Block(BaseModel):
 
-    account = ForeignKeyField(UserProfile)
-    target = ForeignKeyField(UserProfile)
+    account = ForeignKeyField(UserProfile, on_delete='CASCADE')
+    target = ForeignKeyField(UserProfile, on_delete='CASCADE')
     created_at = DateTimeField(default=datetime.datetime.now)

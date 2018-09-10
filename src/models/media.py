@@ -11,7 +11,7 @@ from urls import (URIs, uri)
 
 class Media(BaseModel):
 
-    status = ForeignKeyField(Status, backref='media_object', null=True)
+    status = ForeignKeyField(Status, backref='media_object', null=True, on_delete='CASCADE')
     created_at = DateTimeField(default=datetime.datetime.now)
     updated_at = DateTimeField(default=datetime.datetime.now)
     media_name = CharField(unique=True)  

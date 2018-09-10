@@ -3,7 +3,7 @@ from peewee import *
 from models.base import BaseModel
 from models.user import UserProfile
 
-topics = ['spam', 'content', 'harrasment']
+topics = ('spam', 'content', 'harrasment')
 
 class Report(BaseModel):
 

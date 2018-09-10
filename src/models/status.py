@@ -20,7 +20,7 @@ class Status(BaseModel):
     caption = TextField()
     spoiler_text = CharField(max_length=255, null=True)
     is_public = BooleanField(default=True)
-    user = ForeignKeyField(UserProfile, backref='statuses')
+    user = ForeignKeyField(UserProfile, backref='statuses', on_delete='CASCADE')
     sensitive = BooleanField(default=False)
     remote = BooleanField(default = False)
     ap_id = CharField(null=True)
