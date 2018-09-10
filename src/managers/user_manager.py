@@ -12,7 +12,7 @@ class UserManager:
 
 def valid_username(username):
     regex = r'[\w\d_.]+$'
-    return re.match(r, username) != None
+    return re.match(regex, username) != None
 
 def new_user(username, password, email,
              is_remote = False, confirmed=False, is_private = False, 
