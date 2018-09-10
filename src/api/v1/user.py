@@ -8,7 +8,7 @@ import falcon
 import redis
 from falcon_auth import BasicAuthBackend
 
-from models.user import UserProfile
+from models.user import UserProfile, User
 from models.status import Status
 from models.token import Token
 from models.followers import FollowerRelation
@@ -287,7 +287,7 @@ class registerUser:
 
         valid_password = password == confirmation
 
-        free = User.select().where(username=username).count() == 0
+        free = User.select().where(User.username==username).count() == 0
 
         if valid_password and free:
             try:
@@ -302,10 +302,11 @@ class registerUser:
                     resp.body = json.dumps({"Error": "Wrong username. Valid characters are number, ascii letters and (.) (_)"})
                 else:
                     resp.status = falcon.HTTP_202
-                    resp.body = json.dumps(profile.to_json())
-            except:
+                    resp.body = json.dumps(profile.to_json(), default=str)
+            except Exception as e:
+                print(e)
                 resp.status = falcon.HTTP_400
                 resp.body = json.dumps({"Error": "Bad data"})
         else:
             resp.status = falcon.HTTP_400
-            resp.body = json.dumps({"Error": "Bad password"})
+            resp.body = json.dumps({"Error": "User not available"})
