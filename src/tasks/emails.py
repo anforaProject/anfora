@@ -28,7 +28,7 @@ def confirm_token(token, expiration=3600):
 
 def send_email_by_smtp(from_, to, body):
     ''' sends a mime message to mailgun SMTP gateway '''
-    smtp = smtplib.SMTP(SMT_SERVER, SMT_SERVER)
+    smtp = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
     smtp.login(SMTP_LOGIN, SMTP_PASSWORD)
     smtp.sendmail(from_, to, body)
     smtp.quit()    
