@@ -2,6 +2,8 @@ from models.status import Status
 from models.user import UserProfile
 from models.like import Like
 
+from tasks.redis.spreadStatus import like_status
+
 class StatusManager:
 
     def __init__(self, id):
@@ -17,20 +19,6 @@ class StatusManager:
 
 
         self.id = id
-
-    def like(self, user)
-        """
-            user: UserProfile - User liking the status
-
-            Returns True if the action was successful
-        """
-        Like.create(
-            user = user,
-            status = self.status,
-        )
-        Status.update({Status.favourites_count: Status.favourites_count + 1}).where(Status.id == self.id)
-
-        return True
 
     def create(self, user, caption, sensitive, spoiler, public, remote=False, story=False):
         """

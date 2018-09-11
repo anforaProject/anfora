@@ -20,6 +20,8 @@ from auth import (loadUser, auth_backend, try_logged_jwt)
 
 from api.v1.helpers import (max_body, its_me)
 
+from managers.user_manager import UserManager
+
 #Get max size for uploads
 MAX_SIZE = os.getenv('MAX_SIZE', 1024*1024)
 
@@ -44,6 +46,28 @@ class getStatus:
         resp.status = falcon.HTTP_200
 
 
+class favouriteStatus:
+
+    def on_post(self, req, resp, id):
+        status = Status.get_or_none(id=id)
+        if status:
+            user = req.context['user']
+            UserManager(user).like(status)
+            resp.body = json.dumps(status, default=str)
+            resp.status = falcon.HTTP_200
+        else:
+            resp.status = falcon.HTTP_404
+
+class unfavouriteStatus:
+
+    def on_post(self, req, resp, id):
+        status = Status.get_or_none(id=id)
+        if status:
+            user = req.context['user']
+            UserManager(user).dislike(status.id)
+            resp.status = falcon.HTTP_200
+        else:
+            resp.status = falcon.HTTP_404
 
 class manageUserStatuses:
 

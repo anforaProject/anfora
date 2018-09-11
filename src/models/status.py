@@ -67,8 +67,11 @@ class Status(BaseModel):
             "atachment": {
                 "media_url":self.uris.media,
                 "preview_url":self.uris.preview
-            }
-
+            },
+            "spoiler_text": self.spoiler_text,
+            "reblogged": None,
+            "favourited": None,
+            "muted": None
         }
 
         return json
@@ -95,7 +98,7 @@ class Status(BaseModel):
 
     def to_json(self):
         data = {
-            "id": self.uris.id,
+            "id": self.id,
             "description": self.caption,
             "preview": self.uris.preview,
             "message": self.caption,

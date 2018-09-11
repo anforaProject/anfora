@@ -39,6 +39,16 @@ class TimelineManager:
 
         self.r.zadd(timeline_name, status.id, status.id)
 
+    def remove_from_home(self, status_id):
+        
+        """
+        id is an integer representating the status id
+
+        
+        """
+        timeline_name = self.HOME_TIMELINE.format(self.user.id)
+        self.r.rrem(timeline_name, status_id)
+
     def push_notification(self, notification):
 
         """
@@ -51,6 +61,9 @@ class TimelineManager:
         timeline_name = self.NOTIFICATIONS.format(self.user.id)
         self.r.zadd(timeline_name, notification.id, notification.id)
 
+    def remove_notification(self, notification_id):
+        timeline_name = self.HOME_TIMELINE.format(self.user.id)
+        self.r.rrem(timeline_name, notification_id)
 
     def range_home(self, count=0, offset=0, limit = -1):
         

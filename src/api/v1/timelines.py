@@ -5,6 +5,7 @@ import redis
 import falcon
 from models.user import UserProfile
 from models.status import Status 
+from models.like import Like
 
 from managers.timeline_manager import TimelineManager
 
@@ -21,10 +22,12 @@ class homeTimeline(object):
         statuses = []
         errors = 0
         for post in TimelineManager(user).query(since_id=since_id, max_id=max_id, local=True, limit=limit):
-            try:
-                statuses.append(Status.get(id=int(post)).to_json())
-            except:
-                errors += 1
+            status = Status.get(id=int(post))
+            json_data = status.to_json()
+            if Like.select().join(UserProfile).switch(Like).join(Status).switch(Like).where(Like.user.id == user.id, Like.status.id == status).count():
+                json_data["favourited"] = True
+            
+            statuses.append(json_data)
         
         resp.body=json.dumps(statuses, default=str)
         resp.status=falcon.HTTP_200

@@ -13,7 +13,7 @@ from settings import MEDIA_FOLDER
 from middleware import (PeeweeConnectionMiddleware, CorsMiddleware)
 
 #Resources
-from api.v1.statuses import (getStatus, manageUserStatuses)
+from api.v1.statuses import (getStatus, manageUserStatuses, favouriteStatus)
 from api.v1.albums import (createAlbum, getAlbum, addToAlbum)
 from api.v1.user import (authUser, getUser, getFollowers, logoutUser,
                             getStatuses, atomFeed, followAction, 
@@ -69,6 +69,9 @@ app.add_route('/api/v1/accounts/{id}/following', followingAccounts())
 app.add_route('/api/v1/accounts/update_credentials', manageCredentials())
 app.add_route('/api/v1/statuses', manageUserStatuses())
 app.add_route('/api/v1/media', UploadMedia())
+
+app.add_route('/api/v1/statuses/{id}/favourite', favouriteStatus())
+app.add_route('/api/v1/statuses/{id}/unfavourite', favouriteStatus())
 
 app.add_route('/api/v1/auth', authUser())
 app.add_route('/api/v1/accounts/verify_credentials', verifyCredentials())
