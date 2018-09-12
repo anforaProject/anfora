@@ -1,7 +1,10 @@
+import datetime
 import smtplib  
+
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
+
 
 from itsdangerous import URLSafeTimedSerializer
 
@@ -54,3 +57,5 @@ def send_activation_email(profile):
 
     msgAlternative.attach(MIMEText(message))
     send_email_by_smtp(SMTP_FROM_ADDRESS, receiver, msgRoot.as_string())
+    profile.user.confirmation_sent_at = datetime.datetime.now()
+    profile.user.save()

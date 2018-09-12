@@ -26,6 +26,7 @@ from activityPub.identity_manager import ActivityPubId
 from managers.user_manager import new_user
 
 from tasks.ap_methods import send_activity
+from tasks.emails import confirm_token
 
 from settings import (DOMAIN, MEDIA_FOLDER)
 
@@ -310,3 +311,26 @@ class registerUser:
         else:
             resp.status = falcon.HTTP_400
             resp.body = json.dumps({"Error": "User not available"})
+
+class userURLConfirmation:
+
+    auth = {
+        'exempt_methods':['GET']
+    }
+
+
+    def on_get(self, req, resp, token):
+        email = confirm_token(token)
+        if email:
+            user = User.get_or_none(email=email)
+            if user:
+                user.confirmed = True 
+                user.save()
+            else:
+                resp.status = falcon.HTTP_404
+                resp.body = json.dumps({"Error": "User not available"})
+        else:
+            resp.status = falcon.HTTP_500
+            resp.body = json.dumps({"Error": "Invalid code or too old"})
+
+
