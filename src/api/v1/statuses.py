@@ -124,6 +124,22 @@ class manageUserStatuses:
             resp.status = falcon.HTTP_200
             resp.body = json.dumps(status.to_json(),default=str)
 
+        elif req.get_param('in_reply_to_id'):
+
+            replying_to = Status.get_or_none(id=req.get_param('in_reply_to_id'))
+            if replying_to:
+                status = Status(
+                    caption = req.get_param('status'),
+                    user = user,
+                    remote = False,
+                    story = False,
+                    in_reply_to = replying_to,
+                    sensitive = replying_to.sensitive,
+                    spoiler_text = req.get_param('spoiler_text') or replying_to.spoiler_text
+                )
+            else:
+                resp.status = falcon.HTTP_500
+                resp.body = json.dumps({"Error": "Replying to bad ID"})
         else:
             resp.status = falcon.HTTP_500
             resp.body = json.dumps({"Error": "No photo attached"})
