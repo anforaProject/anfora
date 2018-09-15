@@ -9,5 +9,5 @@ from models.user import UserProfile
 class Like(BaseModel):
 
     user = ForeignKeyField(UserProfile, backref='liked_posts', on_delete='CASCADE')
-    status = ForeignKeyField(Status, backref='licked_by')
+    status = ForeignKeyField(Status, backref='licked_by', on_delete='CASCADE')
     created_at = DateTimeField(default=datetime.datetime.now)
