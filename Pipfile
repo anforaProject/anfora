@@ -23,12 +23,17 @@ avatar = {git = "https://github.com/lsdlab/avatar-gen.git"}
 hashids = "*"
 pyyaml = "*"
 colorama = "*"
-"psycopg2-binary" = "*"
 python-magic = "*"
 pip = "*"
 itsdangerous = "*"
 peewee-migrate = "*"
 py-bcrypt = "*"
+aiohttp = "*"
+aiohttp-sse = "*"
+aiopg = "*"
+peewee-async = "*"
+"psycopg2-binary" = "*"
+sqlalchemy = "*"
 
 [requires]
 python_version = "3.6"
@@ -36,3 +41,6 @@ python_version = "3.6"
 [dev-packages]
 pytest = "*"
 requests-toolbelt = "*"
+
+[pipenv]
+allow_prereleases = true
