@@ -1,7 +1,7 @@
 from manage_db import connect
 
 from models.followers import FollowerRelation
-from models.user import UserProfile
+from models.user import UserProfile, User
 from models.status import Status
 
 connect()
@@ -25,5 +25,5 @@ for p in Status.select():
 
 print("========")
 print("Following test:")
-t = UserProfile.get(username="test")
+t = User.get(username="yabirgb").profile
 print(t.followers().count())

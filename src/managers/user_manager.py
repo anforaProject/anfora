@@ -24,7 +24,7 @@ class UserManager:
 
         # Check if the user already liked it
 
-        if Like.get_or_none(user=user,status=status):
+        if Like.get_or_none(user=self.user,status=status):
             return False
         
         # First we create the like object
@@ -44,10 +44,9 @@ class UserManager:
     def dislike(self, status):
 
         # Check if the like exists
-        like = Like.get_or_none(user=user,status=status)
+        like = Like.get_or_none(user=self.user,status=status)
         if not like:
             return False 
-        
         like.delete().execute()
         Status.update({Status.favourites_count: Status.favourites_count - 1}).where(Status.id == status.id)
 

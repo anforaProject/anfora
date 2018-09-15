@@ -54,7 +54,6 @@ class Inbox():
 
         #Make a request to get the actor
         """
-        return
         if req.content_length:
             activity = json.loads(req.stream.read().decode("utf-8"), object_hook=as_activitystream)
         else:
@@ -66,6 +65,8 @@ class Inbox():
             result = handle_follow(activity)
         elif activity.type == 'Accept':
             print(activity.to_json())
+        elif: activity.type == 'Create':
+            result = handle_create(activity)
 
         #store(activity, user, remote = True)
         resp.status= falcon.HTTP_202

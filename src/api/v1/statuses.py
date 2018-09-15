@@ -29,22 +29,33 @@ MAX_SIZE = os.getenv('MAX_SIZE', 1024*1024)
 class getStatus:
 
     auth = {
-        'auth_disabled': True
+        'exempt_methods': ['GET', 'OPTIONS']
     }
 
-    def on_get(self, req, resp, pid):
+    def on_get(self, req, resp, id):
         #photo = self.model.get_or_none(identifier=pid)
-        photo = Status.get_or_none(identifier=pid)
+        photo = Status.get_or_none(id=id)
 
         if photo != None:
             result = photo.json()
+            resp.status = falcon.HTTP_200
         else:
             result = json.dumps({"Error": 'Not found'})
+            resp.status = falcon.HTTP_404
 
         resp.body = result
-        resp.set_header('Response by:', 'zinat')
-        resp.status = falcon.HTTP_200
 
+    
+    def on_delete(self, req, resp, id):
+        status = Status.get_or_none(id=id)
+        if status != None:
+            if req.context['user'].id == status.user.id:
+                status.delete().execute()
+                resp.status = falcon.HTTP_200
+            else:
+                resp.status = falcon.HTTP_401
+        else:
+            resp.status = falcon.HTTP_500
 
 class favouriteStatus:
 
@@ -64,7 +75,8 @@ class unfavouriteStatus:
         status = Status.get_or_none(id=id)
         if status:
             user = req.context['user']
-            UserManager(user).dislike(status.id)
+            UserManager(user).dislike(status)
+            resp.body = json.dumps(status, default=str)
             resp.status = falcon.HTTP_200
         else:
             resp.status = falcon.HTTP_404

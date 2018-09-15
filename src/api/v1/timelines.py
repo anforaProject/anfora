@@ -22,12 +22,13 @@ class homeTimeline(object):
         statuses = []
         errors = 0
         for post in TimelineManager(user).query(since_id=since_id, max_id=max_id, local=True, limit=limit):
-            status = Status.get(id=int(post))
-            json_data = status.to_json()
-            if Like.select().join(UserProfile).switch(Like).join(Status).switch(Like).where(Like.user.id == user.id, Like.status.id == status).count():
-                json_data["favourited"] = True
-            
-            statuses.append(json_data)
+            status = Status.get_or_none(id=int(post))
+            if status:
+                json_data = status.to_json()
+                if Like.select().join(UserProfile).switch(Like).join(Status).switch(Like).where(Like.user.id == user.id, Like.status.id == status).count():
+                    json_data["favourited"] = True
+                
+                statuses.append(json_data)
         
         resp.body=json.dumps(statuses, default=str)
         resp.status=falcon.HTTP_200
