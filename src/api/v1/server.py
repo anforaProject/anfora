@@ -100,10 +100,11 @@ class wellknownWebfinger:
             raise falcon.HTTPBadRequest(description="Unable to decode resource.")
 
         if domain == DOMAIN:
-            user = UserProfile.get_or_none(username=username)
+            user = User.get_or_none(username=username)
+            profile = user.profile
 
             if user:
-                response = Webfinger(user).generate()
+                response = Webfinger(profile).generate()
                 resp.body = json.dumps(response)
                 resp.status = falcon.HTTP_200
             else:
