@@ -121,8 +121,9 @@ class getUser():
     }
 
     def on_get(self, req, resp, id):
-        person = UserProfile.get_or_none(id=id)
+        person = User.get_or_none(id=id)
         if person:
+            person = person.profile.get()
             resp.body = json.dumps(person.to_json(), default=json_serial)
             resp.status = falcon.HTTP_200
         else:
