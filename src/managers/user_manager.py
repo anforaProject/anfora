@@ -93,7 +93,7 @@ def new_user(username, password, email,
         is_remote = is_remote,
         user = user,
         name = name,
-        public_key = public_key
+        public_key = public_key,
         ap_id = ap_id,
         description = description
     )
