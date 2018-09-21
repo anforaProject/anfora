@@ -1,5 +1,6 @@
 import argon2
 import bcrypt
+import falcon
 from argon2.exceptions import VerificationError, VerifyMismatchError
 from falcon_auth import TokenAuthBackend, JWTAuthBackend
 
