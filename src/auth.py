@@ -113,14 +113,22 @@ def loadUserPass(username, password):
     candidate = User.get_or_none(username=username)
     if candidate != None:
         if bcrypt.hashpw(password,candidate.password):
-            return UserProfile.get(id=candidate.id)
+            return candidate.profile.get()
         else:
-            return None
+            raise falcon.HTTPUnauthorized(
+                title='401 Unauthorized',
+                description='Invalid user or token missing',
+                challenges=None)
 
 def loadUser(payload):
     candidate = User.get_or_none(username=payload['user']['username'])
     if candidate:
-        return UserProfile.get(id=candidate.id)
+        return candidate.profile.get()
+    else:
+        raise falcon.HTTPUnauthorized(
+            title='401 Unauthorized',
+            description='Invalid user or token missing',
+            challenges=None)
 
 
 def loadUserToken(token):
