@@ -6,7 +6,7 @@ from settings import (ID, NODENAME, DOMAIN, SCHEME)
 from release_info import VERSION
 
 from models.followers import FollowerRelation
-from models.user import UserProfile
+from models.user import UserProfile, User
 from models.status import Status
 
 from utils.username import extract_user
@@ -101,7 +101,7 @@ class wellknownWebfinger:
 
         if domain == DOMAIN:
             user = User.get_or_none(username=username)
-            profile = user.profile
+            profile = user.profile.get()
 
             if user:
                 response = Webfinger(profile).generate()
