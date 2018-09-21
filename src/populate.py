@@ -63,7 +63,7 @@ yab = new_user(
         is_remote=False,
         is_private=False
     )
-"""
+
 def populate_db():
     for i in range(15):
         target = UserProfile.create(
@@ -134,24 +134,24 @@ def populate_db():
 
 def populate_for_travis():
     for i in range(15):
-        target = UserProfile.create(
-            username=f'test{i}',
-            password=passw,
-            name=f'test#{i}',
+        target = new_user(
+            username=f'test{i}', 
+            password = passw, 
             email=f'fort{i}@gma.com',
-            confirmation_sent_at=datetime.datetime.now(),
-            last_sign_in_at=1
+            confirmed=True,
+            is_admin = True,
+            is_remote=False,
+            is_private=False
         )
         target.follow(yab)
 
         #crate some followers
         for j in range(i):
             if j != i:
-                user = UserProfile.get(username=f'test{j}')
+                user = User.get(username=f'test{j}').profile.get()
                 user.follow(target, True)
 
 if os.environ.get('POPULATE', 'local') == 'travis':
     populate_for_travis()
 else:
     populate_db()
-"""

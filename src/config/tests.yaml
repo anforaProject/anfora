@@ -14,7 +14,7 @@ db_host: 'localhost',
 db_name: 'anforadb',
 email_enabled: True,
 smtp_server: '',
-smtp_port: '',
+smtp_port: 572,
 smtp_login: '',
 smtp_password: '',
 smtp_adress: ''}
