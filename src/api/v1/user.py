@@ -295,7 +295,7 @@ class registerUser:
                 profile = new_user(
                     username = username, 
                     password = password,
-                    description = "" 
+                    description = "",
                     email = parseaddr(email)[1]
                 )
 
