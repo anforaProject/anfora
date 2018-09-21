@@ -112,7 +112,7 @@ class Argon2(object):
 def loadUserPass(username, password):
     candidate = User.get_or_none(username=username)
     if candidate != None:
-        if bcrypt.hashpw(password,candidate.password):
+        if bcrypt.hashpw(password,candidate.password) == candidate.password:
             return candidate.profile.get()
         else:
             raise falcon.HTTPUnauthorized(
