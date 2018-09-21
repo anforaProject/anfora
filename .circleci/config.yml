@@ -38,11 +38,6 @@ jobs:
             mkdir uploads/avatars
             mkdir uploads/max_resolution
             mkdir uploads/small
-            cd src 
-            pipenv run python commands.py --travis-config
-            pipenv run python commands.py -s --config config/tests.yaml
-            pipenv run python commands.py -d
-            pipenv run python populate.py
 
       - save_cache:
           key: cache-{{ checksum "Pipfile.lock" }}
@@ -50,9 +45,17 @@ jobs:
             - ~/.local
             - ~/.cache
       - run:
+          name: setup data
+          command: |
+            cd src 
+            pipenv run python commands.py --travis-config
+            pipenv run python commands.py -s --config config/tests.yaml
+            pipenv run python commands.py -d
+            pipenv run python populate.py
+
+      - run:
           name: run tests
           command: |
-            cd src
             pipenv run python -m pytest tests/
 
       - store_artifacts:
