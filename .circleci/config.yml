@@ -10,7 +10,6 @@ jobs:
       # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
       - image: circleci/python:3.6.6-jessie-browsers-legacy
         environment:
-          VENV_HOME_DIR: ~/anfora
           POPULATE: travis
           REDIS_HOST: localhost
       
@@ -29,10 +28,12 @@ jobs:
           name: setup env
           command: |
             pipenv install
-            mkdir $VENV_HOME_DIR/uploads
-            mkdir $VENV_HOME_DIR/uploads/avatars
-            mkdir $VENV_HOME_DIR/uploads/max_resolution
-            mkdir $VENV_HOME_DIR/uploads/small
+            echo 'export VENV_HOME_DIR=pwd' >> $BASH_ENV
+            source $BASH_ENV
+            mkdir uploads
+            mkdir uploads/avatars
+            mkdir uploads/max_resolution
+            mkdir uploads/small
             cd src 
             pipenv run python commands.py --travis-config
             pipenv run python commands.py -s --config config/tests.yaml
