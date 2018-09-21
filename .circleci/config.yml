@@ -28,8 +28,7 @@ jobs:
           name: setup env
           command: |
             pipenv install
-            echo 'export VENV_HOME_DIR=pwd' >> $BASH_ENV
-            source $BASH_ENV
+            echo 'export VENV_HOME_DIR=$(pwd)' >> $BASH_ENV
             mkdir uploads
             mkdir uploads/avatars
             mkdir uploads/max_resolution
