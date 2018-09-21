@@ -53,7 +53,7 @@ def travis_setup():
     settings = yaml.load(fileb)
     fileb.close()
     
-    path = os.environ.get('TRAVIS_BUILD_DIR')
+    path = os.environ.get('VENV_HOME_DIR')
     settings["root_path"] = path
     settings["media_folder"] = os.path.join(path, 'uploads')
     fileb = open("config/tests.yaml", "w")
