@@ -56,7 +56,7 @@ def valid_username(username):
 
 def new_user(username, password, email,
              is_remote = False, confirmed=False, is_private = False, 
-             is_admin=False):
+             is_admin=False, public_key=None, name=None, description = None, ap_id = None):
 
     """
         Returns False or UserProfile
@@ -82,6 +82,9 @@ def new_user(username, password, email,
         is_private = is_private
     )
 
+    if name == None:
+        name = username
+
     # Now we create the profile
 
     profile = UserProfile.create(
@@ -89,7 +92,10 @@ def new_user(username, password, email,
         disabled = True,
         is_remote = is_remote,
         user = user,
-        name = username
+        name = name,
+        public_key = public_key
+        ap_id = ap_id,
+        description = description
     )
 
     # Send the confirmation email

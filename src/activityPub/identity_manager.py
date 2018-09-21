@@ -8,7 +8,8 @@ from settings import DOMAIN
 from activityPub.activities import as_activitystream
 
 #Models
-from models.user import UserProfile
+from models.user import UserProfile, User
+from managers.user_manager import new_user
 from models.followers import FollowerRelation
 
 class IdentityManager:
@@ -50,14 +51,14 @@ class ActivityPubId(IdentityManager):
             user = self.dereference()
             hostname = urlparse(user.id).hostname
             username = "{0}@{1}".format(user.preferredUsername, hostname)
-            user = UserProfile.create(
+            user = new_user(
                 username=user.preferredUsername,
                 name=user.name,
                 ap_id=user.id,
-                remote=True,
+                is_remote=True,
                 password = "what",
                 description=user.summary,
-                private=user.manuallyApprovesFollowers,
+                is_private=user.manuallyApprovesFollowers,
                 public_key=user.publicKey['publicKeyPem']
             )
         #print(user)
