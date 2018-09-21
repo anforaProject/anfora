@@ -10,7 +10,7 @@ from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256 
 from base64 import b64encode, b64decode
 
-from models.user import UserProfile
+from models.user import UserProfile, User
 from models.status import Status
 
 from activityPub import activities
@@ -25,7 +25,7 @@ from tasks.tasks import deliver
 
 from activityPub.data_signature import SignatureVerification
 
-class Inbox():
+class Inbox:
 
     auth = {
         'exempt_methods': ['POST']
@@ -65,7 +65,7 @@ class Inbox():
             result = handle_follow(activity)
         elif activity.type == 'Accept':
             print(activity.to_json())
-        elif: activity.type == 'Create':
+        elif activity.type == 'Create':
             result = handle_create(activity)
 
         #store(activity, user, remote = True)
