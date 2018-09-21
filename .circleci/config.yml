@@ -57,6 +57,7 @@ jobs:
       - run:
           name: run tests
           command: |
+            cd src
             pipenv run python -m pytest tests/
 
       - store_artifacts:
