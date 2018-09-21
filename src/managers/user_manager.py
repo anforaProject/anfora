@@ -56,7 +56,7 @@ def valid_username(username):
 
 def new_user(username, password, email,
              is_remote = False, confirmed=False, is_private = False, 
-             is_admin=False, public_key=None, name=None, description = None, ap_id = None):
+             is_admin=False, public_key=None, name=None, description = "", ap_id = None):
 
     """
         Returns False or UserProfile

@@ -58,6 +58,7 @@ yab = new_user(
         username = "test", 
         password = passw, 
         email = "yab@gmail.com",
+        description="A test user"
         confirmed=True,
         is_admin = True,
         is_remote=False,

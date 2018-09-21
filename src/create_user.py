@@ -29,6 +29,7 @@ new_user(
         username = username, 
         password = passw, 
         email = email,
+        description= ""
         confirmed=True,
         is_admin = admin,
         is_remote=False,
