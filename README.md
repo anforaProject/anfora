@@ -1,6 +1,6 @@
 # Anfora
 
-[![Build Status](https://travis-ci.com/anforaProject/anfora.svg?branch=master)](https://travis-ci.com/anforaProject/anfora)
+[![CircleCI](https://circleci.com/gh/anforaProject/anfora.svg?style=svg)](https://circleci.com/gh/anforaProject/anfora)
 
 ## About
 
@@ -26,6 +26,13 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 You should have received a copy of the GNU Affero General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 
+
+## Some images
+
+![MobileView](/images/mobile.png)
+![ProfileView](/images/profile_view.png)
+![Profile settings](/images/profile.png)
+![Upload](/images/upload.png)
 
 ## Start services
 
