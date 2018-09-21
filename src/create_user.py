@@ -23,11 +23,9 @@ while(password != password2):
 
 email = input("Enter a email: ")
 
-passw = bcrypt.hashpw(password, salt_code)
-
 new_user(
         username = username, 
-        password = passw, 
+        password = password, 
         email = email,
         description= "",
         confirmed=True,
