@@ -56,16 +56,6 @@ passw = Argon2().generate_password_hash("test")
 #yab = UserProfile.create(username="yab")
 yab = new_user(
         username = "test", 
-        password = passw, 
-        email = "yab@gmail.com",
-        description="A test user",
-        confirmed=True,
-        is_admin = True,
-        is_remote=False,
-        is_private=False
-    )
-test = new_user(
-        username = "test", 
         password = 'test', 
         email = "yab2@gmail.com",
         description="A test user",
@@ -74,6 +64,7 @@ test = new_user(
         is_remote=False,
         is_private=False
     )
+    
 def populate_db():
     for i in range(15):
         target = UserProfile.create(
