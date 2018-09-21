@@ -33,6 +33,7 @@ jobs:
           name: setup env
           command: |
             pipenv install
+            pipenv install pytest
             echo 'export VENV_HOME_DIR=$(pwd)' >> $BASH_ENV
             mkdir uploads
             mkdir uploads/avatars
