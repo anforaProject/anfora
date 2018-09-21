@@ -10,7 +10,7 @@ import argon2
 from falcon import testing
 
 from auth import Argon2
-from models.user import UserProfile
+from models.user import UserProfile, User
 from models.status import Status
 from models.followers import FollowerRelation
 from manage_db import (connect, create_tables)
