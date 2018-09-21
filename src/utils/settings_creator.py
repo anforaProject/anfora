@@ -53,7 +53,7 @@ def travis_setup():
     settings = yaml.load(fileb)
     fileb.close()
     
-    path = os.environ.get('VENV_HOME_DIR')
+    path = os.environ.get('VENV_HOME_DIR', '/home/circleci/anfora/')
     settings["root_path"] = path
     settings["media_folder"] = os.path.join(path, 'uploads')
     fileb = open("config/tests.yaml", "w")
