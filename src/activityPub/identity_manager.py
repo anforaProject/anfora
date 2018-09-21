@@ -56,6 +56,7 @@ class ActivityPubId(IdentityManager):
                 name=user.name,
                 ap_id=user.id,
                 is_remote=True,
+                email = None,
                 password = "what",
                 description=user.summary,
                 is_private=user.manuallyApprovesFollowers,
