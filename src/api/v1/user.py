@@ -51,7 +51,6 @@ class authUser:
 
     def on_get(self, req, resp):
         user = req.context['user']
-        print(user, type(user))
 
         if user.is_remote:
             resp.status = falcon.HTTP_401
