@@ -24,6 +24,11 @@ jobs:
     steps:
       - checkout
 
+      - restore_cache:
+          keys:
+            - cache-{{ checksum "Pipfile.lock" }}
+            - cache-
+
       - run:
           name: setup env
           command: |
@@ -39,6 +44,11 @@ jobs:
             pipenv run python commands.py -d
             pipenv run python populate.py
 
+      - save_cache:
+          key: cache-{{ checksum "Pipfile.lock" }}
+          paths:
+            - ~/.local
+            - ~/.cache
       - run:
           name: run tests
           command: |
