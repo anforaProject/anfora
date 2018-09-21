@@ -101,9 +101,8 @@ class wellknownWebfinger:
 
         if domain == DOMAIN:
             user = User.get_or_none(username=username)
-            profile = user.profile.get()
-
             if user:
+                profile = user.profile.get()
                 response = Webfinger(profile).generate()
                 resp.body = json.dumps(response)
                 resp.status = falcon.HTTP_200
