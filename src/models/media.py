@@ -54,9 +54,12 @@ class Media(BaseModel):
             'description': self.description
         }
 
-    def to_activitystrem(self):
+    def to_activitystream(self):
         json = {
-            "type": "Document"      
+            "type": "Document",
+            "name": self.media_name,
+            "url": self.uris.media,
+            "mediaType": self.media_type      
         }
 
         return json

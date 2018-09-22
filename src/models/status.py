@@ -51,6 +51,9 @@ class Status(BaseModel):
         from models.media import Media 
 
         return self.media_object.order_by(Media.id.desc())
+    @property
+    def media_data(self):
+        return {"hola": 3}
 
 
     def to_activitystream(self):
@@ -62,12 +65,9 @@ class Status(BaseModel):
             #"hashtags": self.hashtags,
             "likes": self.likes_count(),
             "actor": self.user.uris.id,
-            "sensitive": self.sensitive,
+            "is_sensitive": self.sensitive,
             "created_at": self.created_at.strftime('%Y-%m-%dT%H:%M:%S'),
-            "atachment": {
-                "media_url":self.uris.media,
-                "preview_url":self.uris.preview
-            },
+            "attachment":[ media.to_activitystream() for media in self.media_object],
             "spoiler_text": self.spoiler_text,
             "reblogged": None,
             "favourited": None,
