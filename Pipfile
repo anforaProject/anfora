@@ -33,7 +33,6 @@ aiohttp-sse = "*"
 aiopg = "*"
 peewee-async = "*"
 "psycopg2-binary" = "*"
-sqlalchemy = "*"
 
 [requires]
 python_version = "3.6"
