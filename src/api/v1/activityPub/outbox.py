@@ -5,7 +5,7 @@ import uuid
 from PIL import Image
 import falcon
 
-from models.user import UserProfile
+from models.user import UserProfile, User
 from models.status import Status
 from models.followers import FollowerRelation
 from models.activity import Activity
@@ -30,13 +30,16 @@ class Outbox():
     }
 
     def on_get(self, req, resp, username):
-        user = UserProfile.get_or_none(username==username)
-        objects = user.photos.select().order_by(Status.created_at.desc())
+        user = User.get_or_none(username==username)
+        
+        if user:
+            user = user.profile.get()
 
-        collectionPage = activities.OrderedCollectionPage(map(activities.Note, objects))
-        collection = activities.OrderedCollection([collectionPage])
-        resp.body = json.dumps(collection.to_json(context=True))
-        resp.status = falcon.HTTP_200
+            objects = user.statuses.select().order_by(Status.created_at.desc())
+            collectionPage = activities.OrderedCollectionPage(map(activities.Note, objects))
+            collection = activities.OrderedCollection([collectionPage])
+            resp.body = json.dumps(collection.to_json(context=True))
+            resp.status = falcon.HTTP_200
 
     def on_post(self, req, resp, username):
         user = UserProfile.get_or_none(username==username)
