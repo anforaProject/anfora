@@ -47,7 +47,7 @@ class TimelineManager:
         
         """
         timeline_name = self.HOME_TIMELINE.format(self.user.id)
-        self.r.rrem(timeline_name, status_id)
+        self.r.zrem(timeline_name, status_id)
 
     def push_notification(self, notification):
 
@@ -63,7 +63,7 @@ class TimelineManager:
 
     def remove_notification(self, notification_id):
         timeline_name = self.HOME_TIMELINE.format(self.user.id)
-        self.r.rrem(timeline_name, notification_id)
+        self.r.zrem(timeline_name, notification_id)
 
     def range_home(self, count=0, offset=0, limit = -1):
         
