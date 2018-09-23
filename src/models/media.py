@@ -25,9 +25,21 @@ class Media(BaseModel):
     duration = IntegerField(null=True) #If this media is a video fill this
 
     @property
+    def extension(self):
+        if self.media_type == "image/jpeg":
+            media_type = "jpg"
+        elif self.media_type == 'video/mp4':
+            media_type = 'mp4'
+        else:
+            media_type = 'jpg'
+
+        return media_type
+
+
+    @property
     def uris(self):
         return URIs(
-            media=uri("media", {"id":self.media_name}),
+            media=uri("media", {"id":self.media_name, "extension": self.extension}),
             preview=uri("preview", {"id":self.media_name})
         )
 
@@ -35,10 +47,20 @@ class Media(BaseModel):
         return f'{self.id} - {self.media_name}'
 
     def to_json(self):
+
+
+        if self.media_type == "image/jpeg":
+            media_type = "image"
+        elif self.media_type == 'video/mp4':
+            media_type = 'video'
+        else:
+            media_type = 'image'
+
         return {
             'id': self.media_name,
             'url': self.uris.media,
             'preview_url': self.uris.preview,
+            'type': media_type,
             'meta': {
                 'original':{
                     'width': self.width,

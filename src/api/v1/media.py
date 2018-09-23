@@ -9,7 +9,7 @@ from PIL import Image
 from settings import (MEDIA_FOLDER, thumb_folder, pic_folder)
 
 from models.media import Media
-
+from managers.media_manager import MediaManager
 
 class UploadMedia:
 
@@ -50,25 +50,32 @@ class UploadMedia:
             ident = str(uuid.uuid4())
             valid = not Media.select().where(Media.media_name == identity).exists()
         
+        manager = MediaManager(image.file.read())
+        if manager.is_valid():
+
         #Send task to create image object
-        width, height, mtype = self.create_image(io.BytesIO(image.file.read()), ident)
+            width, height, mtype = manager.store_media(ident)
 
-        description = req.get_param('description') or ""
-        focus_x = 0
-        focus_y = 0
+            if width:
+                description = req.get_param('description') or ""
+                focus_x = 0
+                focus_y = 0
 
-        if req.get_param('focus'):
-            focus_x, focus_y = req.get_param('focus').split(',')
+                if req.get_param('focus'):
+                    focus_x, focus_y = req.get_param('focus').split(',')
 
-        m = Media.create(
-            media_name = ident,
-            height = height,
-            width = width,
-            focus_x = focus_x,
-            focus_y = focus_y,
-            media_type = mtype,
-            description = description,
-        )
+                m = Media.create(
+                    media_name = ident,
+                    height = height,
+                    width = width,
+                    focus_x = focus_x,
+                    focus_y = focus_y,
+                    media_type = mtype,
+                    description = description,
+                )
 
-        resp.body = json.dumps(m.to_json())
-        resp.status = falcon.HTTP_200
+                resp.body = json.dumps(m.to_json())
+                resp.status = falcon.HTTP_200
+        else:
+            resp.body = json.dumps({"Error": "Error storing files"})
+            resp.body = falcon.HTTP_500

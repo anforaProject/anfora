@@ -16,6 +16,7 @@ from pipelines.upload_media import upload_image
 
 from tasks.redis.spreadStatus import spread_status
 from tasks.tasks import create_image
+from tasks.redis.remove_status import remove_status
 from auth import (loadUser, auth_backend, try_logged_jwt)
 
 from api.v1.helpers import (max_body, its_me)
@@ -50,7 +51,7 @@ class getStatus:
         status = Status.get_or_none(id=id)
         if status != None:
             if req.context['user'].id == status.user.id:
-                status.delete().execute()
+                remove_status(status)
                 resp.status = falcon.HTTP_200
             else:
                 resp.status = falcon.HTTP_401

@@ -9,7 +9,7 @@ urls = {
     "user": "/users/{username}",
     "atom": "/users/atom/{id}/",
     "profile_image": "/media/files/avatars/{name}",
-    "media": "/media/files/max_resolution/{id}.jpeg",
+    "media": "/media/files/max_resolution/{id}.{extension}",
     "preview": "/media/files/small/{id}.thumbnail",
     "logout": "/logout",
     "featured": "/users/{username}/collections/featured",

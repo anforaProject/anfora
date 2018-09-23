@@ -33,6 +33,8 @@ aiohttp-sse = "*"
 aiopg = "*"
 peewee-async = "*"
 "psycopg2-binary" = "*"
+moviepy = "*"
+imageio = "*"
 
 [requires]
 python_version = "3.6"
