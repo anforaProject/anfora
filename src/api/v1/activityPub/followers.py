@@ -1,11 +1,16 @@
 import json
+import logging
 
 import falcon
 
-from models.user import UserProfile 
+from models.user import UserProfile, User
 from models.followers import FollowerRelation
 from activityPub import activities
 
+from hooks.pagination import ap_pagination
+
+
+logger = logging.getLogger()
 
 class Followers():
 
@@ -13,11 +18,34 @@ class Followers():
         'exempt_methods':['GET']
     }
 
+    @falcon.before(ap_pagination)
     def on_get(self, req, resp, username):
-        user = UserProfile.get_or_none(username=username)
+        user = User.get_or_none(username=username)
+        
         if user:
-            followers = [follower.uris.id for follower in user.followers()]
-            resp.body=json.dumps(activities.OrderedCollection(followers).to_json(), default=str)
-            resp.status = falcon.HTTP_200
+            user = user.profile.get()
+            page = req.context['pagination']['page']
+            default_pagination = req.context['pagination']['default_pagination']
+            if page:
+                # In this case the page params is given
+                info = {
+                    'id': req.context['pagination']['id'],
+                    'partOf':req.context['pagination']['partOf'],
+                }
+                followers = [follower.uris.id for follower in user.followers().paginate(page,default_pagination)]
+                if followers:
+                    info['next'] = req.context['pagination']['next']
+                    
+                resp.body=json.dumps(activities.OrderedCollectionPage(followers, **info).to_json(), default=str)
+                resp.status = falcon.HTTP_200
+            else:
+                # We return the 0 page
+                info = {
+                    'id': req.context['pagination']['id'],
+                    'first': f"{req.context['pagination']['partOf']}?page=1",
+                }
+                resp.body=json.dumps(activities.OrderedCollection(**info).to_json())
+                
         else:
-            resp.status = falcon.HTTP_404
+            logger.debug(f'User not found {username}. AcitivtyPub/followers')
+            raise falcon.HTTPNotFound(decription="User not found") 

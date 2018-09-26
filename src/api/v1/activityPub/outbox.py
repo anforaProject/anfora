@@ -35,7 +35,7 @@ class Outbox():
         if user:
             user = user.profile.get()
 
-            objects = user.statuses.select().order_by(Status.created_at.desc())
+            objects = [status for status in TimelineManager(user).query(since_id=since_id, max_id=max_id, local=True, limit=limit) if status]
             collectionPage = activities.OrderedCollectionPage(map(activities.Note, objects))
             collection = activities.OrderedCollection([collectionPage])
             resp.body = json.dumps(collection.to_json(context=True))

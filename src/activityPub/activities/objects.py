@@ -21,8 +21,7 @@ class Object:
             value = kwargs.get(key)
             if isinstance(value, dict) and value.get("type"):
                 value = as_activitystream(value)
-
-            if value != None:
+            elif value != None:
                 setattr(self, key, value)
 
     def __str__(self):
@@ -88,9 +87,13 @@ class Person(Actor):
     type = "Person"
 
 class Note(Object):
-    attributes = Object.attributes + ["message", "actor","description",
-    "sensitive","likes", "created_at", "media_url", "preview_url"]
+    attributes = Object.attributes + ["actor","caption",
+    "is_sensitive","favourites_count", "created_at", 'media_data', 'attachment']
     type = "Note"
+
+class Document(Object):
+    attributes = Object.attributes + ['media_type', 'media_name']
+    type = 'Object'
 
 class Collection(Object):
 
@@ -134,22 +137,12 @@ class Collection(Object):
                     raise Exception("Invalid Activity object: {item}".format(item=item))
 
     def to_json(self, **kwargs):
-        json = Object.to_json(self, **kwargs)
-        return json
+        return Object.to_json(self, **kwargs)
 
 class OrderedCollection(Collection):
-    attributes = Object.attributes + ["first"]
+    attributes = Object.attributes + ["first", 'id']
     type = "OrderedCollection"
 
-
-    @property
-    def first(self):
-        return self.items
-
-
-    @first.setter
-    def first(self, iterable):
-        self.items = iterable
 
     def to_json(self, **kwargs):
         data = Collection.to_json(self, **kwargs)
@@ -186,6 +179,8 @@ ALLOWED_TYPES = {
     "Actor": Actor,
     "Person": Person,
     "Note": Note,
+    "Document": Document,
+    "Media": Document,
     "Collection": Collection,
     "OrderedCollection": OrderedCollection
 }
