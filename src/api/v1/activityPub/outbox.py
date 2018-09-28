@@ -18,7 +18,7 @@ from tasks.tasks import deliver
 from tasks.tasks import create_image
 
 from activityPub.identity_manager import ActivityPubId
-
+from managers.timeline_manager import TimelineManager
 
 class Outbox():
 
@@ -30,12 +30,12 @@ class Outbox():
     }
 
     def on_get(self, req, resp, username):
-        user = User.get_or_none(username==username)
+        user = User.get_or_none(username=username)
         
         if user:
             user = user.profile.get()
 
-            objects = [status for status in TimelineManager(user).query(since_id=since_id, max_id=max_id, local=True, limit=limit) if status]
+            objects = [Status.get_by_id(int(status)) for status in TimelineManager(user).query() if status]
             collectionPage = activities.OrderedCollectionPage(map(activities.Note, objects))
             collection = activities.OrderedCollection([collectionPage])
             resp.body = json.dumps(collection.to_json(context=True))
