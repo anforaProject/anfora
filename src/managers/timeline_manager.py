@@ -93,7 +93,7 @@ class TimelineManager:
         ids = []
         if since_id and not max_id:
             # Search the status
-            start = self.r.zrank(timeline_name, since_id)
+            start = self.r.zrank(timeline_name, since_id, score_cast_func=int)
             
             # If the status is in redis
             if start != None:
@@ -103,8 +103,8 @@ class TimelineManager:
                 ids = []
         elif since_id and max_id:
 
-            start = self.r.zrank(timeline_name, since_id)
-            end = self.r.zrank(timeline_name, max_id)
+            start = self.r.zrank(timeline_name, since_id, score_cast_func=int)
+            end = self.r.zrank(timeline_name, max_id, score_cast_func=int)
 
             if start and end:
                 ids = self.r.zrevrange(timeline_name, start, min(start+limit, end), score_cast_func=int)
@@ -117,7 +117,7 @@ class TimelineManager:
 
         elif not since_id and max_id:
             # Search the status
-            end = self.r.zrank(timeline_name, max_id)
+            end = self.r.zrank(timeline_name, max_id, score_cast_func=int)
             
             # If the status is in redis
             if start != None:
