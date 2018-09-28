@@ -13,9 +13,8 @@ class VueClient:
             return fp.read()
 
 
-    def on_get(self, req, resp, path):
+    def on_get(self, req, resp):
         html = self._load_template('index.html')
-
         resp.status = falcon.HTTP_200
         resp.content_type = 'text/html'
         resp.body = html
