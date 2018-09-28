@@ -42,12 +42,13 @@ class MediaManager:
 
         if mine_type in self.allowed_images:
 
-            thumb = os.path.join(MEDIA_FOLDER, thumb_folder, filename + 'jpg.thumbnail')
+            thumb = os.path.join(MEDIA_FOLDER, thumb_folder, filename + '.thumbnail.jpg')
             file_path = os.path.join(MEDIA_FOLDER, pic_folder, filename + '.jpg')
 
             im = Image.open(io.BytesIO(iobytes))
             im = im.convert('RGB') # Remove alpha layer 
             im.save(file_path, 'jpeg', quality=80, optimize=True, progressive=True)
+            im.save(thumb, 'jpeg', quality=30, optimize=True, progressive=True)
             
             return im.size[0], im.size[1], "image/jpeg"
 
