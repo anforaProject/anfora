@@ -28,7 +28,8 @@ from api.v1.client import VueClient
 
 from api.v1.activityPub.inbox import (Inbox)
 from api.v1.activityPub.outbox import (Outbox)
-from api.v1.activityPub.followers import (Followers)
+from api.v1.activityPub.actor import (getActor)
+from api.v1.activityPub.followers import (Followers, Following)
 
 from api.v1.server import (wellknownNodeinfo, wellknownWebfinger, nodeinfo, hostMeta)
 
@@ -91,10 +92,11 @@ app.add_route('/.well-known/host-meta', hostMeta())
 app.add_route(urls["outbox"], Outbox())
 app.add_route(urls["inbox"], Inbox())
 
-app.add_route(urls["user"], getUser())
+app.add_route(urls["user"], getActor())
 app.add_route(urls["atom"], atomFeed())
 
 app.add_route(urls["followers"], Followers())
+app.add_route(urls['following'], Following())
 app.add_route(urls["logout"], logoutUser())
 
-#app.add_route('/{path}', VueClient())
+app.add_sink(VueClient().on_get, prefix='/')
