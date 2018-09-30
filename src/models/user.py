@@ -143,13 +143,43 @@ class UserProfile(BaseModel):
 
     def to_activitystream(self):
         json = {
+            "@context": [
+                "https://www.w3.org/ns/activitystreams",
+                "https://w3id.org/security/v1",
+                {
+                    "manuallyApprovesFollowers": "as:manuallyApprovesFollowers",
+                    "sensitive": "as:sensitive",
+                    "movedTo": {
+                        "@id": "as:movedTo",
+                        "@type": "@id"
+                    },
+                    "Hashtag": "as:Hashtag",
+                    "ostatus": "http://ostatus.org#",
+                    "atomUri": "ostatus:atomUri",
+                    "inReplyToAtomUri": "ostatus:inReplyToAtomUri",
+                    "conversation": "ostatus:conversation",
+                    "toot": "http://joinmastodon.org/ns#",
+                    "Emoji": "toot:Emoji",
+                    "focalPoint": {
+                        "@container": "@list",
+                        "@id": "toot:focalPoint"
+                    },
+                    "featured": {
+                        "@id": "toot:featured",
+                        "@type": "@id"
+                    },
+                    "schema": "http://schema.org#",
+                    "PropertyValue": "schema:PropertyValue",
+                    "value": "schema:value"
+                }
+            ],
             "type": "Person",
             "id": self.uris.id,
             "name": self.name,
             "preferredUsername": self.username,
         }
 
-        if not self.remote:
+        if not self.is_remote:
             json.update({
                 "following": self.uris.following,
                 "followers": self.uris.followers,
@@ -161,7 +191,7 @@ class UserProfile(BaseModel):
                     'owner': self.ap_id
                 },
                 "summary": self.description,
-                "manuallyApprovesFollowers": self.private,
+                "manuallyApprovesFollowers": self.is_private,
                 "featured": self.uris.featured
             })
 
