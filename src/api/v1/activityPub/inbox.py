@@ -25,6 +25,8 @@ from tasks.tasks import deliver
 
 from activityPub.data_signature import SignatureVerification
 
+logger = logging.getLogger(__name__)
+
 class Inbox:
 
     auth = {
@@ -54,13 +56,14 @@ class Inbox:
 
         #Make a request to get the actor
         """
+        data = req.stream.read().decode("utf-8")
         if req.content_length:
-            activity = json.loads(req.stream.read().decode("utf-8"), object_hook=as_activitystream)
+            activity = as_activitystream(json.loads(data))
         else:
             activity = {}
 
         result = False
-        
+
         if activity.type == 'Follow':
             result = handle_follow(activity)
         elif activity.type == 'Accept':
