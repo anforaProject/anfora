@@ -18,8 +18,8 @@ from models.user import UserProfile
 
 class LinkedDataSignature:
 
-    def __init__(self, json):
-        self.json = dict(json)
+    def __init__(self, json_file):
+        self.json = dict(json_file)
 
     def sign(self, creator):
 
@@ -57,46 +57,7 @@ class LinkedDataSignature:
         options.update({'signatureValue': signature.decode('utf8')})
         self.json.update({'signature': options})
 
-class LinkedDataSignature:
-
-    def __init__(self, json):
-        self.json = dict(json)
-
-    def sign(self, creator):
-
-        """
-        Creator is an instance of User
-        """
-
-
-        options = {
-            'type': 'RsaSignature2017',
-            'creator': f'{creator.uris.id}#main-key',
-            'created': f'{datetime.datetime.utcnow():%d-%b-%YT%H:%M:%SZ}'
-        }
-
-        options_dic = dict(options)
-        del options_dic['type']
-
-        #Load Key
-        rsakey = RSA.importKey(creator.private_key) 
-        signer = PKCS1_v1_5.new(rsakey) 
-        digest = SHA256.new()
-
-        #Prepare data
-        data = dict(self.json).update({'signature': options_dic})
-        json_data = json.dumps(data).encode('utf8')
-        digest.update(json_data) 
-
-        #sign
-        sign = signer.sign(digest) 
-
-        #Return encode version
-        signature = b64encode(sign)
-
-        #Update the json object with the signature
-        options.update({'signatureValue': signature.decode('utf8')})
-        self.json.update({'signature': options})
+        return self.json
 
 class SignatureVerification:
 
@@ -158,11 +119,8 @@ class SignatureVerification:
 
         
         headers = []
-
-
-        hlist = headers_list.split(" ")
         
-        for header in hlist:
+        for header in headers_list:
             string = ""
             if header == self.REQUEST_TARGET:
                 string = f'{self.REQUEST_TARGET}: {self.method} {self.path}'
@@ -206,21 +164,21 @@ class SignatureVerification:
 
 
     def sign(self, user):
-        rsakey = RSA.importKey(creator.private_key) 
+        rsakey = RSA.importKey(user.private_key) 
         signer = PKCS1_v1_5.new(rsakey) 
         digest = SHA256.new()
 
-        as_list = list(headers.keys())
+        as_list = list(self.headers.keys())
 
         headers = self._build_signed_string(as_list)
-        digest.update(headers)
+        digest.update(headers.encode())
         #sign
         sign = signer.sign(digest) 
 
         #Return encode version
         signature = b64encode(sign)
 
-        header_list = " ".join(headers.keys())
+        header_list = " ".join(self.headers.keys())
 
         dic = {
             'keyId': f'{user.ap_id}#main-key',
@@ -228,4 +186,4 @@ class SignatureVerification:
             'headers': " ".join(as_list),
         }
 
-        return ",".join([f'{x}=\"{dic[x]}\"' for x in dic.keys()])
+        return ",".join([f'{x}="{dic[x]}"' for x in dic.keys()])
