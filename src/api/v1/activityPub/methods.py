@@ -54,7 +54,7 @@ def store(activity, person, remote=False):
 
 def handle_follow(activity):
     followed = UserProfile.get_or_none(ap_id=activity.object)
-
+    print(activity.object)
     if followed:
         ap_id = ""
         if isinstance(activity.actor, activities.Actor):
@@ -64,13 +64,13 @@ def handle_follow(activity):
 
         follower = ActivityPubId(ap_id).get_or_create_remote_user()
 
-        if followed.private:
+        if followed.is_private:
             FollowRequest.create(
                 account = follower,
                 target = followed
             )
         else:
-            follower.follow(followed)
+            follower.follow(followed, valid=True)
             t = Accept(object=activity,actor=followed.ap_id)
             data = LinkedDataSignature(t.to_json())
             signed = data.sign(followed)
@@ -82,7 +82,7 @@ def handle_follow(activity):
                 "host": DOMAIN,                
             }
 
-            signature = SignatureVerification(headers).sign(followed)
+            signature = SignatureVerification(headers, method="POST", path=activity.actor + '/inbox').sign(followed)
 
             
             headers.update({'signature': signature})
@@ -90,8 +90,10 @@ def handle_follow(activity):
             logger.debug('Records: %s', headers)
 
             r = requests.post(follower.ap_id, data = signed, headers=headers )
-            
+            print(r.status_code)
             logger.debug('Records: %s', r.status_code + "\n" + r.json())
+            print("sent ", signed, signature)
+            return True
     else:
         return False
 
