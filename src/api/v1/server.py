@@ -40,7 +40,7 @@ class wellknownNodeinfo:
         links=[
             {
                 "rel": "http://nodeinfo.diaspora.software/ns/schema/2.0",
-                "href": "{}/nodeinfo".format(ID),
+                "href": "{}/nodeinfo.json".format(ID),
             }
         ]
         resp.body = json.dumps(links)

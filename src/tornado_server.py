@@ -5,18 +5,22 @@ import peewee_async
 
 from models.base import db
 
-from api.v1.streaming import Notification
+from api.v1.streaming import SSEHandler, SubscriptionManager
+
+
 
 def make_app():
-    return tornado.web.Application([
-        (r"/api/v1/streaming/user", Notification),
+    loop = asyncio.get_event_loop()
+    manager = SubscriptionManager()
+    loop.run_until_complete(manager.connect())
+    app = tornado.web.Application([
+        (r"/api/v1/streaming/user", SSEHandler, dict(manager=manager)),
     ], debug=True)
 
-if __name__ == "__main__":
-    #AsyncIOMainLoop().install()
-    app = make_app()
-
-    app.listen(4000)
+    # Set database
     app.objects = peewee_async.Manager(db)
-    #loop = asyncio.get_event_loop().run_forever()
-    tornado.ioloop.IOLoop.current().start()
+    app.listen(4000)
+    loop.run_forever()
+
+if __name__ == "__main__":
+    make_app()

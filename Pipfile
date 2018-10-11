@@ -35,6 +35,8 @@ peewee-async = "*"
 "psycopg2-binary" = "*"
 moviepy = "*"
 imageio = "*"
+aioredis = "*"
+tornado = "*"
 
 [requires]
 python_version = "3.6"

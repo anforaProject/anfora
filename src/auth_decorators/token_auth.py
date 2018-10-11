@@ -5,10 +5,10 @@ import peewee_async
 import functools
 from models.base import db
 
-async def loadUserToken(token, object):
+def loadUserToken(token, object):
     
     try:
-        candidate = await object.get(Token, key=token)
+        candidate = Token.get(key=token)
         return candidate.user
     except Token.DoesNotExist:
         return None
@@ -17,7 +17,7 @@ async def loadUserToken(token, object):
 def bearerAuth(method):
 
     @functools.wraps(method)
-    async def wrapper(self, *args, **kwargs):
+    def wrapper(self, *args, **kwargs):
         auth = self.request.headers.get('Authorization')
 
         if auth:
@@ -40,7 +40,7 @@ def bearerAuth(method):
                 handler.finish()
 
             token = parts[1]
-            t = await loadUserToken(token, self.application.objects)
+            t = loadUserToken(token, self.application.objects)
             if not t:
                 handler.write("Invalid token")
                 handler.finish()
@@ -51,7 +51,7 @@ def bearerAuth(method):
 def is_authenticated(method):
 
     @functools.wraps(method)
-    async def wrapper(self, *args, **kwargs):
+    def wrapper(self, *args, **kwargs):
         auth = self.request.headers.get('Authorization')
         authenticated = True
         kwargs['user'] = None
@@ -65,7 +65,7 @@ def is_authenticated(method):
                 authenticated = False
 
             token = parts[1]
-            t = await loadUserToken(token, self.application.objects)
+            t = loadUserToken(token, self.application.objects)
             if t == None:
                 authenticated = False
             else:
