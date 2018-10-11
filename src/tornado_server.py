@@ -1,6 +1,4 @@
-import tornado.ioloop
-import tornado.web
-from tornado.platform.asyncio import AsyncIOMainLoop
+import tornado
 import asyncio
 
 import peewee_async
@@ -18,7 +16,7 @@ if __name__ == "__main__":
     #AsyncIOMainLoop().install()
     app = make_app()
 
-    app.listen(8888)
+    app.listen(4000)
     app.objects = peewee_async.Manager(db)
     #loop = asyncio.get_event_loop().run_forever()
     tornado.ioloop.IOLoop.current().start()
