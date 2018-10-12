@@ -99,7 +99,7 @@ class SubscriptionManager:
         del sub
 
 
-class SSEHandler(web.RequestHandler):
+class SSEHandler(BaseHandler):
     def initialize(self, manager: SubscriptionManager):
         self.queue = Queue()
         self.manager = manager
@@ -108,7 +108,6 @@ class SSEHandler(web.RequestHandler):
     
     @bearerAuth
     async def get(self, user):
-        print(user.id)
         channel = f'timeline:{user.id}'
         await self.manager.subscribe(self, channel)
         while True:
