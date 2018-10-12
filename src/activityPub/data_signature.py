@@ -119,8 +119,8 @@ class SignatureVerification:
 
         
         headers = []
-        
-        for header in headers_list:
+        hlist = headers_list.split(" ")
+        for header in hlist:
             string = ""
             if header == self.REQUEST_TARGET:
                 string = f'{self.REQUEST_TARGET}: {self.method} {self.path}'
