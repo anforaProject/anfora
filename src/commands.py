@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 from services.create_timelines import *
 from utils.settings_creator import create_settings_file, travis_setup
 
-from manage_db import (connect, create_tables)
+from manage_db import (connect, create_tables, migrate)
 
 parser = ArgumentParser()
 parser.add_argument("-t", "--timelines", dest="command",
@@ -31,6 +31,14 @@ parser.add_argument('-d', '--syncdb',
                     action="store_const",
                     const="db")
 
+parser.add_argument('-m', '--migrate',
+                    dest="command",
+                    help="created database",
+                    action="store_const",
+                    const="migrate")
+
+
+
 parser.add_argument('--travis-config', dest="command",action="store_const", const="travis")
 
 args = parser.parse_args()
@@ -42,8 +50,11 @@ elif args.command == 'settings' and args.config:
     create_settings_file(args.config)
 elif args.command == 'db':
     connect()
-    create_tables()
+    #create_tables()
+    migrate()
 elif args.command == 'travis':
     travis_setup()
+elif args.command == 'migrate':
+    migrate()
 else:
     print("No command found")

@@ -1,102 +1,73 @@
-import os
+import tornado.ioloop
+import tornado.web 
+from tornado.platform.asyncio import AsyncIOMainLoop
+import asyncio
 
-import falcon
+import peewee_async
+from tornadouvloop import TornadoUvloop
 
-#Middlewares
-#from middleware import RequireJSON
-from falcon_multipart.middleware import MultipartMiddleware
-from falcon_auth import FalconAuthMiddleware
-from falcon_cors import CORS
+from models.base import db
 
-from settings import MEDIA_FOLDER
+from api.v1.user import (UserHandler, ProfileManager, RegisterUser, AuthUser,
+                        VerifyCredentials)
+from api.v1.status import (StatusHandler, UserStatuses, FavouriteStatus,
+                            UnFavouriteStatus, FetchUserStatuses  
+                        )
 
-from middleware import (PeeweeConnectionMiddleware, CorsMiddleware)
-
-#Resources
-from api.v1.statuses import (getStatus, manageUserStatuses, favouriteStatus, unfavouriteStatus)
-from api.v1.albums import (createAlbum, getAlbum, addToAlbum)
-from api.v1.user import (authUser, getUser, getFollowers, logoutUser,
-                            getStatuses, atomFeed, followAction, 
-                            manageCredentials,verifyCredentials, 
-                            followingAccounts, registerUser, userURLConfirmation)
-
-from api.v1.timelines import (homeTimeline)
-
+from api.v1.server import (WellKnownNodeInfo, WellKnownWebFinger, NodeInfo)
 from api.v1.media import UploadMedia
+from api.v1.timelines import (HomeTimeline)
+from api.v1.streaming import SSEHandler, SubscriptionManager
 
-from api.v1.client import VueClient
+from api.v1.explore import ExploreUsers
 
-from api.v1.activityPub.inbox import (Inbox)
-from api.v1.activityPub.outbox import (Outbox)
-from api.v1.activityPub.actor import (getActor)
-from api.v1.activityPub.followers import (Followers, Following)
+class MainHandler(tornado.web.RequestHandler):
+    def get(self, path):
+        try:
+            with open("/home/yabir/killMe/anfora/src/client/dist/index.html") as f:
+                self.write(f.read())
+        except IOError as e:
+            self.write("404: Not Found")
 
-from api.v1.server import (wellknownNodeinfo, wellknownWebfinger, nodeinfo, hostMeta)
+manager = SubscriptionManager()
 
-#Auth
-from auth import (auth_backend,loadUser)
+            
+def make_app():
+    return tornado.web.Application([
+        (r'/api/v1/accounts/(?P<id>[\d+])', UserHandler),
+        (r'/api/v1/accounts/(?P<id>[\d+])/statuses', FetchUserStatuses),
+        (r'/api/v1/accounts/update_credentials', ProfileManager),
 
-#URLs
-from urls import urls
+        (r'/api/v1/statuses', UserStatuses),
+        (r'/api/v1/statuses/(?P<pid>[\d+]+)', StatusHandler),
+        (r'/api/v1/statuses/(?P<pid>[\d+]+)/favourite', FavouriteStatus),
+        (r'/api/v1/statuses/(?P<pid>[\d+]+)/unfavourite', UnFavouriteStatus),
 
-from api.v1.server import serverInfo
+        (r'/.well-known/nodeinfo', WellKnownNodeInfo),
+        (r'/.well-known/webfinger', WellKnownWebFinger),
+        (r'/nodeinfo', NodeInfo),
 
-cors =  CORS(allow_all_origins=True,
-            allow_all_methods=True,
-            allow_headers_list=['*'],
-            log_level='INFO',
-        )
+        (r'/api/v1/timelines/home', HomeTimeline),
 
-#Auth values
-auth_middleware = FalconAuthMiddleware(auth_backend,exempt_methods=['OPTIONS'])
+        (r'/api/v1/media', UploadMedia),
+        (r'/api/v1/auth', AuthUser),
+        (r'/api/v1/accounts/verify_credentials', VerifyCredentials),
 
+        (r'/api/v1/explore/users', ExploreUsers),
 
-#Create the app
-app = falcon.API(middleware=[
-    #cors.middleware,
-    CorsMiddleware(),
-    auth_middleware,
-    PeeweeConnectionMiddleware(),
-    MultipartMiddleware(),
-])
+        (r'/api/v1/register', RegisterUser),
+        (r'/(.*)', MainHandler),
+        (r"/api/v1/streaming/user", SSEHandler, dict(manager=manager))
+    ], debug=True)
 
-#Routes
-app.add_route('/info', serverInfo())
+if __name__ == "__main__":
+    #AsyncIOMainLoop().install()
+    app = make_app()
 
-app.add_route('/api/v1/accounts/{id}', getUser())
-app.add_route('/api/v1/accounts/{id}/statuses', getStatuses())
-app.add_route('/api/v1/accounts/{id}/followers', getFollowers())
-app.add_route('/api/v1/accounts/{id}/following', followingAccounts())
-app.add_route('/api/v1/accounts/update_credentials', manageCredentials())
-app.add_route('/api/v1/statuses', manageUserStatuses())
-app.add_route('/api/v1/media', UploadMedia())
-
-app.add_route('/api/v1/statuses/{id}', getStatus())
-app.add_route('/api/v1/statuses/{id}/favourite', favouriteStatus())
-app.add_route('/api/v1/statuses/{id}/unfavourite', unfavouriteStatus())
-
-app.add_route('/api/v1/auth', authUser())
-app.add_route('/api/v1/accounts/verify_credentials', verifyCredentials())
-app.add_route('/api/v1/timelines/home', homeTimeline())
-app.add_route('/api/v1/follows', followAction())
-
-app.add_route('/api/v1/register', registerUser())
-app.add_route('/registration/active/{token}', userURLConfirmation())
-
-app.add_route('/.well-known/nodeinfo', wellknownNodeinfo())
-app.add_route('/.well-known/webfinger', wellknownWebfinger())
-app.add_route('/nodeinfo', nodeinfo())
-app.add_route('/.well-known/host-meta', hostMeta())
-
-#User oubox/inbox
-app.add_route(urls["outbox"], Outbox())
-app.add_route(urls["inbox"], Inbox())
-
-app.add_route(urls["user"], getActor())
-app.add_route(urls["atom"], atomFeed())
-
-app.add_route(urls["followers"], Followers())
-app.add_route(urls['following'], Following())
-app.add_route(urls["logout"], logoutUser())
-
-app.add_sink(VueClient().on_get, prefix='/')
+    app.listen(3000)
+    app.objects = peewee_async.Manager(db)
+    
+    loop = asyncio.get_event_loop()
+    manager.connect()
+    tornado.ioloop.IOLoop.configure(TornadoUvloop)
+    tornado.ioloop.IOLoop.current().start()

@@ -10,7 +10,7 @@ from PIL import Image
 from Crypto.PublicKey import RSA
 from Crypto import Random
 
-from peewee import *
+from peewee import CharField, BooleanField, DateTimeField, IntegerField, TextField, ForeignKeyField
 from playhouse.shortcuts import model_to_dict
 
 from models.base import BaseModel

@@ -68,7 +68,7 @@ def new_user(username, password, email,
         return False
 
     # Hash the password
-
+    password = password
     passw = bcrypt.hashpw(password, salt_code)
 
     # First we create the actual user

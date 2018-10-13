@@ -13,6 +13,7 @@ class Token(BaseModel):
 
     key = CharField(primary_key=True)
     user = ForeignKeyField(UserProfile, on_delete='CASCADE')
+    created_at = DateTimeField(default=datetime.datetime.now) 
 
     def save(self, *args, **kwargs):
         if not self.key:

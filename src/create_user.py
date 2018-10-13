@@ -3,7 +3,6 @@ import bcrypt
 
 from models.user import UserProfile
 from managers.user_manager import new_user
-from auth import Argon2
 from settings import salt_code
 
 

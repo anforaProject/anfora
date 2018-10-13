@@ -1,49 +1,31 @@
 [[source]]
+url = "https://pypi.org/simple"
 name = "pypi"
 verify_ssl = true
-url = "https://pypi.org/simple"
+
+[dev-packages]
 
 [packages]
-peewee = "*"
-falcon = "*"
-"argon2-cffi" = "*"
-pillow = "*"
-requests = "*"
-uwsgi = "*"
-falcon-auth = "*"
-falcon-cors = "*"
-huey = "*"
-redis = "*"
-falcon-multipart = "*"
-crypto = "*"
-pycrypto = "*"
-gunicorn = "*"
-bson = "*"
-avatar = {git = "https://github.com/lsdlab/avatar-gen.git"}
-hashids = "*"
-pyyaml = "*"
-colorama = "*"
-python-magic = "*"
-pip = "*"
-itsdangerous = "*"
-peewee-migrate = "*"
-py-bcrypt = "*"
-aiohttp = "*"
-aiohttp-sse = "*"
-aiopg = "*"
-peewee-async = "*"
-"psycopg2-binary" = "*"
-moviepy = "*"
-imageio = "*"
-aioredis = "*"
 tornado = "*"
+aiopg = "*"
+redis = "*"
+huey = "*"
+avatar = {git = "https://github.com/lsdlab/avatar-gen.git"}
+pillow = "*"
+pycrypto = "*"
+hashids = "*"
+peewee = "==3.7.0"
+peewee-async = "*"
+itsdangerous = "*"
+"psycopg2-binary" = "*"
+python-magic = "*"
+moviepy = "*"
+aioredis = "*"
+tornado-uvloop = "*"
+py-bcrypt = "*"
 
 [requires]
 python_version = "3.6"
-
-[dev-packages]
-pytest = "*"
-requests-toolbelt = "*"
 
 [pipenv]
 allow_prereleases = true

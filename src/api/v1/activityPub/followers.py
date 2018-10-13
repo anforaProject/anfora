@@ -35,7 +35,8 @@ class Followers():
                 followers = [follower.uris.id for follower in user.followers().paginate(page,default_pagination)]
                 if followers:
                     info['next'] = req.context['pagination']['next']
-                    
+                
+                
                 resp.body=json.dumps(activities.OrderedCollectionPage(followers, **info).to_json(), default=str)
                 resp.status = falcon.HTTP_200
             else:
