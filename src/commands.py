@@ -50,8 +50,7 @@ elif args.command == 'settings' and args.config:
     create_settings_file(args.config)
 elif args.command == 'db':
     connect()
-    #create_tables()
-    migrate()
+    create_tables()
 elif args.command == 'travis':
     travis_setup()
 elif args.command == 'migrate':
