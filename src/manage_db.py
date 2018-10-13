@@ -3,7 +3,7 @@ import psycopg2
 from settings import (DB_USER, DB_NAME, DB_PORT, DB_HOST)
 
 from models.base import db
-
+import peeweedbevolve
 from models.user import UserProfile, User
 from models.album import Album
 from models.status import Status
@@ -19,6 +19,8 @@ from models.like import Like
 from models.follow_request import FollowRequest
 from models.report import Report 
 from models.notification import Notification
+
+
 
 def create_db():
     con = psycopg2.connect(dbname='postgres',user="postgres", host=DB_HOST, port=DB_PORT)
@@ -58,3 +60,6 @@ def create_tables():
     for table in tables:
         if not table.table_exists():
             table.create_table()
+
+def migrate():
+    db.evolve()

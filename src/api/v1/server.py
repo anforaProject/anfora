@@ -1,6 +1,5 @@
-import falcon
 import json
-from falcon_auth import BasicAuthBackend
+from tornado.web import HTTPError, RequestHandler
 
 from settings import (ID, NODENAME, DOMAIN, SCHEME)
 from release_info import VERSION
@@ -9,52 +8,32 @@ from models.followers import FollowerRelation
 from models.user import UserProfile, User
 from models.status import Status
 
+from api.v1.base_handler import BaseHandler
+
 from utils.username import extract_user
 from utils.webfinger import Webfinger
 
-class serverInfo:
+class WellKnownNodeInfo(BaseHandler):
 
-    auth = {'auth_disabled': True}
+    def get(self):
 
-    def on_get(self, req, resp):
-        nUsers = UserProfile.select().count()
-
-        resp.status = falcon.HTTP_200
-        resp.body = json.dumps({"users": nUsers})
-
-class hostMeta:
-
-    auth = {'auth_disabled': True}
-
-    def on_get(self, req, resp):
-        print(req.params)
-        resp.content_type = falcon.MEDIA_XML
-        resp.status = falcon.HTTP_200
-        resp.body = f'<?xml version="1.0" encoding="UTF-8"?>\n<XRD xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0">\n<Link rel="lrdd" type="application/xrd+xml" template="{SCHEME}://{DOMAIN}/.well-known/webfinger?resource={{uri}}"/>\n</XRD>'
-
-class wellknownNodeinfo:
-
-    auth = {'auth_disabled': True}
-
-    def on_get(self,req, resp):
-        links=[
+        links = [
             {
                 "rel": "http://nodeinfo.diaspora.software/ns/schema/2.0",
                 "href": "{}/nodeinfo.json".format(ID),
             }
         ]
-        resp.body = json.dumps(links)
-        resp.content_type = 'application/jrd+json'
-        resp.status = falcon.HTTP_200
 
-class nodeinfo:
+        self.write(links)
 
-    auth = {'auth_disabled':True}
 
-    def on_get(self, req, resp):
+class NodeInfo(BaseHandler):
 
-        resp.append_header("Content-Type","application/json; profile=http://nodeinfo.diaspora.software/ns/schema/2.0#")
+    async def get(self):
 
+        number_of_users = await self.application.objects.count(UserProfile.select())
+        number_of_statuses = await self.application.objects.count(Status.select())
+        
         response = {
             "version": "2.0",
             "software": {
@@ -66,47 +45,45 @@ class nodeinfo:
             "openRegistrations": False,
             "usage": {
                 "users": {
-                    "total": UserProfile.select().count()
+                    "total": number_of_users
                 },
-                "localPosts": Status.select().count()
+                "localPosts": number_of_statuses
             },
             "metadata": {
                 "sourceCode": "https://github.com/anforaProject/anfora",
                 "nodeName": NODENAME,
-            },
+            },    
         }
 
-        resp.body = json.dumps(response)
-        resp.status = falcon.HTTP_200
+        self.write(response)
 
+class WellKnownWebFinger(BaseHandler):
 
-class wellknownWebfinger:
+    async def get(self):
 
-    auth = {'auth_disabled': True}
+        if not self.get_argument('resource', False):
+            self.set_status(400)
+            self.write({"Error": "No resource was provided"})
 
-    def on_get(self, req, resp):
-
-        # For now I will assume that webfinger only asks for the actor, so resources
-        # is just one element.
-        if not 'resource' in req.params.keys():
-            raise falcon.HTTPBadRequest(description="No resource was provided along the request.")
-        
-        resources = req.params['resource']
-
+        resources = self.get_argument('resource')
 
         username, domain = extract_user(resources)
 
         if username == None and domain == None:
-            raise falcon.HTTPBadRequest(description="Unable to decode resource.")
+            self.write({"Error": "Bad resource provided"})
+            return
 
         if domain == DOMAIN:
-            user = User.get_or_none(username=username)
-            if user:
-                profile = user.profile.get()
+            try:
+                user = await self.application.objects.get(User, username=username)
+
+                profile = await self.application.objects.get(user.profile)
                 response = Webfinger(profile).generate()
-                resp.body = json.dumps(response)
-                resp.status = falcon.HTTP_200
-            else:
-                raise falcon.HTTPNotFound(description="User was not found.")
+                self.write(response)
+            except User.DoesNotExist:
+                self.write({"Error": "User not found"})
+                self.set_status(404)
         else:
-            raise falcon.HTTPBadRequest(description="Resouce domain doesn't match local domain.")
+
+            self.write({"Error": "Incorrect domain"})
+            self.set_status(400)

@@ -1,5 +1,4 @@
 import datetime
-import falcon
 
 from peewee import (ForeignKeyField, BooleanField, DateTimeField)
 

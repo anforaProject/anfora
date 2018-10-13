@@ -10,7 +10,7 @@ class Album(BaseModel):
     creted_date = DateTimeField(default=datetime.datetime.now)
     public = BooleanField(default=False)
     user = ForeignKeyField(UserProfile, backref='albums')
-#   description = TextField()
+    description = TextField()
 
     def to_model(self):
         return model_to_dict(self, exclude=self._BaseModel__exclude())

@@ -1,56 +1,28 @@
 import json
-import os
 import logging
-from datetime import datetime, timedelta, date
-from email.utils import parseaddr
 
-import falcon
-import redis
-from falcon_auth import BasicAuthBackend
+from tornado.web import HTTPError, RequestHandler
 
 from models.user import UserProfile, User
 from models.status import Status
 from models.token import Token
-from models.followers import FollowerRelation
 
-from auth import (auth_backend,loadUserToken,loadUserPass)
-
-from activityPub import activities
-from activityPub.data_signature import LinkedDataSignature,SignatureVerification
+from api.v1.base_handler import BaseHandler
+from auth.token_auth import bearerAuth, userPassLogin, basicAuth
 
 from utils.atomFeed import generate_feed
 
-from api.v1.helpers import get_ap_by_uri
-from activityPub.identity_manager import ActivityPubId
-
 from managers.user_manager import new_user
 
-from tasks.ap_methods import send_activity
 from tasks.emails import confirm_token
 
-from settings import (DOMAIN, MEDIA_FOLDER)
+logger = logging.getLogger(__name__)
 
-def json_serial(obj):
-    """JSON serializer for objects not serializable by default json code"""
 
-    if isinstance(obj, (datetime, date)):
-        return obj.isoformat()
-    raise TypeError ("Type %s not serializable" % type(obj))
+class AuthUser(BaseHandler):
 
-class authUser:
-
-    """
-    Loggin user
-    """
-
-    auth = {
-        'backend': BasicAuthBackend(user_loader=loadUserPass)
-    }
-
-    cors_enabled = False
-
-    def on_get(self, req, resp):
-        user = req.context['user']
+    @basicAuth
+    async def get(self, user):
 
         if user.is_remote:
             resp.status = falcon.HTTP_401
@@ -59,239 +31,170 @@ class authUser:
         token = Token.create(user=user)
 
         payload = {
-            "token": token.key
+            "token": "Bearer " + token.key
         }
 
+        self.write(payload)
+        self.set_status(200)
 
-        resp.status = falcon.HTTP_200
-        resp.body = json.dumps({"token":auth_backend.get_auth_token(payload)})
 
-class verifyCredentials:
+class UserHandler(BaseHandler):
+    async def get(self, id):
+        try:
+            #person = await self.application.objects.get(User, User.id==int(id))
+            profile = await self.application.objects.get(UserProfile, UserProfile.id==int(id))
 
-    def on_get(self, req, resp):
+            self.write(json.dumps(profile.to_json(), default=str).encode('utf-8'))
+            self.set_status(200)
+        except User.DoesNotExist:
+            raise HTTPError(404, "User not found")
 
-        user = req.context['user']
+class VerifyCredentials(BaseHandler):
 
-        resp.body = json.dumps(user.to_json(), default=str)
-        resp.status = falcon.HTTP_200
+    @bearerAuth
+    async def get(self, user):
 
-class manageCredentials:
+        self.write(json.dumps(user.to_json(), default=str).encode('utf-8'))
 
-    def on_patch(self, req, resp):
-        user = req.context['user']
+class ProfileManager(BaseHandler):
+
+    """
+    
+        Update the profile info for an user.
+
+        patch: Valid arguments are:
+
+            - display_name: The name to show
+            - note: A description
+            - locked: true if the account is private
+            - bot: true if the account is a bot
+            - avatar: a file containing the image for the user account
+
+    """
+
+    @bearerAuth
+    async def patch(self, user):
 
         errors = []
 
-        if 'display_name' in req.params:
-            if len(req.get_param('display_name')) <= 31: 
-                user.name = req.get_param('display_name')
+        valids_types = ['image/png', 'image/jpeg']
+
+        if self.get_argument('display_name', None):
+            if len(self.get_argument('display_name')) <= 31: 
+                user.name = self.get_argument('display_name')
             else:
                 errors.append('display_name length exceeded.')
         
-        if 'note' in req.params:
-            if len(req.get_param('note')) <= 160:
-                user.description = req.get_param('note')
+        if self.get_argument('note', False):
+            if len(self.get_argument('note')) <= 160:
+                user.description = self.get_argument('note')
             else:
                 errors.append('Note length exceeded.')
 
-        if 'locked' in req.params:
-            user.private = req.get_param('locked') in ['true']
+        if self.get_argument('locked', False):
+            user.private = self.get_argument('locked') in ['true']
 
-        if 'bot' in req.params:
-            user.bot = req.get_param('bot') in ['true']
+        if self.get_argument('bot', False):
+            user.bot = self.get_argument('bot') in ['true']
 
-        if 'avatar' in req.params:
-            image = req.get_param('avatar')
-            user.avatar_file = user.update_avatar(image.file.read())
+        if 'avatar' in self.request.files.keys():
+            if self.request.files['avatar'][0]['content_type'] in valids_types:
+            # TO DO 
+            # Review that this works
+                user.avatar_file = user.update_avatar(self.request.files['avatar'][0]['body'])
+
         
+        # Once all the changes have been made
+
         if not errors:
-            user.save()
-            resp.status = falcon.HTTP_200
-            resp.body = json.dumps(user.to_json(), default=str)
-        else:
-            resp.status = falcon.HTTP_UNPROCESSABLE_ENTITY
-            resp.body = json.dumps(errors)
+            await self.application.objects.update(user)
+            self.write(json.dumps(user.to_json(), default=str).encode('utf-8'))
         
-
-
-class getUser():
-    auth = {
-        'exempt_methods': ['GET']
-    }
-
-    def on_get(self, req, resp, id):
-        person = User.get_or_none(id=id)
-        if person:
-            person = person.profile.get()
-            resp.body = json.dumps(person.to_json(), default=json_serial)
-            resp.status = falcon.HTTP_200
         else:
-            resp.status = falcon.HTTP_404
 
+            self.set_status(422)
+            self.write(json.dumps(errors).encode('utf-8'))
 
-class logoutUser(object):
-
-    def on_post(self, req, resp):
-        user = req.context['user']
-
-        token = req.get_param('token').replace('Bearer','').split(' ')[-1]
-        if user.is_remote:
-            resp.status = falcon.HTTP_404
-            resp.body = json.dumps({"Error": "Remote user"})
-
-        token = Token.get(Token.key==token)
-
-        if user == token.user:
-            token.delete_instance()
-            resp.status = falcon.HTTP_200
-            resp.body = json.dumps({"Success":"Removed token"})
-        else:
-            resp.status = falcon.HTTP_401
-            resp.body = json.dumps({"Error": "Unauthorized user"})
-
-
-class getStatuses(object):
+class LogoutUser(BaseHandler):
 
     """
-    Retrive Statuses for an user
+        Delete the token associated to an account.
+        Therefor this ends its session.
     """
 
-    auth = {
-        'exempt_methods': ['GET']
-    }
+    @bearerAuth
+    async def post(sef, user):
+        token = self.request.headers.get('Authorization').split()[1]
 
-    def on_get(self, req, resp, id):
+        try:
+            token = await self.application.objects.get(Token, key=token)
 
-        user = UserProfile.get_or_none(id=id)
-        if user:
-            statuses = [x.to_json() for x in user.statuses.order_by(Status.created_at.desc())]
-            resp.body = json.dumps(statuses, default=str)
-            resp.status = falcon.HTTP_200
+            if user == token.user:
+                await self.application.objects.delete(token)
+                self.write({"Success": "Removed token"})
+            else:
+                self.set_status(401)
+                self.write({"Error": "Unauthorized user"})
+        
+        except Token.DoesNotExist:
+            self.write({"Error": "This token doesn't exists"})
 
-        else:
-            resp.body = json.dumps({"Error: No such user"})
-            resp.status = falcon.HTTP_404
+class atomFeed(BaseHandler):
 
+    async def get(self, id):
 
-class atomFeed(object):
-    
-
-    """
-    Called when you request the atom feed 
-    """
-
-    auth = {
-        'exempt_methods': ['GET']
-    }
-
-    def on_get(self, req, resp, id):
-        user = UserProfile.get_or_none(id=id)
-        if user:
-            if 'max_id' in req.params.keys():
-                feed = generate_feed(user, req.params['max_id'])
+        try:
+            user = await self.application.objects.get(User, id=id)
+            if self.get_argument('max_id', False):
+                feed = generate_feed(user, int(self.get_argument('max_id')))
             else:
                 feed = generate_feed(user)
+            
+            self.set_header('Content-Type', 'application/xml')
+            self.write(feed)  
 
-            resp.status = falcon.HTTP_200
-            resp.body = feed
-            resp.content_type = falcon.MEDIA_XML
+        except User.DoesNotExist:
+            self.set_status(404)
+            self.write({"Error": "User doesn't exits"})
+
+class UserURLConfirmation(BaseHandler):
+
+    async def get(self, token):
+        email = confirm_token(token)
+        if email:
+            try:
+                user = self.application.objects(User, email=email)
+                user.confirmed = True 
+                self.application.objects.update(user)
+            
+            except User.DoesNotExist:
+                self.set_status(404)
+                self.write({"Error": "User not available"})
         else:
-
-            resp.status = falcon.HTTP_404
-
-
-class followAction(object):
-
-    """
-    Triggered when you want to follow an account in the fediverse
-    """
-
-    def on_post(self, req, resp):
-        user = req.context['user']
-
-        #FIX: Check if it's uri
-        obj_id = get_ap_by_uri(req.params['uri'])
-        #print(obj_id)
-        follow_object = activities.Follow(actor=user.uris.inbox,
-                                    object=obj_id)
+            self.set_status(500)
+            self.write({"Error": "Invalid code or too old"})
 
 
-        #Follow object that needs to be send
-        signed_object = LinkedDataSignature(follow_object.to_json(context=True))
+class RegisterUser(BaseHandler):
 
-        #Prepare the object that will be send as response
-        following = ActivityPubId(obj_id).get_or_create_remote_user()
+    async def post(self):
 
-        #Sign the activity object
-        signed_object.sign(user)
-
-        #Create the task to send the petition
-        send_activity(signed_object.json, user, obj_id)
-        
-        resp.body = json.dumps(following.to_json(), default=str)
-        #resp.body = json.dumps(signed_object.json, default=str)
-        resp.status = falcon.HTTP_200
-
-class getFollowers:
-
-    auth = {
-        'exempt_methods':['GET']
-    }
-
-    def on_get(self, req, resp, id):
-        user = UserProfile.get_or_none(id=id)
-        if user:
-            followers = [follower.to_json() for follower in user.followers()]
-            resp.body=json.dumps(followers, default=str)
-            resp.status = falcon.HTTP_200
-        else:
-            resp.status = falcon.HTTP_404
-
-class followingAccounts:
-
-    auth = {
-        'exempt_methods': ['GET']
-    }
-
-    def __init__(self):
-        self.MAX_ELEMENTS = 40
-
-    def on_get(self, req, resp, id):
-
-        max_id = req.get_param('max_ids')
-        since_id = req.get_param('since_id')
-        limit = req.get_param('limit') or self.MAX_ELEMENTS
-
-        if max_id and since_id:
-            follows = UserProfile.select().join(FollowerRelation, on=FollowerRelation.follows).where(FollowerRelation.user.id == id, UserProfile.id > since_id, UserProfile.id < max_id).limit(limit)
-        elif max_id:
-            follows = UserProfile.select().join(FollowerRelation, on=FollowerRelation.follows).where(FollowerRelation.user.id == id, UserProfile.id < max_id).limit(limit)
-        elif since_id:
-            follows = UserProfile.select().join(FollowerRelation, on=FollowerRelation.follows).where(FollowerRelation.user.id == id, UserProfile.id > since_id).limit(limit)
-        else:
-            follows = FollowerRelation.select().join(UserProfile, on=FollowerRelation.user).where(FollowerRelation.follows.id == id).limit(limit).order_by(FollowerRelation.id.desc())
-
-        following = [follow.follows.to_json() for follow in follows]
-        resp.body=json.dumps(following, default=str) 
-        resp.satatus=falcon.HTTP_200
-
-class registerUser:
-    auth = {
-        'exempt_methods':['POST']
-    }
-
-    def on_post(self, req, resp):
-        username = req.get_param('username')
-        password = req.get_param('password')
-        confirmation = req.get_param('password_confirmation')
-        email = req.get_param('email')
+        username = self.get_argument('username')
+        password = self.get_argument('password')
+        confirmation = self.get_argument('password_confirmation')
+        email = self.get_argument('email')
 
         valid_password = password == confirmation
 
-        free = User.select().where(User.username==username).count() == 0
+        username_count = await self.application.objects.execute(User.select().where(User.username==username).count())
 
+        free = username_count == 0
+        logger.debug(f'username is free: {free}')
         if valid_password and free:
+
             try:
+
+                logger.debug("Creating new user")
                 profile = new_user(
                     username = username, 
                     password = password,
@@ -300,38 +203,16 @@ class registerUser:
                 )
 
                 if not profile:
-                    resp.status = falcon.HTTP_402
-                    resp.body = json.dumps({"Error": "Wrong username. Valid characters are number, ascii letters and (.) (_)"})
-                else:
-                    resp.status = falcon.HTTP_202
-                    resp.body = json.dumps(profile.to_json(), default=str)
+                    logger.error("Error creating profile")
+                    self.set_status(402)
+                    self.write({"Error": "Wrong username. Valid characters are number, ascii letters and (.) (_)"})
+
             except Exception as e:
-                print(e)
-                resp.status = falcon.HTTP_400
-                resp.body = json.dumps({"Error": "Bad data"})
+                logger.error(e)
+                self.set_status(500)
+                self.write({"Error": "Error creating new user"})
+        
         else:
-            resp.status = falcon.HTTP_400
-            resp.body = json.dumps({"Error": "User not available"})
 
-class userURLConfirmation:
-
-    auth = {
-        'exempt_methods':['GET']
-    }
-
-
-    def on_get(self, req, resp, token):
-        email = confirm_token(token)
-        if email:
-            user = User.get_or_none(email=email)
-            if user:
-                user.confirmed = True 
-                user.save()
-            else:
-                resp.status = falcon.HTTP_404
-                resp.body = json.dumps({"Error": "User not available"})
-        else:
-            resp.status = falcon.HTTP_500
-            resp.body = json.dumps({"Error": "Invalid code or too old"})
-
-
+            self.set_status(400)
+            self.write({"Error": "User not available or password not matching"})

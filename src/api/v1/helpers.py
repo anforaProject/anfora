@@ -1,6 +1,5 @@
 import os
 
-import falcon
 import requests
 import redis 
 from Crypto.PublicKey import RSA 

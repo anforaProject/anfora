@@ -5,7 +5,7 @@ from PIL import Image
 from settings import MEDIA_FOLDER
 
 from models.status import Status
-from api.v1.activityPub.methods import (get_final_audience, deliver_to)
+#from api.v1.activityPub.methods import (get_final_audience, deliver_to)
 
 from tasks.config import huey # import the huey we instantiated in config.py
 

@@ -10,7 +10,7 @@ from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop, PeriodicCallback
 from tornado.iostream import StreamClosedError
 
-from auth_decorators.token_auth import bearerAuth
+from auth.token_auth import bearerAuth
 
 from api.v1.base_handler import BaseHandler
 
@@ -74,7 +74,7 @@ class SubscriptionManager:
     def __init__(self, loop=None):
         self.redis = None
         self.subscriptions = dict()
-        self.loop = loop or asyncio.get_event_loop()
+        #self.loop = loop or asyncio.get_event_loop()
 
     async def connect(self):
         self.redis = await Connection.redis()

@@ -1,81 +1,83 @@
-import falcon
 import json
+import logging
 import os
 import io
 import uuid
-
 from PIL import Image
+
+from tornado.web import HTTPError, RequestHandler
 
 from settings import (MEDIA_FOLDER, thumb_folder, pic_folder)
 
 from models.media import Media
 from managers.media_manager import MediaManager
 
-class UploadMedia:
+from api.v1.base_handler import BaseHandler
 
-    def __init__(self):
-        self.THUMBNAIL_SIZE = 640, 640
-        self.THUMBNAIL_BOX = 0,0, 320, 320
-        self.sizes = {
-            'square': (1080, 1080),
-            'landscape': (1920, 1080),
-            'portrait': (1080, 1350),
-            'thumbnail': (320, 320)
-        }
+from auth.token_auth import (bearerAuth, is_authenticated)
+from decorators.get_by_id import retrive_by_id
 
-    def create_image(self, bytes, filename):
+from managers.user_manager import UserManager
 
-        thumb = os.path.join(MEDIA_FOLDER, thumb_folder, filename + '.thumbnail')
-        file_path = os.path.join(MEDIA_FOLDER, pic_folder, filename + '.jpeg')
+from tasks.redis.spreadStatus import spread_status
 
-        im = Image.open(bytes)
-        im = im.convert('RGB')  
-        im.save(file_path, 'JPEG', quality=80, optimize=True, progressive=True)
 
-        im.thumbnail(self.THUMBNAIL_SIZE, Image.ANTIALIAS)
-        im.save(thumb, "jpeg")
+logger = logging.getLogger(__name__)
 
-        return im.size[0], im.size[1], "Image"
-
-    def on_post(self, req, resp):
-        image = req.get_param('file')
-
-        if image == None:
-            raise falcon.HTTPMissingParam('file')
-
-        # Get a free id for the image
-        valid = False
-        identity = ""
-        while not valid:
-            ident = str(uuid.uuid4())
-            valid = not Media.select().where(Media.media_name == identity).exists()
+class UploadMedia(BaseHandler):
         
-        manager = MediaManager(image.file.read())
+    @bearerAuth
+    async def post(self, user):
+        
+        if not 'file' in self.request.files.keys():
+            self.write({"Error": "File not provided"})
+            self.set_status(422)
+            return
+            
+        image = self.request.files['file'][0]
+
+        # Search for a valid id 
+        valid = False
+        ident = ""
+        while not valid:
+
+            try:
+                ident = str(uuid.uuid4())
+                media = await self.application.objects.get(Media, media_name = ident)
+            except Media.DoesNotExist:
+                valid = True # If we are here that means that the object exits
+
+
+        manager = MediaManager(self.request.files['file'][0]['body'])
+
         if manager.is_valid():
 
-        #Send task to create image object
             width, height, mtype = manager.store_media(ident)
 
             if width:
-                description = req.get_param('description') or ""
+
+                description = self.get_argument('description', '')
                 focus_x = 0
                 focus_y = 0
 
-                if req.get_param('focus'):
-                    focus_x, focus_y = req.get_param('focus').split(',')
+                if self.get_argument('focus', False):
+                    args = self.get_argument('focus').replace(" ", "").split(',')
+                    if len(args) == 2:
+                        focus_x, focus_y = args[:2]
 
-                m = Media.create(
-                    media_name = ident,
-                    height = height,
-                    width = width,
-                    focus_x = focus_x,
-                    focus_y = focus_y,
-                    media_type = mtype,
-                    description = description,
-                )
+                data = {
+                    'media_name': ident,
+                    'height': height,
+                    'width': width,
+                    'focus_x': focus_x,
+                    'focus_y': focus_y,
+                    'media_type': mtype,
+                    'description': description
+                }
 
-                resp.body = json.dumps(m.to_json())
-                resp.status = falcon.HTTP_200
+                m = await self.application.objects.create(Media, **data)
+
+                self.write(json.dumps(m.to_json(), default=str))
         else:
-            resp.body = json.dumps({"Error": "Error storing files"})
-            resp.body = falcon.HTTP_500
+            self.write({"Error": "Error storing files"})
+            self.set_status(500)

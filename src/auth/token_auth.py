@@ -5,6 +5,10 @@ import peewee_async
 import functools
 from models.base import db
 
+import bcrypt
+import base64
+
+
 def loadUserToken(token, object):
     
     try:
@@ -24,26 +28,26 @@ def bearerAuth(method):
             parts = auth.split()
 
             if parts[0].lower() != 'bearer':
-                handler._transforms = []
-                handler.set_status(401)
-                handler.write("invalid header authorization")
-                handler.finish()
+                self.set_status(401)
+                self.write("invalid header authorization")
+                self.finish()
+                return
             elif len(parts) == 1:
-                handler._transforms = []
-                handler.set_status(401)
-                handler.write("invalid header authorization")
-                handler.finish()
+                self.set_status(401)
+                self.write("invalid header authorization")
+                self.finish()
+                return
             elif len(parts) > 2:
-                handler._transforms = []
-                handler.set_status(401)
-                handler.write("invalid header authorization")
-                handler.finish()
-
+                self.set_status(401)
+                self.write("invalid header authorization")
+                self.finish()
+                return 
             token = parts[1]
             t = loadUserToken(token, self.application.objects)
             if not t:
-                handler.write("Invalid token")
-                handler.finish()
+                self.write("Invalid token")
+                self.finish()
+
             kwargs['user'] = t
         return method(self,*args, **kwargs)
     return wrapper
@@ -75,4 +79,44 @@ def is_authenticated(method):
 
         kwargs['is_authenticated'] = authenticated
         return method(self,*args, **kwargs)
+    return wrapper
+
+
+def userPassLogin(username, password):
+    candidate = User.get_or_none(username=username)
+    if candidate != None:
+        pw = candidate.password
+        password = password.encode()
+        if bcrypt.hashpw(password,pw) == pw:
+            return candidate.profile.get()
+        else:
+            return False 
+
+def basicAuth(method):
+
+    def end_request(handler):
+        handler.write("Invalid token")
+        handler.finish()
+
+    @functools.wraps(method)
+    def wrapper(self, *args, **kwargs):
+        auth_header = self.request.headers.get('Authorization')
+
+        if auth_header is None: 
+            return end_request(self)
+        if not auth_header.startswith('Basic '): 
+            return end_request(self)
+
+        auth_decoded = base64.decodestring(auth_header[6:].encode()).decode('utf-8')
+        username, password = auth_decoded.split(':', 2)
+        user = userPassLogin(username, password)
+
+        if user:
+            kwargs['user'] = user
+            return method(self,*args, **kwargs)
+        else:
+            end_request(self)
+            return 
+
+        
     return wrapper
