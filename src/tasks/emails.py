@@ -17,6 +17,10 @@ def generate_confirmation_token(email):
     serializer = URLSafeTimedSerializer(SECRET)
     return serializer.dumps(email, salt=salt_code)
 
+def generate_recovery_url(email):
+    serializer = URLSafeTimedSerializer(SECRET)
+    return serializer.dumps(['password_recovery', email], salt=salt_code)
+
 def confirm_token(token, expiration=3600):
     serializer = URLSafeTimedSerializer(SECRET)
     try:
@@ -28,6 +32,22 @@ def confirm_token(token, expiration=3600):
     except:
         return False
     return email
+
+def confirm_password_reset(token, expiration=3600*24):
+    serializer = URLSafeTimedSerializer(SECRET)
+    try:
+        argument, email = serializer.loads(
+            token,
+            salt=salt_code,
+            max_age=expiration
+        )
+
+        if argument != 'password_recovery':
+            raise Exception('Code not valid')
+    except:
+        return False
+    return email
+
 
 def send_email_by_smtp(from_, to, body):
     ''' sends a mime message to mailgun SMTP gateway '''
@@ -51,6 +71,30 @@ def send_activation_email(profile):
 
     
     message = f'Please validate your email by clicking here {url}'
+
+    msgAlternative = MIMEMultipart('alternative')
+    msgRoot.attach(msgAlternative)
+
+    msgAlternative.attach(MIMEText(message))
+    send_email_by_smtp(SMTP_FROM_ADDRESS, receiver, msgRoot.as_string())
+    profile.user.confirmation_sent_at = datetime.datetime.now()
+    profile.user.save()
+
+@huey.task()
+def send_password_reset(profile):
+
+    receiver = profile.user.email
+    url = f'{BASE_URL}/reset/{generate_recovery_url(receiver)}'
+
+    # Create the root message and fill in the from, to, and subject headers
+    msgRoot = MIMEMultipart('related')
+    msgRoot['Subject'] = 'Anfora pasword reset'
+    msgRoot['From'] = SMTP_FROM_ADDRESS
+    msgRoot['To'] = receiver
+    msgRoot.preamble = 'Reset your password'
+
+    
+    message = f'To reset your password click on the following url: {url}'
 
     msgAlternative = MIMEMultipart('alternative')
     msgRoot.attach(msgAlternative)

@@ -9,7 +9,7 @@ from tornadouvloop import TornadoUvloop
 from models.base import db
 
 from api.v1.user import (UserHandler, ProfileManager, RegisterUser, AuthUser,
-                        VerifyCredentials)
+                        VerifyCredentials, PasswordRecovery, RequestPasswordRecovery)
 from api.v1.status import (StatusHandler, UserStatuses, FavouriteStatus,
                             UnFavouriteStatus, FetchUserStatuses  
                         )
@@ -56,9 +56,11 @@ def make_app():
         (r'/api/v1/explore', ExploreServer),
 
         (r'/api/v1/register', RegisterUser),
+        (r'/api/v1/reset-password',PasswordRecovery),
+        (r'/api/v1/reset-password/request/(?P<email>[\w.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4})', RequestPasswordRecovery),
         (r'/(.*)', MainHandler),
         (r"/api/v1/streaming/user", SSEHandler, dict(manager=manager))
-    ], debug=False)
+    ], debug=True)
 
 if __name__ == "__main__":
     #AsyncIOMainLoop().install()

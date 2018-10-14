@@ -1,5 +1,6 @@
 import json
 import logging
+import bcrypt
 
 from tornado.web import HTTPError, RequestHandler
 
@@ -15,6 +16,11 @@ from utils.atomFeed import generate_feed
 from managers.user_manager import new_user
 
 from tasks.emails import confirm_token
+
+from settings import salt_code
+
+from tasks.emails import send_password_reset
+
 
 logger = logging.getLogger(__name__)
 
@@ -163,7 +169,7 @@ class UserURLConfirmation(BaseHandler):
         email = confirm_token(token)
         if email:
             try:
-                user = self.application.objects(User, email=email)
+                user = self.application.objects.get(User, email=email)
                 user.confirmed = True 
                 self.application.objects.update(user)
             
@@ -173,7 +179,6 @@ class UserURLConfirmation(BaseHandler):
         else:
             self.set_status(500)
             self.write({"Error": "Invalid code or too old"})
-
 
 class RegisterUser(BaseHandler):
 
@@ -216,3 +221,39 @@ class RegisterUser(BaseHandler):
 
             self.set_status(400)
             self.write({"Error": "User not available or password not matching"})
+
+class PasswordRecovery(BaseHandler):
+
+    async def post(self):
+        token = self.get_argument('token')
+        typ, email = confirm_token(token)
+        
+        if email:
+            try:
+                user = await self.application.objects.get(User, email=email)
+                password = self.get_argument('password')
+                confirmation = self.get_argument('password_confirmation')
+                valid_password = password == confirmation
+
+                if valid_password:
+                    user.password = bcrypt.hashpw(password, salt_code) 
+                    await self.application.objects.update(user)
+                else:
+                    self.set_status(402)
+                    self.write({"Error": "Password and confirmation do not match"})
+            
+            except User.DoesNotExist:
+                self.set_status(404)
+                self.write({"Error": "User not available"})
+        else:
+            self.set_status(500)
+            self.write({"Error": "Invalid code or too old"})
+
+class RequestPasswordRecovery(BaseHandler):
+
+    @bearerAuth
+    def post(self, email, user):
+        send_password_reset(user)
+        self.set_status(200)
+
+
