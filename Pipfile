@@ -23,6 +23,7 @@ moviepy = "*"
 aioredis = "*"
 tornado-uvloop = "*"
 py-bcrypt = "*"
+requests = "*"
 
 [requires]
 python_version = "3.6"
