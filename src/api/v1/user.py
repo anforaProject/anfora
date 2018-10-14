@@ -251,9 +251,14 @@ class PasswordRecovery(BaseHandler):
 
 class RequestPasswordRecovery(BaseHandler):
 
-    @bearerAuth
-    def post(self, email, user):
-        send_password_reset(user)
+    async def post(self, email):
+        try:
+            user = await self.application.objects.get(User, email=email)
+            profile = user.profile.get()
+            send_password_reset(profile)
+        except User.DoesNotExist:
+            pass 
+        self.write({"Success": "If the email is our database we'll contact the user"})
         self.set_status(200)
 
 
