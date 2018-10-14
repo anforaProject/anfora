@@ -6,10 +6,8 @@ import io
 import os
 from base64 import b64encode
 
-import argon2
 from falcon import testing
 
-from auth import Argon2
 from models.user import UserProfile, User
 from models.status import Status
 from models.followers import FollowerRelation
