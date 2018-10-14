@@ -21,10 +21,12 @@ from api.v1.streaming import SSEHandler, SubscriptionManager
 
 from api.v1.explore import (ExploreUsers, ExploreServer)
 
+from settings import ROOT_PATH
+
 class MainHandler(tornado.web.RequestHandler):
     def get(self, path):
         try:
-            with open("/home/yabir/killMe/anfora/src/client/dist/index.html") as f:
+            with open(f"{ROOT_PATH}/src/client/dist/index.html") as f:
                 self.write(f.read())
         except IOError as e:
             self.write("404: Not Found")
