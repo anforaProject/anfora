@@ -19,7 +19,7 @@ from api.v1.media import UploadMedia
 from api.v1.timelines import (HomeTimeline)
 from api.v1.streaming import SSEHandler, SubscriptionManager
 
-from api.v1.explore import ExploreUsers
+from api.v1.explore import (ExploreUsers, ExploreServer)
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self, path):
@@ -53,12 +53,12 @@ def make_app():
         (r'/api/v1/auth', AuthUser),
         (r'/api/v1/accounts/verify_credentials', VerifyCredentials),
 
-        (r'/api/v1/explore/users', ExploreUsers),
+        (r'/api/v1/explore', ExploreServer),
 
         (r'/api/v1/register', RegisterUser),
         (r'/(.*)', MainHandler),
         (r"/api/v1/streaming/user", SSEHandler, dict(manager=manager))
-    ], debug=True)
+    ], debug=False)
 
 if __name__ == "__main__":
     #AsyncIOMainLoop().install()
@@ -68,6 +68,6 @@ if __name__ == "__main__":
     app.objects = peewee_async.Manager(db)
     
     loop = asyncio.get_event_loop()
-    manager.connect()
+    #manager.connect()
     tornado.ioloop.IOLoop.configure(TornadoUvloop)
     tornado.ioloop.IOLoop.current().start()
