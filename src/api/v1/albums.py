@@ -8,7 +8,7 @@ from models.status import Status
 from models.user import UserProfile
 from models.album import Album
 from models.albumRelation import RelationAlbumStatus
-from auth import (loadUser, auth_backend)
+from auth.token_auth import (bearerAuth, is_authenticated)
 
 class getAlbum:
     

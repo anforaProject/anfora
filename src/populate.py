@@ -6,10 +6,8 @@ import io
 import os
 from base64 import b64encode
 
-import argon2
 from falcon import testing
 
-from auth import Argon2
 from models.user import UserProfile, User
 from models.status import Status
 from models.followers import FollowerRelation
@@ -17,8 +15,6 @@ from manage_db import (connect, create_tables)
 
 from managers.user_manager import new_user
 
-
-from main import app
 
 PHOTOS = 20
 
@@ -51,7 +47,7 @@ def create_multipart(data, fieldname, filename, content_type):
 connect()
 create_tables()
 
-passw = Argon2().generate_password_hash("test")
+passw = "test"
 
 #yab = UserProfile.create(username="yab")
 yab = new_user(
@@ -92,6 +88,7 @@ def populate_db():
         print("Uploading some pics")
         for j in range(PHOTOS):
             print(f'Image {j} of {PHOTOS}')
+            """
             client = testing.TestClient(app)
 
             data = {
@@ -132,7 +129,7 @@ def populate_db():
             }
 
             response = client.simulate_post("/api/v1/statuses", params=status, headers=auth)
-
+            """
 def populate_for_travis():
     for i in range(15):
         target = new_user(
