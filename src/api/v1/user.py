@@ -20,6 +20,7 @@ from tasks.emails import confirm_token
 from settings import salt_code
 
 from tasks.emails import send_password_reset
+from tasks.timelines import *
 
 
 logger = logging.getLogger(__name__)
@@ -262,3 +263,29 @@ class RequestPasswordRecovery(BaseHandler):
         self.set_status(200)
 
 
+class FollowUser(BaseHandler):
+
+    @bearerAuth
+    async def post(self, target_id, user):
+
+        try:
+            target = await self.application.objects.get(UserProfile, id=target_id)
+            print(target.username, user.username)
+            user.follow(target)
+            add_to_timeline(user, target)
+        except User.DoesNotExist:
+            self.write({"Error": "User not found"})
+            self.set_status(400)
+
+class UnFollowUser(BaseHandler):
+
+    @bearerAuth
+    async def post(self, target_id, user):
+
+        try:
+            target = await self.application.objects.get(UserProfile, id=target_id)
+            user.follow(target)
+            remove_from_timeline(user, target)
+        except User.DoesNotExist:
+            self.write({"Error": "User not found"})
+            self.set_status(400)

@@ -284,3 +284,23 @@ class UserProfile(BaseModel):
 
         following_increment.execute()
         followers_increment.execute()
+
+    def unfollow(self, target, valid=False):
+
+
+        """
+        The current user follows the target account. 
+        
+        target: An instance of User
+        valid: Boolean to force a valid Follow. This means that the user
+                doesn't have to accept the follow
+        """
+
+        from models.followers import FollowerRelation
+
+        FollowerRelation.get(user = self, follows =target).delete_instance().execute()
+        followers_increment = UserProfile.update({UserProfile.followers_count: UserProfile.followers_count - 1}).where(UserProfile.id == target.id)
+        following_increment = UserProfile.update({UserProfile.following_count: UserProfile.following_count - 1}).where(UserProfile.id == self.id)
+
+        following_increment.execute()
+        followers_increment.execute()
