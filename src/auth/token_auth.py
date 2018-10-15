@@ -47,6 +47,7 @@ def bearerAuth(method):
             if not t:
                 self.write("Invalid token")
                 self.finish()
+                return
 
             kwargs['user'] = t
         return method(self,*args, **kwargs)

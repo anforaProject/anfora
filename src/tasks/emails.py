@@ -33,7 +33,7 @@ def confirm_token(token, expiration=3600):
         return False
     return email
 
-def confirm_password_reset(token, expiration=3600*24):
+def confirm_password_reset(token, expiration=86400):
     serializer = URLSafeTimedSerializer(SECRET)
     try:
         argument, email = serializer.loads(

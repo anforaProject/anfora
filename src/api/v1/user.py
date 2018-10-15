@@ -227,7 +227,14 @@ class PasswordRecovery(BaseHandler):
 
     async def post(self):
         token = self.get_argument('token')
-        typ, email = confirm_token(token)
+        data = confirm_token(token)
+        if data:
+            typ, email = data 
+        else:
+            self.write({"Error": "Code expired"})
+            self.set_status(500)
+            self.finish()
+            return 
         
         if email:
             try:
