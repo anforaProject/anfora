@@ -301,7 +301,7 @@ class FetchFollowers:
 
     async def get(self, id):
         try:
-            user = await self.applicaiton.objects.get(UserProfile, id=id)
+            user = await self.application.objects.get(UserProfile, id=id)
             followers = [follower.to_json() for follower in user.followers()]
             self.write(json.dumps(followers, default=str))
             self.set_status = falcon.HTTP_200
@@ -313,7 +313,7 @@ class FetchFollowing:
 
     async def get(self, id):
         try:
-            user = await self.applicaiton.objects.get(UserProfile, id=id)
+            user = await self.application.objects.get(UserProfile, id=id)
             followers = [following.to_json() for following in user.following()]
             self.write(json.dumps(followers, default=str))
             self.set_status = falcon.HTTP_200
