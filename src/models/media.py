@@ -30,6 +30,8 @@ class Media(BaseModel):
             media_type = "jpg"
         elif self.media_type == 'video/mp4':
             media_type = 'mp4'
+        elif self.media_type == 'image/png':
+            media_type = 'png'
         else:
             media_type = 'jpg'
 

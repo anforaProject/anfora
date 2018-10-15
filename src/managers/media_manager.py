@@ -35,22 +35,32 @@ class MediaManager:
         #detect the minetype
 
         mine_type = magic.from_buffer(data, mime=True)
-        
+        media_type = 'jpg'
         iobytes = data
 
         logger.debug(f"Detected media type {mine_type}")
 
+        if mine_type == "image/jpeg":
+            media_type = "jpg"
+        elif mine_type == 'image/png':
+            media_type = 'png'
+
         if mine_type in self.allowed_images:
 
-            thumb = os.path.join(MEDIA_FOLDER, thumb_folder, filename + '.thumbnail.jpg')
-            file_path = os.path.join(MEDIA_FOLDER, pic_folder, filename + '.jpg')
+            thumb = os.path.join(MEDIA_FOLDER, thumb_folder, filename + f'.thumbnail.{media_type}')
+            file_path = os.path.join(MEDIA_FOLDER, pic_folder, filename + f'.{media_type}')
 
             im = Image.open(io.BytesIO(iobytes))
-            im = im.convert('RGB') # Remove alpha layer 
-            im.save(file_path, 'jpeg', quality=80, optimize=True, progressive=True)
-            im.save(thumb, 'jpeg', quality=30, optimize=True, progressive=True)
+            if media_type == 'jpg':
+                im.save(file_path, 'jpeg', quality=80, optimize=True, progressive=True)
+                im.save(thumb, 'jpeg', quality=30, optimize=True, progressive=True)
+                return im.size[0], im.size[1], "image/jpeg"
+            else:
+                im.save(file_path, 'png', optimize=True)
+                im.save(thumb, 'png', optimize=True)
+                return im.size[0], im.size[1], "image/png"
+                
             
-            return im.size[0], im.size[1], "image/jpeg"
 
         elif mine_type in self.allowed_animated:
             file_path = os.path.join(MEDIA_FOLDER, pic_folder, filename + "_temp" + '.gif')
