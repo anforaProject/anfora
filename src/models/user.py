@@ -200,7 +200,7 @@ class UserProfile(BaseModel):
     def _create_avatar_id(self):
         hashid = Hashids(salt=salt_code, min_length=6)
 
-        possible_id = self.id
+        possible_id = self.id + int((datetime.datetime.now() - datetime.datetime(1970,1,1)).total_seconds())
         return hashid.encode(possible_id)
 
     def _crate_avatar_file(self, image):
