@@ -223,9 +223,7 @@ class UserProfile(BaseModel):
         return f'{filename}.jpeg'
 
     def update_avatar(self, image):
-        self.avatar_file = self._crate_avatar_file(image)
-        self.save()
-        
+        return self._crate_avatar_file(image)        
 
     @property
     def avatar(self):
