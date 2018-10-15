@@ -9,7 +9,7 @@ from tornadouvloop import TornadoUvloop
 from models.base import db
 
 from api.v1.user import (UserHandler, ProfileManager, RegisterUser, AuthUser,
-                        VerifyCredentials, PasswordRecovery, RequestPasswordRecovery, FollowUser, UnFollowUser)
+                        VerifyCredentials, PasswordRecovery, RequestPasswordRecovery, FollowUser, UnFollowUser, FetchFollowers, FetchFollowing)
 from api.v1.status import (StatusHandler, UserStatuses, FavouriteStatus,
                             UnFavouriteStatus, FetchUserStatuses  
                         )
@@ -37,6 +37,8 @@ manager = SubscriptionManager()
 def make_app():
     return tornado.web.Application([
         (r'/api/v1/accounts/(?P<id>[\d+])', UserHandler),
+        (r'/api/v1/accounts/(?P<id>[\d+])/followers', FetchFollowers),
+        (r'/api/v1/accounts/(?P<id>[\d+])/following', FetchFollowing),
         (r'/api/v1/accounts/(?P<target_id>[\d+])/follow', FollowUser),
         (r'/api/v1/accounts/(?P<target_id>[\d+])/unfollow', UnFollowUser),
         (r'/api/v1/accounts/(?P<id>[\d+])/statuses', FetchUserStatuses),

@@ -296,3 +296,28 @@ class UnFollowUser(BaseHandler):
         except User.DoesNotExist:
             self.write({"Error": "User not found"})
             self.set_status(400)
+
+class FetchFollowers:
+
+    async def get(self, id):
+        try:
+            user = await self.applicaiton.objects.get(UserProfile, id=id)
+            followers = [follower.to_json() for follower in user.followers()]
+            self.write(json.dumps(followers, default=str))
+            self.set_status = falcon.HTTP_200
+        except UserProfile.DoesNotExist:
+            self.write({"Error": "user not found"})
+            self.set_status(404)
+            
+class FetchFollowing:
+
+    async def get(self, id):
+        try:
+            user = await self.applicaiton.objects.get(UserProfile, id=id)
+            followers = [following.to_json() for following in user.following()]
+            self.write(json.dumps(followers, default=str))
+            self.set_status = falcon.HTTP_200
+        except UserProfile.DoesNotExist:
+            self.write({"Error": "user not found"})
+            self.set_status(404)
+            
