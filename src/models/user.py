@@ -237,7 +237,7 @@ class UserProfile(BaseModel):
                 .select()
                 .join(FollowerRelation, on=FollowerRelation.user)
                 .where(FollowerRelation.follows == self)
-                .order_by(UserProfile.id))
+                .order_by(FollowerRelation.created_at.desc()))
 
     def timeline(self):
         from models.status import Status
@@ -246,7 +246,7 @@ class UserProfile(BaseModel):
     def following(self):
         from models.followers import FollowerRelation
 
-        return (User
+        return (UserProfile
                 .select()
                 .join(FollowerRelation, on=FollowerRelation.follows)
                 .where(FollowerRelation.user == self)
