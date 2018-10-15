@@ -42,7 +42,7 @@ class Media(BaseModel):
     def uris(self):
         return URIs(
             media=uri("media", {"id":self.media_name, "extension": self.extension}),
-            preview=uri("preview", {"id":self.media_name})
+            preview=uri("preview", {"id":self.media_name, "extension": self.extension})
         )
 
     def __str__(self):
