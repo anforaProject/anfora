@@ -113,14 +113,9 @@ class ProfileManager(BaseHandler):
         
         # Once all the changes have been made
 
-        if not errors:
-            await self.application.objects.update(user)
-            self.write(json.dumps(user.to_json(), default=str).encode('utf-8'))
-        
-        else:
-
-            self.set_status(422)
-            self.write(json.dumps(errors).encode('utf-8'))
+        await self.application.objects.update(user)
+        self.write(json.dumps(user.to_json(), default=str).encode('utf-8'))
+    
 
 class LogoutUser(BaseHandler):
 
