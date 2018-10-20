@@ -63,7 +63,7 @@ def make_app():
 
         (r'/api/v1/register', RegisterUser),
         (r'/api/v1/reset-password',PasswordRecovery),
-        (r'/api/v1/reset-password/request/(?P<email>[\w.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4})', RequestPasswordRecovery),
+        (r'/api/v1/reset-password/request/(?P<email>[\w.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6})', RequestPasswordRecovery),
         (r'/(.*)', MainHandler),
         (r"/api/v1/streaming/user", SSEHandler, dict(manager=manager))
     ], debug=True)
