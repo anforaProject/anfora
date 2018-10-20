@@ -50,6 +50,16 @@ class UserManager:
         like.delete().execute()
         Status.update({Status.favourites_count: Status.favourites_count - 1}).where(Status.id == status.id)
 
+    
+    def is_following(self, target: UserProfile):
+        """
+        Return whether the current user is following the `target` user
+        """
+        
+        # Call the current method in models
+        # TODO: store this on redis
+        return self.user.is_following(target)
+
 def valid_username(username):
     regex = r'[\w\d_.]+$'
     return re.match(regex, username) != None

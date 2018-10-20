@@ -1,3 +1,7 @@
+import logging
+import os
+ 
+
 import tornado.ioloop
 import tornado.web 
 from tornado.platform.asyncio import AsyncIOMainLoop
@@ -9,7 +13,9 @@ from tornadouvloop import TornadoUvloop
 from models.base import db
 
 from api.v1.user import (UserHandler, ProfileManager, RegisterUser, AuthUser,
-                        VerifyCredentials, PasswordRecovery, RequestPasswordRecovery, FollowUser, UnFollowUser, FetchFollowers, FetchFollowing)
+                        VerifyCredentials, PasswordRecovery, RequestPasswordRecovery, 
+                        FollowUser, UnFollowUser, FetchFollowers, FetchFollowing,
+                        Relationship)
 from api.v1.status import (StatusHandler, UserStatuses, FavouriteStatus,
                             UnFavouriteStatus, FetchUserStatuses  
                         )
@@ -22,6 +28,8 @@ from api.v1.streaming import SSEHandler, SubscriptionManager
 from api.v1.explore import (ExploreUsers, ExploreServer)
 
 from settings import ROOT_PATH
+
+logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self, path):
@@ -43,6 +51,7 @@ def make_app():
         (r'/api/v1/accounts/(?P<target_id>[\d+])/unfollow', UnFollowUser),
         (r'/api/v1/accounts/(?P<id>[\d+])/statuses', FetchUserStatuses),
         (r'/api/v1/accounts/update_credentials', ProfileManager),
+        (r'/api/v1/accounts/relationships', Relationship),
 
         (r'/api/v1/statuses', UserStatuses),
         (r'/api/v1/statuses/(?P<pid>[\d+]+)', StatusHandler),

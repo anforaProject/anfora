@@ -3,6 +3,7 @@ import uuid
 import binascii
 import os
 import io
+import logging
 
 import Crypto
 from PIL import Image
@@ -20,6 +21,8 @@ from urls import (uri, URIs)
 from avatar_gen.pixel_avatar import PixelAvatar
 from hashids import Hashids
 from settings import (MEDIA_FOLDER, salt_code)
+
+log = logging.getLogger(__name__)
 
 class User(BaseModel):
     username = CharField(unique=True)
