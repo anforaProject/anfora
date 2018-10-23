@@ -39,13 +39,14 @@ class TimelineManager:
 
         self.r.zadd(timeline_name, status.id, status.id)
 
-    def remove_from_home(self, status_id):
+    def remove_from_home(self, status):
         
         """
         id is an integer representating the status id
 
         
         """
+        status_id = status.id
         timeline_name = self.HOME_TIMELINE.format(self.user.id)
         self.r.zrem(timeline_name, status_id)
 
