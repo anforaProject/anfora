@@ -275,13 +275,13 @@ class UserProfile(BaseModel):
         """
 
         from models.followers import FollowerRelation
+        if not FollowerRelation.get_or_none(user=self, follows=target):
+            FollowerRelation.create(user = self, follows =target, valid=valid)
+            followers_increment = UserProfile.update({UserProfile.followers_count: UserProfile.followers_count + 1}).where(UserProfile.id == target.id)
+            following_increment = UserProfile.update({UserProfile.following_count: UserProfile.following_count + 1}).where(UserProfile.id == self.id)
 
-        FollowerRelation.create(user = self, follows =target, valid=valid)
-        followers_increment = UserProfile.update({UserProfile.followers_count: UserProfile.followers_count + 1}).where(UserProfile.id == target.id)
-        following_increment = UserProfile.update({UserProfile.following_count: UserProfile.following_count + 1}).where(UserProfile.id == self.id)
-
-        following_increment.execute()
-        followers_increment.execute()
+            following_increment.execute()
+            followers_increment.execute()
 
     def unfollow(self, target, valid=False):
 
@@ -295,10 +295,11 @@ class UserProfile(BaseModel):
         """
 
         from models.followers import FollowerRelation
+        t = FollowerRelation.get_or_none(user=self, follows=target)
+        if t:
+            t.delete_instance()
+            followers_increment = UserProfile.update({UserProfile.followers_count: UserProfile.followers_count - 1}).where(UserProfile.id == target.id)
+            following_increment = UserProfile.update({UserProfile.following_count: UserProfile.following_count - 1}).where(UserProfile.id == self.id)
 
-        FollowerRelation.get(user = self, follows =target).delete_instance().execute()
-        followers_increment = UserProfile.update({UserProfile.followers_count: UserProfile.followers_count - 1}).where(UserProfile.id == target.id)
-        following_increment = UserProfile.update({UserProfile.following_count: UserProfile.following_count - 1}).where(UserProfile.id == self.id)
-
-        following_increment.execute()
-        followers_increment.execute()
+            following_increment.execute()
+            followers_increment.execute()

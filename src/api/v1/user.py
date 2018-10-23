@@ -13,7 +13,7 @@ from auth.token_auth import bearerAuth, userPassLogin, basicAuth
 
 from utils.atomFeed import generate_feed
 
-from managers.user_manager import new_user
+from managers.user_manager import new_user, UserManager
 
 from tasks.emails import confirm_token
 
@@ -23,7 +23,7 @@ from tasks.emails import send_password_reset
 from tasks.timelines import *
 
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 class AuthUser(BaseHandler):
@@ -190,12 +190,12 @@ class RegisterUser(BaseHandler):
         username_count = await self.application.objects.execute(User.select().where(User.username==username).count())
 
         free = username_count == 0
-        logger.debug(f'username is free: {free}')
+        log.debug(f'username is free: {free}')
         if valid_password and free:
 
             try:
 
-                logger.debug("Creating new user")
+                log.debug("Creating new user")
                 profile = new_user(
                     username = username, 
                     password = password,
@@ -204,12 +204,12 @@ class RegisterUser(BaseHandler):
                 )
 
                 if not profile:
-                    logger.error("Error creating profile")
+                    log.error("Error creating profile")
                     self.set_status(402)
                     self.write({"Error": "Wrong username. Valid characters are number, ascii letters and (.) (_)"})
 
             except Exception as e:
-                logger.error(e)
+                log.error(e)
                 self.set_status(500)
                 self.write({"Error": "Error creating new user"})
         
@@ -286,7 +286,7 @@ class UnFollowUser(BaseHandler):
 
         try:
             target = await self.application.objects.get(UserProfile, id=target_id)
-            user.follow(target)
+            user.unfollow(target)
             remove_from_timeline(user, target)
         except User.DoesNotExist:
             self.write({"Error": "User not found"})
@@ -317,3 +317,36 @@ class FetchFollowing(BaseHandler):
             self.set_status(404)
         except Exception as e:
             print(e)
+
+class Relationship(BaseHandler):
+
+    @bearerAuth
+    async def get(self, user):
+        target_id = self.get_argument('id', None)
+
+        if target_id:
+            try:
+                target = await self.application.objects.get(UserProfile, id=target_id)
+                User
+                data = {
+                    'id': target_id,
+                }
+                
+                # Check if the current user is following that account
+
+                manager = UserManager(user)
+                target_manager = UserManager(target)
+
+                data['following'] = manager.is_following(target)
+                data['followed_by'] = target_manager.is_following(user)
+
+                self.write(data)
+                self.set_status(200)
+            except UserProfile.DoesNotExist:
+                log.error(f'User with id {target_id} not found')
+                self.write({"Error": "Target user not found"})
+                self.set_status(404)
+        else:
+            self.write({"Error": "User not provided"})
+            self.set_status(422)
+            log.warning("Missing target id on request")
