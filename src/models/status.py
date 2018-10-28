@@ -30,7 +30,7 @@ class Status(BaseModel):
     reblogs_count = IntegerField(default=0)
     replies_count = IntegerField(default=0)
     #Need to add tagged users
-
+    
     def __str__(self):
         return "{} - {} - {} - {}".format(self.caption, self.ap_id, self.created_at, self.remote)
 

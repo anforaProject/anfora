@@ -9,6 +9,7 @@ from models.notification import Notification, notification_types
 from tasks.config import huey
 
 from managers.timeline_manager import TimelineManager
+from managers.notification_manager import NotificationManager
 
 @huey.task()
 def spread_status(status):
@@ -36,15 +37,7 @@ def like_status(status, user):
 
     r = redis.StrictRedis(host=os.environ.get('REDIS_HOST', 'localhost'))
     
-    #Add id to the like timeline
-    TimelineManager(status.user).push_likes(status)
-    
-    notification = Notification.create(
-        user = user,
-        target = status.user,
-        status = status,
-        notification_type = notification_types['like']
-    )
+    NotificationManager(user).create_like_notification(status)
 
     json_file = json.dumps(status.json(), default=str)
 

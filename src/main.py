@@ -1,6 +1,7 @@
 import logging
 import os
- 
+from logging.config import fileConfig
+
 
 import tornado.ioloop
 import tornado.web 
@@ -25,11 +26,13 @@ from api.v1.media import UploadMedia
 from api.v1.timelines import (HomeTimeline)
 from api.v1.streaming import SSEHandler, SubscriptionManager
 
+from api.v1.notifications import NotificationHandler
+
 from api.v1.explore import (ExploreUsers, ExploreServer)
 
 from settings import ROOT_PATH
 
-logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
+fileConfig('logging_config.ini')
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self, path):
@@ -62,6 +65,8 @@ def make_app():
         (r'/.well-known/webfinger', WellKnownWebFinger),
         (r'/nodeinfo', NodeInfo),
 
+        (r'/api/v1/notifications', NotificationHandler),
+
         (r'/api/v1/timelines/home', HomeTimeline),
 
         (r'/api/v1/media', UploadMedia),
@@ -73,8 +78,8 @@ def make_app():
         (r'/api/v1/register', RegisterUser),
         (r'/api/v1/reset-password',PasswordRecovery),
         (r'/api/v1/reset-password/request/(?P<email>[\w.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6})', RequestPasswordRecovery),
+        (r'/api/v1/streaming/user', SSEHandler, dict(manager=manager)),
         (r'/(.*)', MainHandler),
-        (r"/api/v1/streaming/user", SSEHandler, dict(manager=manager))
     ], debug=True)
 
 if __name__ == "__main__":

@@ -1,6 +1,8 @@
 import os
 import redis
 
+from models.notification import Notification
+
 class TimelineManager:
 
     def __init__(self, user):
@@ -50,7 +52,7 @@ class TimelineManager:
         timeline_name = self.HOME_TIMELINE.format(self.user.id)
         self.r.zrem(timeline_name, status_id)
 
-    def push_notification(self, notification):
+    def push_notification(self, notification:Notification) -> None:
 
         """
         Push a notification to the user's notifications timeline
@@ -62,8 +64,9 @@ class TimelineManager:
         timeline_name = self.NOTIFICATIONS.format(self.user.id)
         self.r.zadd(timeline_name, notification.id, notification.id)
 
-    def remove_notification(self, notification_id):
+    def remove_notification(self, notification:Notification)->None:
         timeline_name = self.HOME_TIMELINE.format(self.user.id)
+        notification_id = notification.id
         self.r.zrem(timeline_name, notification_id)
 
     def range_home(self, count=0, offset=0, limit = -1):

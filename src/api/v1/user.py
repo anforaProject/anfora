@@ -14,7 +14,7 @@ from auth.token_auth import bearerAuth, userPassLogin, basicAuth
 from utils.atomFeed import generate_feed
 
 from managers.user_manager import new_user, UserManager
-
+from managers.notification_manager import NotificationManager
 from tasks.emails import confirm_token
 
 from settings import salt_code
@@ -272,9 +272,10 @@ class FollowUser(BaseHandler):
 
         try:
             target = await self.application.objects.get(UserProfile, id=target_id)
-            print(target.username, user.username)
             user.follow(target)
             add_to_timeline(user, target)
+            NotificationManager(user).create_follow_notification(target)
+            log.debug(f"{user.username} followed {target.username}")
         except User.DoesNotExist:
             self.write({"Error": "User not found"})
             self.set_status(400)

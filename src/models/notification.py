@@ -18,12 +18,16 @@ class Notification(BaseModel):
     notification_type = CharField(max_length=64)
     created_at = DateTimeField(default=datetime.datetime.now)
 
-    def json(self):
+    def to_json(self):
         
-        return {
+        data = {
             'id': self.id,
             'account': self.user.to_json(),
-            'status': self.status.to_json(),
-            'type': self.notification_type,
+            'type': notification_types[self.notification_type],
             'created_at': self.created_at,
         }
+
+        if self.status:
+            data['status'] = self.status.to_json(),
+
+        return data
