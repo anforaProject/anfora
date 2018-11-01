@@ -13,7 +13,7 @@ def retrive_by_id(model):
         async def wrapper(self, *args, **kwargs):
             #id is one of the arguments of the function
             try:
-                obj = await self.application.objects.get(model, id=int(kwargs['pid']))
+                obj = await self.application.objects.get(model, identifier=kwargs['pid'])
                 kwargs["target"] = obj
                 
             except model.DoesNotExist:

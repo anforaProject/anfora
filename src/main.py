@@ -57,9 +57,9 @@ def make_app():
         (r'/api/v1/accounts/relationships', Relationship),
 
         (r'/api/v1/statuses', UserStatuses),
-        (r'/api/v1/statuses/(?P<pid>[\d+]+)', StatusHandler),
-        (r'/api/v1/statuses/(?P<pid>[\d+]+)/favourite', FavouriteStatus),
-        (r'/api/v1/statuses/(?P<pid>[\d+]+)/unfavourite', UnFavouriteStatus),
+        (r'/api/v1/statuses/(?P<pid>[a-zA-Z0-9]+)', StatusHandler),
+        (r'/api/v1/statuses/(?P<pid>[\w]+)/favourite', FavouriteStatus),
+        (r'/api/v1/statuses/(?P<pid>[\w]+)/unfavourite', UnFavouriteStatus),
 
         (r'/.well-known/nodeinfo', WellKnownNodeInfo),
         (r'/.well-known/webfinger', WellKnownWebFinger),

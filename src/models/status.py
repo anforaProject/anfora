@@ -4,6 +4,7 @@ import binascii
 import os
 import json
 import requests
+from hashids import Hashids
 
 from peewee import *
 from playhouse.shortcuts import model_to_dict
@@ -13,6 +14,10 @@ from models.base import BaseModel
 from models.user import UserProfile
 from models.album import Album
 
+from settings import (MEDIA_FOLDER, salt_code)
+
+def random():
+    return os.urandom(5).hex()
 
 class Status(BaseModel):
     created_at = DateTimeField(default=datetime.datetime.now)
@@ -29,6 +34,7 @@ class Status(BaseModel):
     favourites_count = IntegerField(default=0)
     reblogs_count = IntegerField(default=0)
     replies_count = IntegerField(default=0)
+    identifier = CharField(max_length=20, null=False)
     #Need to add tagged users
     
     def __str__(self):
@@ -55,6 +61,9 @@ class Status(BaseModel):
     def media_data(self):
         return {"hola": 3}
 
+    def generate_id(self):
+        hashids = Hashids(salt=salt_code, min_length=9)
+        return hashids.encode(self.id)
 
     def to_activitystream(self):
         json = {
@@ -80,6 +89,9 @@ class Status(BaseModel):
         if not self.ap_id:
             self.ap_id = self.uris.id
 
+        if not self.identifier:
+            self.identifier = self.generate_id()
+
         return super(Status, self).save(*args, **kwargs)
 
     def albums(self):
@@ -98,7 +110,7 @@ class Status(BaseModel):
 
     def to_json(self):
         data = {
-            "id": self.id,
+            "id": self.identifier,
             "description": self.caption,
             "preview": self.uris.preview,
             "message": self.caption,
@@ -107,7 +119,7 @@ class Status(BaseModel):
             "account": self.user.to_json(),
             "sensitive": self.sensitive,
             "created_at": self.created_at.strftime('%Y-%m-%dT%H:%M:%S'),
-            "media_attachments":[]
+            "media_attachments":[],
         }
 
         for media in self.media_object:
