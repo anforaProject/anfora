@@ -19,7 +19,7 @@ from models.like import Like
 from models.follow_request import FollowRequest
 from models.report import Report 
 from models.notification import Notification
-
+from models.circles import Circle
 
 
 def create_db():
@@ -53,7 +53,8 @@ def create_tables():
                 FollowRequest,
                 Media,
                 Report,
-                Notification
+                Notification,
+                Circle
             ]
 
 
