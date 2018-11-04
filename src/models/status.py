@@ -80,7 +80,8 @@ class Status(BaseModel):
             "spoiler_text": self.spoiler_text,
             "reblogged": None,
             "favourited": None,
-            "muted": None
+            "muted": None,
+            "comments": [x.to_json() for x in self.replies]
         }
 
         return json
@@ -120,6 +121,8 @@ class Status(BaseModel):
             "sensitive": self.sensitive,
             "created_at": self.created_at.strftime('%Y-%m-%dT%H:%M:%S'),
             "media_attachments":[],
+            "comments": [x.to_json() for x in self.replies]
+
         }
 
         for media in self.media_object:

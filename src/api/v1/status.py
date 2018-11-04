@@ -1,5 +1,6 @@
 import json
 import logging
+import datetime
 
 from tornado.web import HTTPError, RequestHandler
 
@@ -9,6 +10,7 @@ from models.token import Token
 from models.media import Media 
 
 from api.v1.base_handler import BaseHandler
+from hashids import Hashids
 
 from auth.token_auth import (bearerAuth, is_authenticated)
 from decorators.get_by_id import retrive_by_id
@@ -18,6 +20,7 @@ from managers.user_manager import UserManager
 from tasks.redis.spreadStatus import spread_status
 from tasks.redis.remove_status import remove_status
 
+from settings import (salt_code)
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +68,10 @@ class FetchUserStatuses(BaseHandler):
     async def get(self, id):
         try:
             photos = await self.application.objects.execute(
-                Status.select().join(UserProfile).where(Status.user.id == id).order_by(Status.created_at.desc())
+                Status.select().
+                join(UserProfile).
+                where((Status.user.id == id) & Status.in_reply_to_id.is_null())
+                .order_by(Status.created_at.desc())
             )
             
             query = [photo.to_json() for photo in photos]
@@ -92,6 +98,8 @@ class UserStatuses(BaseHandler):
     
     @bearerAuth
     async def post(self, user):
+        hashids = Hashids(salt=salt_code, min_length=9)
+
         if self.get_argument('media_ids', False):
             data = {
                 "caption": self.get_argument('status', ''),
@@ -99,7 +107,8 @@ class UserStatuses(BaseHandler):
                 "user": user,
                 "sensitive": bool(self.get_argument('sensitive', False)),
                 "remote": False,
-                "sotory": bool(self.get_argument('story', False))
+                "sotory": bool(self.get_argument('story', False)),
+                "identifier": hashids.encode(int(str(user.id) + str(int(datetime.datetime.now().timestamp()))))
             }
             
             if data['sensitive']:
@@ -127,10 +136,25 @@ class UserStatuses(BaseHandler):
         elif self.get_argument('in_reply_to_id', False):
 
             try:
-                replying_to = await self.application.objects.get(Status,id=int(self.get_argument('in_reply_to_id')))
+                replying_to = await self.application.objects.get(Status,identifier=self.get_argument('in_reply_to_id'))
+
+                data = {
+                    "caption": self.get_argument('status', ''),
+                    "visibility": bool(self.get_argument('visibility', False)),
+                    "user": user,
+                    "sensitive": bool(self.get_argument('sensitive', False)),
+                    "remote": False,
+                    "identifier": hashids.encode(int(str(user.id) + str(int(datetime.datetime.now().timestamp())))),
+                    "in_reply_to": replying_to
+                }
+
+                status = await self.application.objects.create(Status, **data)
+                self.write(json.dumps(status.to_json(),default=str))
+
             except Status.DoesNotExist:
                 self.set_status(500)
                 self.write({"Error": "Replying to bad ID"})
+
 
         else:
 
