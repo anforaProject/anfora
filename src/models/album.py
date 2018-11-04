@@ -6,14 +6,17 @@ from .user import UserProfile
 from .base import BaseModel
 
 class Album(BaseModel):
-    name = CharField()
-    creted_date = DateTimeField(default=datetime.datetime.now)
+    name = CharField(max_length=200)
+    created_date = DateTimeField(default=datetime.datetime.now)
     public = BooleanField(default=False)
     user = ForeignKeyField(UserProfile, backref='albums')
     description = TextField()
 
-    def to_model(self):
-        return model_to_dict(self, exclude=self._BaseModel__exclude())
-    
     def json(self):
-        return json.dumps(self.to_model(), default=str)
+        return {
+            'name': self.name,
+            'created_date': self.created_date,
+            'public': self.public,
+            'user': self.user,
+            'description': self.description
+        }

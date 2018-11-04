@@ -23,6 +23,7 @@ class Media(BaseModel):
     description = CharField(max_length=420)
     remote_url = CharField(max_length=400, null=True) #If this was a remote file. Specify origin url
     duration = IntegerField(null=True) #If this media is a video fill this
+    filter_name = CharField(max_length=200, null=True)
 
     @property
     def extension(self):
