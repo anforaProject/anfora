@@ -1,7 +1,6 @@
 import json
 import os
 import logging
-from logging.config import fileConfig
 import uuid
 import io
 import sys
@@ -18,7 +17,6 @@ from auth.token_auth import bearerAuth, userPassLogin, basicAuth
 from managers.user_manager import UserManager
 
 
-fileConfig('logging_config.ini')
 log = logging.getLogger(__name__)
 
 class NotificationHandler(BaseHandler):
