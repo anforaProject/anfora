@@ -1,9 +1,9 @@
 import json
-import falcon
+import tornado
 import requests
 import logging
 import re
-
+import os
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.Signature import PKCS1_v1_5
@@ -24,25 +24,13 @@ from activityPub.identity_manager import ActivityPubId
 from tasks.tasks import deliver
 
 from activityPub.data_signature import SignatureVerification
+from api.v1.base_handler import BaseHandler
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+class Inbox(BaseHandler):
 
-class Inbox:
-
-    auth = {
-        'exempt_methods': ['POST']
-    }
-
-    def on_get(self, req, resp, username):
-
-        user = req.context['user']
-        objects = user.activities.select().where(remote==True).order_by(created_at.desc())
-        collection = activities.OrderedCollection(objects)
-
-        resp.body = collection.to_json(context=True)
-        resp.status = falcon.HTTP_200
-
-    def on_post(self, req, resp, username):
+    def post(self, username):
 
         #First we check the headers 
         #Lowercase them to ensure all have the same name
@@ -56,20 +44,27 @@ class Inbox:
 
         #Make a request to get the actor
         """
-        data = req.stream.read().decode("utf-8")
-        if req.content_length:
-            activity = as_activitystream(json.loads(data))
+        data = tornado.escape.json_decode(self.request.body)
+        if data:
+            activity = as_activitystream(data)
         else:
             activity = {}
 
+        activity.actor = activity.actor.replace('https://plearoma','http://pleroma')
+        logger.info(f'Received activity {activity}')
+        activity.actor = activity.actor.replace('https://plearoma','http://pleroma')
         result = False
-
         if activity.type == 'Follow':
+            logger.info(f"Starting follow process for {activity.object}" )
             result = handle_follow(activity)
+            print("REsult of follow ", result)
+            self.set_status(200)
         elif activity.type == 'Accept':
-            print(activity.to_json())
+            #print(activity.to_json())
+            pass
         elif activity.type == 'Create':
-            result = handle_create(activity)
+            #result = handle_create(activity)
+            pass
 
         #store(activity, user, remote = True)
-        resp.status= falcon.HTTP_202
+        #self.set_status(500)
