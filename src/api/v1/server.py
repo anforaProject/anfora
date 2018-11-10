@@ -80,6 +80,7 @@ class WellKnownWebFinger(BaseHandler):
                 profile = await self.application.objects.get(user.profile)
                 response = Webfinger(profile).generate()
                 self.write(response)
+                self.set_header('Content-Type', 'application/jrd+json')
             except User.DoesNotExist:
                 self.write({"Error": "User not found"})
                 self.set_status(404)
