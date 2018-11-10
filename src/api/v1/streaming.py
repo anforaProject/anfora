@@ -1,7 +1,6 @@
 import signal
 import os
 import logging
-from logging.config import fileConfig
 import redis
 import asyncio
 from asyncio import Queue
@@ -22,7 +21,6 @@ import aioredis
 redis_host = 'localhost'
 redis_port = 6379
 
-fileConfig('logging_config.ini')
 log = logging.getLogger(__name__)
 
 class Connection:

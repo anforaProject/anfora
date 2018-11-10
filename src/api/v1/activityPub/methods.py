@@ -2,7 +2,7 @@ import json
 import requests
 import datetime
 import logging
-
+import os
 from settings import DOMAIN
 
 #Models
@@ -15,9 +15,10 @@ from activityPub import activities
 from activityPub.activities import as_activitystream
 from activityPub.data_signature import *
 from activityPub.activities.verbs import Activity, Accept
+from managers.notification_manager import NotificationManager
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+LOGLEVEL = os.environ.get('LOGLEVEL', 'DEBUG').upper()
+logging.basicConfig(level=LOGLEVEL)
 
 
 def get_final_audience(audience):
@@ -53,24 +54,34 @@ def store(activity, person, remote=False):
     return obj.id
 
 def handle_follow(activity):
+
+    # Find if the target user is in our system
     followed = UserProfile.get_or_none(ap_id=activity.object)
-    print(activity.object)
+    
     if followed:
+        logging.debug(f"Starting follow process for {followed.username}")
+        # Get the ap_id for the actor
         ap_id = ""
         if isinstance(activity.actor, activities.Actor):
             ap_id = activity.actor.id
         elif isinstance(activity.actor, str):
             ap_id = activity.actor
 
+        # A representation of the remote user
         follower = ActivityPubId(ap_id).get_or_create_remote_user()
-
+        
+        # Handle if the user must manually approve request 
         if followed.is_private:
             FollowRequest.create(
                 account = follower,
                 target = followed
             )
         else:
-            follower.follow(followed, valid=True)
+
+            # Handle local things
+            #follower.follow(followed)
+            #NotificationManager(follower).create_follow_notification(followed)
+
             t = Accept(object=activity,actor=followed.ap_id)
             data = LinkedDataSignature(t.to_json())
             signed = data.sign(followed)
@@ -87,14 +98,12 @@ def handle_follow(activity):
             
             headers.update({'signature': signature})
 
-            logger.debug('Records: %s', headers)
-
             r = requests.post(follower.ap_id, data = signed, headers=headers )
             print(r.status_code)
-            logger.debug('Records: %s', r.status_code + "\n" + r.json())
             print("sent ", signed, signature)
             return True
     else:
+        logging.error(f"User not found: {activity.object}")
         return False
 
 def handle_note(activity):

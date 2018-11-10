@@ -1,6 +1,5 @@
 import logging
 import os
-from logging.config import fileConfig
 
 
 import tornado.ioloop
@@ -25,14 +24,17 @@ from api.v1.server import (WellKnownNodeInfo, WellKnownWebFinger, NodeInfo)
 from api.v1.media import UploadMedia
 from api.v1.timelines import (HomeTimeline)
 from api.v1.streaming import SSEHandler, SubscriptionManager
+from api.v1.activityPub.actor import getActor
+from api.v1.activityPub.outbox import Outbox
+from api.v1.activityPub.inbox import Inbox
 
 from api.v1.notifications import NotificationHandler
 
 from api.v1.explore import (ExploreUsers, ExploreServer)
 
 from settings import ROOT_PATH
+import tornado.options
 
-fileConfig('logging_config.ini')
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self, path):
@@ -79,6 +81,14 @@ def make_app():
         (r'/api/v1/reset-password',PasswordRecovery),
         (r'/api/v1/reset-password/request/(?P<email>[\w.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6})', RequestPasswordRecovery),
         (r'/api/v1/streaming/user', SSEHandler, dict(manager=manager)),
+
+
+        #ActivityPub 
+
+        (r'/users/(?P<username>[\w]+)/outbox', Outbox),
+        (r'/users/(?P<username>[\w]+)/inbox', Inbox),
+        (r'/users/(?P<username>[\w]+)', getActor),
+
         (r'/(.*)', MainHandler),
     ], debug=True)
 
@@ -89,7 +99,8 @@ if __name__ == "__main__":
     app.listen(3000)
     app.objects = peewee_async.Manager(db)
     
-    loop = asyncio.get_event_loop()
+    #loop = asyncio.get_event_loop()
     #manager.connect()
+    tornado.options.parse_command_line()
     tornado.ioloop.IOLoop.configure(TornadoUvloop)
     tornado.ioloop.IOLoop.current().start()
