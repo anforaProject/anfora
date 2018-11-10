@@ -10,7 +10,7 @@ with a minimal footprint in the server.
 It is being built upon the following technologies:
 
 * Python 3.6
-* Falcon API framework
+* Tornado
 * peewee
 
 Also is in the objectives of this project to create a decentralized social
@@ -31,8 +31,6 @@ You should have received a copy of the GNU Affero General Public License along w
 
 ![MobileView](/images/mobile.png)
 ![ProfileView](/images/profile_view.png)
-![Profile settings](/images/profile.png)
-![Upload](/images/upload.png)
 
 ## Start services
 
