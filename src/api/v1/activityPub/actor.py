@@ -1,17 +1,14 @@
 import json 
-import falcon
 from models.user import User, UserProfile
+from api.v1.base_handler import BaseHandler
 
-class getActor():
-    auth = {
-        'exempt_methods': ['GET']
-    }
+class getActor(BaseHandler):
 
-    def on_get(self, req, resp, username):
+    def get(self, username):
         person = User.get_or_none(username=username)
         if person:
             person = person.profile.get()
-            resp.body = json.dumps(person.to_activitystream(), default=str)
-            resp.status = falcon.HTTP_200
+            self.write(json.dumps(person.to_activitystream(), default=str))
+            self.set_status(200)
         else:
-            resp.status = falcon.HTTP_404
+            self.set_status(200)
