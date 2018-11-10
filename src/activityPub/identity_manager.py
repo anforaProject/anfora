@@ -27,7 +27,7 @@ class ActivityPubId(IdentityManager):
 
         """
         Get user info from remote server.
-        Returns an instance of Person
+        Returns an instance of dict (activity stream object)
         """
 
 
@@ -35,7 +35,7 @@ class ActivityPubId(IdentityManager):
         headers = {'Accept': 'application/activity+json'}
 
         #Make a request to the server
-        res = requests.get(self.uri, headers=headers)
+        res = requests.get(self.uri, headers=headers, verify=False)
 
         if res.status_code != 200:
             raise Exception("Failed to dereference {0}".format(self.uri))
@@ -52,7 +52,7 @@ class ActivityPubId(IdentityManager):
             hostname = urlparse(user.id).hostname
             username = "{0}@{1}".format(user.preferredUsername, hostname)
             user = new_user(
-                username=user.preferredUsername,
+                username=username,
                 name=user.name,
                 ap_id=user.id,
                 is_remote=True,
