@@ -25,7 +25,7 @@ from settings import (MEDIA_FOLDER, salt_code)
 log = logging.getLogger(__name__)
 
 class User(BaseModel):
-    username = CharField(unique=True)
+    username = CharField()
     password = CharField()
     created_at =  DateTimeField(default=datetime.datetime.now) 
     is_bot = BooleanField(default=False) # True if the account is a bot
