@@ -23,11 +23,8 @@ from activityPub.identity_manager import ActivityPubId
 
 from tasks.tasks import deliver
 
-from activityPub.data_signature import SignatureVerification
 from api.v1.base_handler import BaseHandler
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 class Inbox(BaseHandler):
 
     def post(self, username):
@@ -51,11 +48,11 @@ class Inbox(BaseHandler):
             activity = {}
 
         activity.actor = activity.actor.replace('https://plearoma','http://pleroma')
-        logger.info(f'Received activity {activity}')
+        logging.info(f'Received activity {activity}')
         activity.actor = activity.actor.replace('https://plearoma','http://pleroma')
         result = False
         if activity.type == 'Follow':
-            logger.info(f"Starting follow process for {activity.object}" )
+            logging.info(f"Starting follow process for {activity.object}" )
             result = handle_follow(activity)
             print("REsult of follow ", result)
             self.set_status(200)
