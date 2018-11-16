@@ -1,5 +1,7 @@
 import json
+import os
 import requests
+import logging
 from urllib.parse import urlparse
 
 from settings import DOMAIN
@@ -46,13 +48,15 @@ class ActivityPubId(IdentityManager):
         """ 
             Returns an instance of User after looking for it using it's ap_id
         """
+        logging.debug(self.uri)
         user = UserProfile.get_or_none(ap_id=self.uri)
-        if not user:
+        if user == None:
             user = self.dereference()
             hostname = urlparse(user.id).hostname
-            username = "{0}@{1}".format(user.preferredUsername, hostname)
+            #username = "{0}@{1}".format(user.preferredUsername, hostname)
+            logging.debug(f"I'm going to request the creation of user with username @{user.preferredUsername}")
             user = new_user(
-                username=username,
+                username=user.preferredUsername,
                 name=user.name,
                 ap_id=user.id,
                 is_remote=True,
@@ -63,6 +67,7 @@ class ActivityPubId(IdentityManager):
                 public_key=user.publicKey['publicKeyPem']
             )
         #print(user)
+        logging.debug(f"remote user: {user}")
         return user
 
     def _local_uri(self, uri):

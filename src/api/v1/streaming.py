@@ -21,8 +21,6 @@ import aioredis
 redis_host = 'localhost'
 redis_port = 6379
 
-log = logging.getLogger(__name__)
-
 class Connection:
     _redis = None
 
@@ -57,13 +55,13 @@ class Subscription:
         """
         while len(self.listeners) > 0:
             msg = await self.channel.get()
-            logger.debug("Got message: %s" % msg)
+            logging.debug("Got message: %s" % msg)
             closed = []
             for listener in self.listeners:
                 try:
                     listener.queue.put_nowait(msg)
                 except:
-                    logger.warning('Message delivery failed. Client disconnection?')
+                    logging.warning('Message delivery failed. Client disconnection?')
                     closed.append(listener)
             if len(closed) > 0:
                 [self.listeners.remove(listener) for listener in closed]
@@ -93,7 +91,7 @@ class SubscriptionManager:
     def unsubscribe(self, channel: str):
         """Unsubscribe from a channel."""
         if channel not in self.subscriptions:
-            logger.warning("Not subscribed to channel '%s'" % channel)
+            logging.warning("Not subscribed to channel '%s'" % channel)
             return
         sub = self.subscriptions.pop(channel)
         del sub
@@ -109,7 +107,7 @@ class SSEHandler(BaseHandler):
     @bearerAuth
     async def get(self, user):
         channel = f'timeline:{user.id}'
-        log.debug(f'SSE Connecting to channel: {channel}')
+        logging.debug(f'SSE Connecting to channel: {channel}')
         await self.manager.connect()
         await self.manager.subscribe(self, channel)
         while True:
@@ -117,9 +115,9 @@ class SSEHandler(BaseHandler):
             print(message)
             try:
                 event, data = message.decode('utf-8').split(' ', 1)
-                log.debug(f'SSE message sent: event: {event}\ndata: {data}\n\n')
+                logging.debug(f'SSE message sent: event: {event}\ndata: {data}\n\n')
                 self.write(f"event: {event}\ndata: {data}\n\n")
                 self.flush()
             except StreamClosedError:
-                log.debug(f'Event closed')
+                logging.debug(f'Event closed')
                 break

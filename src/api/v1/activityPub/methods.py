@@ -17,9 +17,7 @@ from activityPub.data_signature import *
 from activityPub.activities.verbs import Activity, Accept
 from managers.notification_manager import NotificationManager
 
-LOGLEVEL = os.environ.get('LOGLEVEL', 'DEBUG').upper()
-logging.basicConfig(level=LOGLEVEL)
-
+from activityPub.data_signature import sign_headers
 
 def get_final_audience(audience):
     final_audience = []
@@ -69,7 +67,7 @@ def handle_follow(activity):
 
         # A representation of the remote user
         follower = ActivityPubId(ap_id).get_or_create_remote_user()
-        
+        logging.debug(f'New follower: {follower}')
         # Handle if the user must manually approve request 
         if followed.is_private:
             FollowRequest.create(
@@ -85,7 +83,7 @@ def handle_follow(activity):
             t = Accept(object=activity,actor=followed.ap_id)
             data = LinkedDataSignature(t.to_json())
             signed = data.sign(followed)
-
+            
             headers = {
                 'date': f'{datetime.datetime.utcnow():%d-%b-%YT%H:%M:%SZ}',
                 "(request-target)": follower.uris.inbox,
@@ -123,3 +121,23 @@ def handle_note(activity):
             ap_id=activity.object.id,
             remote=True
         )
+
+async def push_to_remote_actor(actor:UserProfile , message: dict, user_key_id):
+
+    inbox = actor.uris.inbox
+    data = json.dumps(message)
+    headers = {
+        '(request-target)': 'post {}'.format(url.path),
+        'Content-Length': str(len(data)),
+        'Content-Type': 'application/activity+json',
+        'User-Agent': 'ActivityRelay'
+    }
+    headers['signature'] = sign_headers(headers, PRIVKEY, our_key_id)
+
+    logging.debug('%r >> %r', inbox, message)
+
+    async with aiohttp.ClientSession() as session:
+        async with session.post(inbox, data=data, headers=headers) as resp:
+            resp_payload = await resp.text()
+            logging.debug('%r >> resp %r', inbox, resp_payload)
+
