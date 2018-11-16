@@ -26,6 +26,8 @@ py-bcrypt = "*"
 requests = "*"
 pyyaml = "*"
 six = "*"
+coloredlogs = "*"
+aiohttp = "*"
 
 [requires]
 python_version = "3.6"
