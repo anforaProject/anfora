@@ -1,4 +1,3 @@
-import falcon
 from settings import DOMAIN, SCHEME
 
 def ap_pagination(obj):
