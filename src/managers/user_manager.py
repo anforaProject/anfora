@@ -1,6 +1,6 @@
 import bcrypt
 import re 
-import logger as logging
+import logging
 
 from settings import salt_code
 from models.user import User, UserProfile
@@ -95,7 +95,7 @@ def new_user(username, password, email,
         is_private = is_private
     )
 
-    logger.debug(f"Created user {user.username}")
+    logging.debug(f"Created user {user.username}")
 
     if name == None:
         name = username
@@ -118,9 +118,9 @@ def new_user(username, password, email,
         if not user.confirmed:
             send_activation_email(profile)
         
-        logger.info(f"New Profile created: {profile}")
+        logging.info(f"New Profile created: {profile}")
         return profile
     except Exception as e:
-        logger.error(e)
+        logging.error(e)
         user.delete_instance()
         return False
