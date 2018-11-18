@@ -44,7 +44,7 @@ class Inbox(BaseHandler):
         data = tornado.escape.json_decode(self.request.body)
 
         logging.info(f'Received activity {data}')
-        #logging.info(self.request.headers)
+        logging.info(self.request.headers)
 
         if data:
             activity = as_activitystream(data)

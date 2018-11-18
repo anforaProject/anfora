@@ -6,6 +6,8 @@ import os
 import aiohttp
 import uuid
 from settings import DOMAIN
+import socket
+import ssl
 
 #Models
 from models.user import UserProfile
@@ -20,7 +22,7 @@ from activityPub.activities.verbs import Activity, Accept
 from managers.notification_manager import NotificationManager
 
 from activityPub.data_signature import sign_headers
-
+from .http_debug import http_debug
 
 async def push_to_remote_actor(actor:UserProfile , message: dict, user_key_id, PRIVKEY):
 
@@ -28,20 +30,25 @@ async def push_to_remote_actor(actor:UserProfile , message: dict, user_key_id, P
     data = json.dumps(message)
     headers = {
         '(request-target)': 'post {}'.format(inbox),
-        'host': DOMAIN,
         'date': f"{datetime.datetime.utcnow():%a,%d %b %Y %H:%M:%S} GMT",
         'Content-Length': str(len(data)),
         'Content-Type': 'application/activity+json',
-       # 'host': 'anfora.test'
+        'host': DOMAIN
     }
     PRIVKEY = RSA.importKey(PRIVKEY)
     headers['signature'] = sign_headers(headers, PRIVKEY, user_key_id)
-    #headers.pop('(request-target)')
+    headers.pop('(request-target)')
     logging.info('%r >> %r', inbox, message)
 
 
-    async with aiohttp.ClientSession() as session:
-        async with session.post(inbox, data=data, headers=headers, verify_ssl=False) as resp:
+    conn = aiohttp.TCPConnector(
+        family=socket.AF_INET,
+        #verify_ssl=False,
+        
+    )
+
+    async with aiohttp.ClientSession(connector = conn, trace_configs=[http_debug()]) as session:
+        async with session.post(inbox, data=data, headers=headers) as resp:
             resp_payload = await resp.text()
             logging.info('%r >> resp %r', inbox, resp_payload)
 
@@ -112,7 +119,7 @@ async def handle_follow(activity):
                 "@context": "https://www.w3.org/ns/activitystreams",
                 "type": "Accept",
                 "to": follower.uris.inbox,
-                "actor": "https://{}/actor".format('pleroma.test'),
+                "actor": followed.ap_id,
 
                 # this is wrong per litepub, but mastodon < 2.4 is not compliant with that profile.
                 "object": {
