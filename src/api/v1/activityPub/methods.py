@@ -1,8 +1,10 @@
 import json
 import requests
 import datetime
-import logging
+import logger
 import os
+import aiohttp
+import uuid
 from settings import DOMAIN
 
 #Models
@@ -18,6 +20,32 @@ from activityPub.activities.verbs import Activity, Accept
 from managers.notification_manager import NotificationManager
 
 from activityPub.data_signature import sign_headers
+
+
+async def push_to_remote_actor(actor:UserProfile , message: dict, user_key_id, PRIVKEY):
+
+    inbox = actor.uris.inbox
+    data = json.dumps(message)
+    headers = {
+        '(request-target)': 'post {}'.format(inbox),
+        'host': 'anfora.test',
+        'date': f"{datetime.datetime.utcnow():%a,%d %b %Y %H:%M:%S} GMT",
+        'Content-Length': str(len(data)),
+        'Content-Type': 'application/activity+json',
+       # 'host': 'anfora.test'
+    }
+    PRIVKEY = RSA.importKey(PRIVKEY)
+    headers['signature'] = sign_headers(headers, PRIVKEY, user_key_id)
+    #headers.pop('(request-target)')
+    logging.info('%r >> %r', inbox, message)
+
+
+    async with aiohttp.ClientSession() as session:
+        async with session.post(inbox, data=data, headers=headers) as resp:
+            resp_payload = await resp.text()
+            logging.info('%r >> resp %r', inbox, resp_payload)
+
+
 
 def get_final_audience(audience):
     final_audience = []
@@ -51,7 +79,7 @@ def store(activity, person, remote=False):
     obj.save()
     return obj.id
 
-def handle_follow(activity):
+async def handle_follow(activity):
 
     # Find if the target user is in our system
     followed = UserProfile.get_or_none(ap_id=activity.object)
@@ -67,7 +95,7 @@ def handle_follow(activity):
 
         # A representation of the remote user
         follower = ActivityPubId(ap_id).get_or_create_remote_user()
-        logging.debug(f'New follower: {follower}')
+        logging.debug(f"New follower: {follower}")
         # Handle if the user must manually approve request 
         if followed.is_private:
             FollowRequest.create(
@@ -80,25 +108,25 @@ def handle_follow(activity):
             #follower.follow(followed)
             #NotificationManager(follower).create_follow_notification(followed)
 
-            t = Accept(object=activity,actor=followed.ap_id)
-            data = LinkedDataSignature(t.to_json())
-            signed = data.sign(followed)
-            
-            headers = {
-                'date': f'{datetime.datetime.utcnow():%d-%b-%YT%H:%M:%SZ}',
-                "(request-target)": follower.uris.inbox,
-                "content-type": "application/activity+json",
-                "host": DOMAIN,                
+            message = {
+                "@context": "https://www.w3.org/ns/activitystreams",
+                "type": "Accept",
+                "to": follower.uris.inbox,
+                "actor": "https://{}/actor".format('pleroma.test'),
+
+                # this is wrong per litepub, but mastodon < 2.4 is not compliant with that profile.
+                "object": {
+                    "type": "Follow",
+                    "id": followed.ap_id,
+                    "object": "https://{}/actor".format('pleroma.test'),
+                    "actor": follower.ap_id
+                },
+
+                "id": "https://{}/activities/{}".format('pleroma.test', uuid.uuid4()),
             }
 
-            signature = SignatureVerification(headers, method="POST", path=activity.actor + '/inbox').sign(followed)
 
-            
-            headers.update({'signature': signature})
-
-            r = requests.post(follower.ap_id, data = signed, headers=headers )
-            print(r.status_code)
-            print("sent ", signed, signature)
+            await push_to_remote_actor(follower, message , f'{followed.ap_id}#main-key', followed.private_key)
             return True
     else:
         logging.error(f"User not found: {activity.object}")
@@ -121,23 +149,4 @@ def handle_note(activity):
             ap_id=activity.object.id,
             remote=True
         )
-
-async def push_to_remote_actor(actor:UserProfile , message: dict, user_key_id):
-
-    inbox = actor.uris.inbox
-    data = json.dumps(message)
-    headers = {
-        '(request-target)': 'post {}'.format(url.path),
-        'Content-Length': str(len(data)),
-        'Content-Type': 'application/activity+json',
-        'User-Agent': 'ActivityRelay'
-    }
-    headers['signature'] = sign_headers(headers, PRIVKEY, our_key_id)
-
-    logging.debug('%r >> %r', inbox, message)
-
-    async with aiohttp.ClientSession() as session:
-        async with session.post(inbox, data=data, headers=headers) as resp:
-            resp_payload = await resp.text()
-            logging.debug('%r >> resp %r', inbox, resp_payload)
 
