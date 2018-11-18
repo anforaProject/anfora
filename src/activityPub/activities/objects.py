@@ -87,7 +87,7 @@ class Person(Actor):
     type = "Person"
 
 class Note(Object):
-    attributes = Object.attributes + ["actor","caption",
+    attributes = Object.attributes + ["actor","message",
     "is_sensitive","favourites_count", "created_at", 'media_data', 'attachment']
     type = "Note"
 
