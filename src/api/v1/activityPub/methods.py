@@ -28,7 +28,7 @@ async def push_to_remote_actor(actor:UserProfile , message: dict, user_key_id, P
     data = json.dumps(message)
     headers = {
         '(request-target)': 'post {}'.format(inbox),
-        'host': 'anfora.test',
+        'host': DOMAIN,
         'date': f"{datetime.datetime.utcnow():%a,%d %b %Y %H:%M:%S} GMT",
         'Content-Length': str(len(data)),
         'Content-Type': 'application/activity+json',
@@ -41,7 +41,7 @@ async def push_to_remote_actor(actor:UserProfile , message: dict, user_key_id, P
 
 
     async with aiohttp.ClientSession() as session:
-        async with session.post(inbox, data=data, headers=headers) as resp:
+        async with session.post(inbox, data=data, headers=headers, verify_ssl=False) as resp:
             resp_payload = await resp.text()
             logging.info('%r >> resp %r', inbox, resp_payload)
 
