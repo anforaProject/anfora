@@ -5,7 +5,7 @@ import logger
 import os
 import aiohttp
 import uuid
-from settings import DOMAIN
+from settings import DOMAIN, BASE_URL
 import socket
 import ssl
 
@@ -23,35 +23,41 @@ from managers.notification_manager import NotificationManager
 
 from activityPub.data_signature import sign_headers
 from .http_debug import http_debug
+from keys import PRIVKEY, PUBKEY, KEYS
 
-async def push_to_remote_actor(actor:UserProfile , message: dict, user_key_id, PRIVKEY):
+PRIVKEYT = RSA.importKey(KEYS["actorKeys"]["privateKey"])
+
+async def push_to_remote_actor(actor:UserProfile , message: dict, user_key_id:str):
 
     inbox = actor.uris.inbox
     data = json.dumps(message)
     headers = {
         '(request-target)': 'post {}'.format(inbox),
-        'date': f"{datetime.datetime.utcnow():%a,%d %b %Y %H:%M:%S} GMT",
         'Content-Length': str(len(data)),
         'Content-Type': 'application/activity+json',
-        'host': DOMAIN
+        'User-Agent': 'Anfora'
     }
-    PRIVKEY = RSA.importKey(PRIVKEY)
-    headers['signature'] = sign_headers(headers, PRIVKEY, user_key_id)
+
+    headers['signature'] = sign_headers(headers, PRIVKEYT, user_key_id)
     headers.pop('(request-target)')
     logging.info('%r >> %r', inbox, message)
 
 
     conn = aiohttp.TCPConnector(
         family=socket.AF_INET,
-        #verify_ssl=False,
+        verify_ssl=False,
         
     )
 
-    async with aiohttp.ClientSession(connector = conn, trace_configs=[http_debug()]) as session:
-        async with session.post(inbox, data=data, headers=headers) as resp:
-            resp_payload = await resp.text()
-            logging.info('%r >> resp %r', inbox, resp_payload)
-
+    try:
+        async with aiohttp.ClientSession(connector = conn, trace_configs=[http_debug()]) as session:
+            async with session.post(inbox, data=data, headers=headers) as resp:
+                if resp.status == 202:
+                    return
+                resp_payload = await resp.text()
+                logging.debug('%r >> resp %r', inbox, resp_payload)
+    except Exception as e:
+        logging.info('Caught %r while pushing to %r.', e, inbox)
 
 
 def get_final_audience(audience):
@@ -129,11 +135,11 @@ async def handle_follow(activity):
                     "actor": follower.ap_id
                 },
 
-                "id": "https://{}/activities/{}".format('pleroma.test', uuid.uuid4()),
+                "id": "https://{}/activities/{}".format('anfora.test', uuid.uuid4()),
             }
 
 
-            await push_to_remote_actor(follower, message , f'{followed.ap_id}#main-key', followed.private_key)
+            await push_to_remote_actor(follower, message , f'{BASE_URL}/actor#main-key')
             return True
     else:
         logging.error(f"User not found: {activity.object}")

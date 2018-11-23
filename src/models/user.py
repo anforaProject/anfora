@@ -4,6 +4,7 @@ import binascii
 import os
 import io
 import logging
+from settings import BASE_URL
 
 import Crypto
 from PIL import Image
@@ -21,6 +22,8 @@ from urls import (uri, URIs)
 from avatar_gen.pixel_avatar import PixelAvatar
 from hashids import Hashids
 from settings import (MEDIA_FOLDER, salt_code)
+
+from keys import PRIVKEY, PUBKEY, KEYS
 
 log = logging.getLogger(__name__)
 
@@ -189,9 +192,9 @@ class UserProfile(BaseModel):
                 "outbox": self.uris.outbox,
                 "inbox": self.uris.inbox,
                 "publicKey": {
-                    'publicKeyPem': self.public_key,
-                    'id': f'{self.ap_id}#main-key',
-                    'owner': self.ap_id
+                    'publicKeyPem': KEYS["actorKeys"]["publicKey"],
+                    'id': f'{BASE_URL}/actor#main-key',
+                    'owner': f'{BASE_URL}/actor'
                 },
                 "summary": self.description,
                 "manuallyApprovesFollowers": self.is_private,

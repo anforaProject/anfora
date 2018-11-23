@@ -5,7 +5,6 @@ import hashlib # Used to create sha256 hash of the request body
 from urllib.parse import urlparse
 import logging
 
-import requests
 
 import base64
 from Crypto.PublicKey import RSA
