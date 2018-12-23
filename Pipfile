@@ -28,6 +28,7 @@ pyyaml = "*"
 six = "*"
 coloredlogs = "*"
 aiohttp = "*"
+peewee-db-evolve = "*"
 
 [requires]
 python_version = "3.6"
