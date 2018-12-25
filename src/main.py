@@ -49,12 +49,12 @@ manager = SubscriptionManager()
             
 def make_app():
     return tornado.web.Application([
-        (r'/api/v1/accounts/(?P<id>[\d+])', UserHandler),
-        (r'/api/v1/accounts/(?P<id>[\d+])/followers', FetchFollowers),
-        (r'/api/v1/accounts/(?P<id>[\d+])/following', FetchFollowing),
-        (r'/api/v1/accounts/(?P<target_id>[\d+])/follow', FollowUser),
-        (r'/api/v1/accounts/(?P<target_id>[\d+])/unfollow', UnFollowUser),
-        (r'/api/v1/accounts/(?P<id>[\d+])/statuses', FetchUserStatuses),
+        (r'/api/v1/accounts/(?P<id>[\d+]+)', UserHandler),
+        (r'/api/v1/accounts/(?P<id>[\d+]+)/followers', FetchFollowers),
+        (r'/api/v1/accounts/(?P<id>[\d+]+)/following', FetchFollowing),
+        (r'/api/v1/accounts/(?P<target_id>[\d+]+)/follow', FollowUser),
+        (r'/api/v1/accounts/(?P<target_id>[\d+]+)/unfollow', UnFollowUser),
+        (r'/api/v1/accounts/(?P<id>[\d+]+)/statuses', FetchUserStatuses),
         (r'/api/v1/accounts/update_credentials', ProfileManager),
         (r'/api/v1/accounts/relationships', Relationship),
 
