@@ -52,7 +52,7 @@ jobs:
             pipenv run python commands.py -s --config config/tests.yaml
             pipenv run python commands.py -d
             pipenv run python populate.py
-      -run:
+      - run:
           name: huey
           background: true
           command: |
@@ -61,8 +61,8 @@ jobs:
       - run:
           name: run tests
           command: |
-            cd src
-            pipenv run python -m pytest tests/
+          cd src
+          pipenv run python -m pytest tests/
 
       - store_artifacts:
           path: test-reports
