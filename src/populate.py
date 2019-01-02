@@ -6,8 +6,6 @@ import io
 import os
 from base64 import b64encode
 
-from falcon import testing
-
 from models.user import UserProfile, User
 from models.status import Status
 from models.followers import FollowerRelation
