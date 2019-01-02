@@ -14,7 +14,7 @@ from hashids import Hashids
 
 from auth.token_auth import (bearerAuth, is_authenticated)
 from decorators.get_by_id import retrive_by_id
-
+from decorators.lists import group_lists
 from managers.user_manager import UserManager
 
 from tasks.redis.spreadStatus import spread_status
@@ -97,10 +97,14 @@ class UserStatuses(BaseHandler):
         self.write(json.dumps(query, default=str))
     
     @bearerAuth
-    async def post(self, user):
+    @group_lists
+    async def post(self, user, **kwargs):
+        """
+        Handle creation of statuses
+        """
         hashids = Hashids(salt=salt_code, min_length=9)
 
-        if self.get_argument('media_ids', False):
+        if self.kwargs('media_ids', False):
             data = {
                 "caption": self.get_argument('status', ''),
                 "visibility": bool(self.get_argument('visibility', False)),
@@ -115,10 +119,8 @@ class UserStatuses(BaseHandler):
                 data['spoliet_text'] = self.get_argument('spoiler_text', '')
 
             status = await self.application.objects.create(Status, **data)
-
-            
         
-            for image in self.get_argument('media_ids').split(","):
+            for image in self.kwargs('media_ids'):
                 try:
                     m = await self.application.objects.get(Media, media_name=image)
                     m.status = status
