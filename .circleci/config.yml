@@ -52,7 +52,7 @@ jobs:
             pipenv run python commands.py -s --config config/tests.yaml
             pipenv run python commands.py -d
             pipenv run python populate.py
-      -run:
+      - run:
           name: huey
           background: true
           command: |
