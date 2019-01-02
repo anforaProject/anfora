@@ -4,6 +4,7 @@ name = "pypi"
 verify_ssl = true
 
 [dev-packages]
+pytest = "*"
 
 [packages]
 tornado = "*"
