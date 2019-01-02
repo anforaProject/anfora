@@ -1,6 +1,7 @@
 import json
 import logging
 import bcrypt
+from email.utils import parseaddr
 
 from tornado.web import HTTPError, RequestHandler
 
@@ -179,27 +180,31 @@ class UserURLConfirmation(BaseHandler):
 class RegisterUser(BaseHandler):
 
     async def post(self):
-
         username = self.get_argument('username')
         password = self.get_argument('password')
         confirmation = self.get_argument('password_confirmation')
         email = self.get_argument('email')
-
+        
         valid_password = password == confirmation
 
-        username_count = await self.application.objects.execute(User.select().where(User.username==username).count())
+        if '@' not in parseaddr(email)[1]: 
+            self.set_status(500)
+            self.write({"Error": "Invalid email"})
+            self.finish()
+            return
+
+        # TODO: Move the logic from here to elsewhere
+        username_count = await self.application.objects.count(User.select().where(User.username==username))
 
         free = username_count == 0
         log.debug(f'username is free: {free}')
         if valid_password and free:
 
             try:
-
                 log.debug("Creating new user")
                 profile = new_user(
                     username = username, 
                     password = password,
-                    description = "",
                     email = parseaddr(email)[1]
                 )
 
@@ -207,6 +212,9 @@ class RegisterUser(BaseHandler):
                     log.error("Error creating profile")
                     self.set_status(402)
                     self.write({"Error": "Wrong username. Valid characters are number, ascii letters and (.) (_)"})
+                else:
+                    self.set_status(200)
+                    self.write(json.dumps(profile.to_json(), default=str))
 
             except Exception as e:
                 log.error(e)
