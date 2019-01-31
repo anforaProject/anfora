@@ -39,7 +39,7 @@ class TimelineManager:
         timeline_name = self.HOME_TIMELINE.format(self.user.id)
 
 
-        self.r.zadd(timeline_name, status.id, status.id)
+        self.r.zadd(timeline_name, {status.id: status.id})
 
     def remove_from_home(self, status):
         
@@ -62,7 +62,7 @@ class TimelineManager:
         """
 
         timeline_name = self.NOTIFICATIONS.format(self.user.id)
-        self.r.zadd(timeline_name, notification.id, notification.id)
+        self.r.zadd(timeline_name, {notification.id: notification.id})
 
     def remove_notification(self, notification:Notification)->None:
         timeline_name = self.HOME_TIMELINE.format(self.user.id)
