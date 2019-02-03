@@ -329,6 +329,8 @@ class FetchFollowing(BaseHandler):
 
 class Relationship(BaseHandler):
 
+
+
     @bearerAuth
     async def get(self, user):
         target_id = self.get_argument('id', None)
@@ -336,7 +338,6 @@ class Relationship(BaseHandler):
         if target_id:
             try:
                 target = await self.application.objects.get(UserProfile, id=target_id)
-                User
                 data = {
                     'id': target_id,
                 }
@@ -346,8 +347,8 @@ class Relationship(BaseHandler):
                 manager = UserManager(user)
                 target_manager = UserManager(target)
 
-                data['following'] = manager.is_following(target)
-                data['followed_by'] = target_manager.is_following(user)
+                data['following'] = await manager.is_following_async(self.application.objects, target)
+                data['followed_by'] = await target_manager.is_following_async(self.application.objects, user)
 
                 self.write(data)
                 self.set_status(200)

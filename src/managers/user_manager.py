@@ -61,6 +61,18 @@ class UserManager:
         # TODO: store this on redis
         return self.user.is_following(target)
 
+    async def is_following_async(self, app, target):
+        from models.followers import FollowerRelation
+
+        count = await app.count(FollowerRelation
+                .select()
+                .where(
+                    (FollowerRelation.user == self.user) &
+                    (FollowerRelation.follows == target))
+                )
+
+        return count > 0
+
 def valid_username(username):
     regex = r'[\w\d_.]+$'
     return re.match(regex, username) != None
