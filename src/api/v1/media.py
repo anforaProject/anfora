@@ -21,9 +21,6 @@ from managers.user_manager import UserManager
 
 from tasks.redis.spreadStatus import spread_status
 
-
-logger = logging.getLogger(__name__)
-
 class UploadMedia(BaseHandler):
         
     @bearerAuth
