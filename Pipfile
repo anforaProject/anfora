@@ -30,6 +30,8 @@ six = "*"
 coloredlogs = "*"
 aiohttp = "*"
 peewee-db-evolve = "*"
+cachetools = "*"
+async-lru = "*"
 
 [requires]
 python_version = "3.6"
