@@ -25,6 +25,7 @@ def create_settings(filen):
         f'DB_HOST = "{settings.get("db_host")}"\n'
         f'DB_NAME = "{settings.get("db_name")}"\n'
         f'EMAIL_ENABLED = {settings.get("email_enabled")}\n'
+        f'DEBUG = {settings.get("DEBUG")}\n'
     )
 
     if settings.get("email_enabled"):
