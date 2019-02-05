@@ -12,7 +12,7 @@ from settings import (MEDIA_FOLDER, thumb_folder, pic_folder)
 from models.media import Media
 from managers.media_manager import MediaManager
 
-from api.v1.base_handler import BaseHandler
+from api.v1.base_handler import BaseHandler, CustomError
 
 from auth.token_auth import (bearerAuth, is_authenticated)
 from decorators.get_by_id import retrive_by_id
@@ -79,5 +79,4 @@ class UploadMedia(BaseHandler):
 
                 self.write(json.dumps(m.to_json(), default=str))
         else:
-            self.write({"Error": "Error storing files"})
-            self.set_status(500)
+            raise CustomError(reason="Error storing files", status_code=400)
