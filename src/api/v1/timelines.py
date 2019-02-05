@@ -7,7 +7,7 @@ import aioredis
 from tornado.web import HTTPError, RequestHandler
 import tornado.ioloop
 
-from api.v1.base_handler import BaseHandler
+from api.v1.base_handler import BaseHandler, CustomError
 from auth.token_auth import bearerAuth
 
 from models.user import UserProfile

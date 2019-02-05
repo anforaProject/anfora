@@ -9,7 +9,7 @@ from models.status import Status
 from models.token import Token
 from models.media import Media 
 
-from api.v1.base_handler import BaseHandler
+from api.v1.base_handler import BaseHandler, CustomError
 from hashids import Hashids
 
 from auth.token_auth import (bearerAuth, is_authenticated)
@@ -154,12 +154,9 @@ class UserStatuses(BaseHandler):
                 self.write(json.dumps(status.to_json(),default=str))
 
             except Status.DoesNotExist:
-                self.set_status(500)
-                self.write({"Error": "Replying to bad ID"})
+                raise CustomError(reason="Replying to bad ID", status_code=400)
 
 
         else:
-
-            self.set_status(500)
-            self.write({"Error": "No media attached nor in reply to"})
+            raise CustomError(reason="No media attached nor in reply to", status_code=400)
 

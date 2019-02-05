@@ -1,19 +1,24 @@
-import datetime
-import json
-import re
-import hashlib # Used to create sha256 hash of the request body
-from urllib.parse import urlparse
+import aiohttp
+import aiohttp.web
+import base64
 import logging
 
-
-import base64
 from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA, SHA256, SHA512
 from Crypto.Signature import PKCS1_v1_5
 
-from activityPub.identity_manager import ActivityPubId
+from cachetools import LFUCache
+from async_lru import alru_cache
 
-from models.user import UserProfile
+from .remote_actor import fetch_actor
+
+
+HASHES = {
+    'sha1': SHA,
+    'sha256': SHA256,
+    'sha512': SHA512
+}
+
 
 def split_signature(sig):
     default = {"headers": "date"}
@@ -33,6 +38,23 @@ def build_signing_string(headers, used_headers):
     return '\n'.join(map(lambda x: ': '.join([x.lower(), headers[x]]), used_headers))
 
 
+SIGSTRING_CACHE = LFUCache(1024)
+
+def sign_signing_string(sigstring, key):
+    if sigstring in SIGSTRING_CACHE:
+        return SIGSTRING_CACHE[sigstring]
+
+    pkcs = PKCS1_v1_5.new(key)
+    h = SHA256.new()
+    h.update(sigstring.encode('ascii'))
+    sigdata = pkcs.sign(h)
+
+    sigdata = base64.b64encode(sigdata)
+    SIGSTRING_CACHE[sigstring] = sigdata.decode('ascii')
+
+    return SIGSTRING_CACHE[sigstring]
+
+
 def sign_headers(headers, key, key_id):
     headers = {x.lower(): y for x, y in headers.items()}
     used_headers = headers.keys()
@@ -42,21 +64,15 @@ def sign_headers(headers, key, key_id):
         'headers': ' '.join(used_headers)
     }
     sigstring = build_signing_string(headers, used_headers)
-
-    pkcs = PKCS1_v1_5.new(key)
-    h = SHA256.new()
-    h.update(sigstring.encode('ascii'))
-    sigdata = pkcs.sign(h)
-
-    sigdata = base64.b64encode(sigdata)
-    sig['signature'] = sigdata.decode('ascii')
+    sig['signature'] = sign_signing_string(sigstring, key)
 
     chunks = ['{}="{}"'.format(k, v) for k, v in sig.items()]
     return ','.join(chunks)
 
 
-def fetch_actor_key(actor):
-    actor_data = fetch_actor(actor)
+@alru_cache(maxsize=16384)
+async def fetch_actor_key(actor):
+    actor_data = await fetch_actor(actor)
 
     if not actor_data:
         return None
@@ -70,8 +86,8 @@ def fetch_actor_key(actor):
     return RSA.importKey(actor_data['publicKey']['publicKeyPem'])
 
 
-def validate(actor, request):
-    pubkey = fetch_actor_key(actor)
+async def validate(actor, request):
+    pubkey = await fetch_actor_key(actor)
     if not pubkey:
         return False
 
@@ -100,3 +116,24 @@ def validate(actor, request):
 
     logging.debug('validates? %r', result)
     return result
+
+
+async def http_signatures_middleware(app, handler):
+    async def http_signatures_handler(request):
+        request['validated'] = False
+
+        if 'signature' in request.headers:
+            data = await request.json()
+            if 'actor' not in data:
+                raise aiohttp.web.HTTPUnauthorized(body='signature check failed, no actor in message')
+
+            actor = data["actor"]
+            if not (await validate(actor, request)):
+                logging.info('Signature validation failed for: %r', actor)
+                raise aiohttp.web.HTTPUnauthorized(body='signature check failed, signature did not match key')
+
+            return (await handler(request))
+
+        return (await handler(request))
+
+    return http_signatures_handler

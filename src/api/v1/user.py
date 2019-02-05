@@ -9,7 +9,7 @@ from models.user import UserProfile, User
 from models.status import Status
 from models.token import Token
 
-from api.v1.base_handler import BaseHandler
+from api.v1.base_handler import BaseHandler, CustomError
 from auth.token_auth import bearerAuth, userPassLogin, basicAuth
 
 from utils.atomFeed import generate_feed
@@ -55,7 +55,7 @@ class UserHandler(BaseHandler):
             self.write(json.dumps(profile.to_json(), default=str).encode('utf-8'))
             self.set_status(200)
         except User.DoesNotExist:
-            raise HTTPError(404, "User not found")
+            raise CustomError(reason="User not found", status_code=401)
 
 class VerifyCredentials(BaseHandler):
 
@@ -136,11 +136,10 @@ class LogoutUser(BaseHandler):
                 await self.application.objects.delete(token)
                 self.write({"Success": "Removed token"})
             else:
-                self.set_status(401)
-                self.write({"Error": "Unauthorized user"})
+                raise CustomError(reason="Unauthorized user", status_code=401)
         
         except Token.DoesNotExist:
-            self.write({"Error": "This token doesn't exists"})
+            raise CustomError(reason="Token not valid", status_code=401)
 
 class atomFeed(BaseHandler):
 
@@ -157,8 +156,7 @@ class atomFeed(BaseHandler):
             self.write(feed)  
 
         except User.DoesNotExist:
-            self.set_status(404)
-            self.write({"Error": "User doesn't exits"})
+            raise CustomError(reason="User not available", status_code=404)
 
 class UserURLConfirmation(BaseHandler):
 
@@ -171,11 +169,10 @@ class UserURLConfirmation(BaseHandler):
                 self.application.objects.update(user)
             
             except User.DoesNotExist:
-                self.set_status(404)
-                self.write({"Error": "User not available"})
+                raise CustomError(reason="User not available", status_code=404)
         else:
-            self.set_status(500)
-            self.write({"Error": "Invalid code or too old"})
+            raise CustomError(reason="Invalid code or too old", status_code=400)
+
 
 class RegisterUser(BaseHandler):
 
@@ -188,10 +185,7 @@ class RegisterUser(BaseHandler):
         valid_password = password == confirmation
 
         if '@' not in parseaddr(email)[1]: 
-            self.set_status(500)
-            self.write({"Error": "Invalid email"})
-            self.finish()
-            return
+            raise CustomError(reason="Invalid email", status_code=400)
 
         # TODO: Move the logic from here to elsewhere
         username_count = await self.application.objects.count(User.select().where(User.username==username))
@@ -211,20 +205,17 @@ class RegisterUser(BaseHandler):
                 if not profile:
                     log.error("Error creating profile")
                     self.set_status(402)
-                    self.write({"Error": "Wrong username. Valid characters are number, ascii letters and (.) (_)"})
+                    CustomError(reason="Wrong username. Valid characters are number, ascii letters and (.) (_)", status_code=400)
                 else:
                     self.set_status(200)
                     self.write(json.dumps(profile.to_json(), default=str))
 
             except Exception as e:
                 log.error(e)
-                self.set_status(500)
-                self.write({"Error": "Error creating new user"})
+                CustomError(reason="Error creating new user", status_code=500)
         
         else:
-
-            self.set_status(400)
-            self.write({"Error": "User not available or password not matching"})
+            raise CustomError(reason="User not available or password not matching", status_code=400)
 
 class PasswordRecovery(BaseHandler):
 
@@ -250,15 +241,12 @@ class PasswordRecovery(BaseHandler):
                     user.password = bcrypt.hashpw(password, salt_code) 
                     await self.application.objects.update(user)
                 else:
-                    self.set_status(402)
-                    self.write({"Error": "Password and confirmation do not match"})
+                    raise CustomError(reason="Password and confirmation do not match", status_code=401)
             
             except User.DoesNotExist:
-                self.set_status(404)
-                self.write({"Error": "User not available"})
+                raise CustomError(reason="User not found", status_code=404)
         else:
-            self.set_status(500)
-            self.write({"Error": "Invalid code or too old"})
+            raise CustomError(reason="Invalid code or too old", status_code=401)
 
 class RequestPasswordRecovery(BaseHandler):
 
@@ -268,7 +256,7 @@ class RequestPasswordRecovery(BaseHandler):
             profile = user.profile.get()
             send_password_reset(profile)
         except User.DoesNotExist:
-            pass 
+            raise CustomError(reason="User not found", status_code=404)
         self.write({"Success": "If the email is our database we'll contact the user"})
         self.set_status(200)
 
@@ -285,8 +273,7 @@ class FollowUser(BaseHandler):
             NotificationManager(user).create_follow_notification(target)
             log.debug(f"{user.username} followed {target.username}")
         except User.DoesNotExist:
-            self.write({"Error": "User not found"})
-            self.set_status(400)
+            raise CustomError(reason="User not found", status_code=404)
 
 class UnFollowUser(BaseHandler):
 
@@ -298,8 +285,7 @@ class UnFollowUser(BaseHandler):
             user.unfollow(target)
             remove_from_timeline(user, target)
         except User.DoesNotExist:
-            self.write({"Error": "User not found"})
-            self.set_status(400)
+            raise CustomError(reason="User not found", status_code=404)
 
 class FetchFollowers(BaseHandler):
 
@@ -310,8 +296,7 @@ class FetchFollowers(BaseHandler):
             self.write(json.dumps(followers, default=str))
             self.set_status(200)
         except UserProfile.DoesNotExist:
-            self.write({"Error": "user not found"})
-            self.set_status(404)
+            raise CustomError(reason="User not found", status_code=404)
             
 class FetchFollowing(BaseHandler):
 
@@ -322,11 +307,10 @@ class FetchFollowing(BaseHandler):
             self.write(json.dumps(followers, default=str))
             self.set_status(200)
         except UserProfile.DoesNotExist:
-            self.write({"Error": "user not found"})
-            self.set_status(404)
+            raise CustomError(reason="User not found", status_code=404)
         except Exception as e:
-            print(e)
-
+            raise CustomError(reason="Unexpected error", status_code=500)
+            log.error(e)
 class Relationship(BaseHandler):
 
 
@@ -357,6 +341,5 @@ class Relationship(BaseHandler):
                 self.write({"Error": "Target user not found"})
                 self.set_status(404)
         else:
-            self.write({"Error": "User not provided"})
-            self.set_status(422)
-            log.warning("Missing target id on request")
+            raise CustomError(reason="Targed it not provided", status_code=400)
+            log.error("Missing target id on request")
