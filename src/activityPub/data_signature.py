@@ -10,7 +10,7 @@ from Crypto.Signature import PKCS1_v1_5
 from cachetools import LFUCache
 from async_lru import alru_cache
 
-from .remote_actor import fetch_actor
+from activityPub.remote_actor import fetch_actor
 
 
 HASHES = {

@@ -1,4 +1,5 @@
 import tornado
+import json
 from settings import DEBUG
 
 
@@ -22,19 +23,19 @@ class BaseHandler(tornado.web.RequestHandler):
         self.set_header('Content-Type', 'application/json')
         if DEBUG:
             # in debug mode, try to send a traceback
-            lines = []
-            for line in traceback.format_exception(*kwargs["exc_info"]):
-                lines.append(line)
-            self.finish(json.dumps({
-                'error': {
-                    'code': status_code,
-                    'message': self._reason,
-                    'traceback': lines,
-                }
-            }))
+            if self.settings.get("serve_traceback") and "exc_info" in kwargs:
+                lines = []
+                self.finish(json.dumps({
+                    'error': {
+                        'code': status_code,
+                        'message': self._reason,
+                        'traceback': lines,
+                    }
+                }))
         else:
             self.finish(json.dumps({
                 'error': {
                     'code': status_code,
                     'message': self._reason,
                 }
+            }))
