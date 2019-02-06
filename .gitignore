@@ -7,3 +7,6 @@ share/*
 *.pyc
 node_modules/*
 dev.yaml
+src/settings.py
+*.sh
+src/server_info.py
