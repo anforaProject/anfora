@@ -1,139 +1,106 @@
-import aiohttp
-import aiohttp.web
-import base64
 import logging
+import hashlib
+import base64
+from typing import (Any, Dict, Optional, List)
+from datetime import datetime
+from urllib.parse import urlparse
 
-from Crypto.PublicKey import RSA
-from Crypto.Hash import SHA, SHA256, SHA512
+from Crypto.Hash import SHA256
 from Crypto.Signature import PKCS1_v1_5
+from requests.auth import AuthBase 
 
-from cachetools import LFUCache
-from async_lru import alru_cache
-
-from activityPub.remote_actor import fetch_actor
+from src.activityPub.key import CryptoKey
 
 
-HASHES = {
-    'sha1': SHA,
-    'sha256': SHA256,
-    'sha512': SHA512
-}
+log = logging.getLogger(__name__)
 
 
-def split_signature(sig):
-    default = {"headers": "date"}
+class HTTPSignaturesAuth(AuthBase):
 
-    sig = sig.strip().split(',')
+    """
+    Plugin for request to sign petitions
+    http://docs.python-requests.org/en/master/user/authentication/#new-forms-of-authentication
+    """
 
-    for chunk in sig:
-        k, _, v = chunk.partition('=')
-        v = v.strip('\"')
-        default[k] = v
+    def __init__(self, key: CryptoKey) -> None:
+        self.key = key 
 
-    default['headers'] = default['headers'].split()
-    return default
+        self.headers = ["(request-target)", "user-agent", "host", "date", "digest", "content-type"]
 
+    def _build_signed_string(self, 
+                            signed_headers: List,
+                            method: str,
+                            path: str,
+                            headers: Any,
+                            body_digest: str 
+                            ) -> str:
 
-def build_signing_string(headers, used_headers):
-    return '\n'.join(map(lambda x: ': '.join([x.lower(), headers[x]]), used_headers))
+        production = []
 
+        for header in signed_headers:
 
-SIGSTRING_CACHE = LFUCache(1024)
-
-def sign_signing_string(sigstring, key):
-    if sigstring in SIGSTRING_CACHE:
-        return SIGSTRING_CACHE[sigstring]
-
-    pkcs = PKCS1_v1_5.new(key)
-    h = SHA256.new()
-    h.update(sigstring.encode('ascii'))
-    sigdata = pkcs.sign(h)
-
-    sigdata = base64.b64encode(sigdata)
-    SIGSTRING_CACHE[sigstring] = sigdata.decode('ascii')
-
-    return SIGSTRING_CACHE[sigstring]
+            if header == '(request-target)':
+                production.append('(request-target): ' + method.lower() + ' ' + path)
+            elif header == 'digest'
+                production.append('digest: ' + body_digest)
+            else:
+                production.append(header + ': ' + headers[header])
 
 
-def sign_headers(headers, key, key_id):
-    headers = {x.lower(): y for x, y in headers.items()}
-    used_headers = headers.keys()
-    sig = {
-        'keyId': key_id,
-        'algorithm': 'rsa-sha256',
-        'headers': ' '.join(used_headers)
-    }
-    sigstring = build_signing_string(headers, used_headers)
-    sig['signature'] = sign_signing_string(sigstring, key)
+        return '\n'.join(production)
 
-    chunks = ['{}="{}"'.format(k, v) for k, v in sig.items()]
-    return ','.join(chunks)
+    def __call__(self, r):
+        
+        # Get the domain target of the request
+        host = urlparse(r.url).netloc
 
+        # Create hasher using sha256
+        hasher = hashlib.new('sha256')
 
-@alru_cache(maxsize=16384)
-async def fetch_actor_key(actor):
-    actor_data = await fetch_actor(actor)
+        body = r.body 
+        try:
+            body = r.body.encode('utf-8')
+        except:
+            pass 
 
-    if not actor_data:
-        return None
+        hasher.update(body)
+        digest = "SHA-256=" + base64.b64encode(hasher.digest()).decode("utf-8")
 
-    if 'publicKey' not in actor_data:
-        return None
+        date = datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
+        
+        new_headers = {
+            "Digest": digest,
+            "Date": date, 
+            "Host": host
+        }
+        
+        r.headers.update(new_headers)
 
-    if 'publicKeyPem' not in actor_data['publicKey']:
-        return None
+        hstring = " ".join(self.headers)
 
-    return RSA.importKey(actor_data['publicKey']['publicKeyPem'])
+        to_sign = self._build_signed_string(
+            self.headers,
+            r.method,
+            r.path_url,
+            r.headers,
+            digest
+        )
 
+        signer = PKCS1_v1_5.new(self.key.privkey)
+        
+        # Digest of the headers
+        hdigest = SHA256.new()
+        hdigest.update(to_sign.encode('utf-8'))
+        sig = base64.b64encode(signer.sign(hdigest))
+        sig = sig.decode('utf-8')
 
-async def validate(actor, request):
-    pubkey = await fetch_actor_key(actor)
-    if not pubkey:
-        return False
+        key_id = self.key.key_id()
+        
+        headers = {
+            "Signature": f'keyId="{key_id}",algorithm="rsa-sha256",headers="{hstring}",signature="{sig}"'
+        }
 
-    logging.debug('actor key: %r', pubkey)
+        log.debug(f'Signed request headers {headers}')
 
-    headers = request.headers.copy()
-    headers['(request-target)'] = ' '.join([request.method.lower(), request.path])
-
-    sig = split_signature(headers['signature'])
-    logging.debug('sigdata: %r', sig)
-
-    sigstring = build_signing_string(headers, sig['headers'])
-    logging.debug('sigstring: %r', sigstring)
-
-    sign_alg, _, hash_alg = sig['algorithm'].partition('-')
-    logging.debug('sign alg: %r, hash alg: %r', sign_alg, hash_alg)
-
-    sigdata = base64.b64decode(sig['signature'])
-
-    pkcs = PKCS1_v1_5.new(pubkey)
-    h = HASHES[hash_alg].new()
-    h.update(sigstring.encode('ascii'))
-    result = pkcs.verify(h, sigdata)
-
-    request['validated'] = result
-
-    logging.debug('validates? %r', result)
-    return result
-
-
-async def http_signatures_middleware(app, handler):
-    async def http_signatures_handler(request):
-        request['validated'] = False
-
-        if 'signature' in request.headers:
-            data = await request.json()
-            if 'actor' not in data:
-                raise aiohttp.web.HTTPUnauthorized(body='signature check failed, no actor in message')
-
-            actor = data["actor"]
-            if not (await validate(actor, request)):
-                logging.info('Signature validation failed for: %r', actor)
-                raise aiohttp.web.HTTPUnauthorized(body='signature check failed, signature did not match key')
-
-            return (await handler(request))
-
-        return (await handler(request))
-
-    return http_signatures_handler
+        r.headers.update(headers)
+        return r
