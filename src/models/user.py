@@ -152,32 +152,6 @@ class UserProfile(BaseModel):
             "@context": [
                 "https://www.w3.org/ns/activitystreams",
                 "https://w3id.org/security/v1",
-                {
-                    "manuallyApprovesFollowers": "as:manuallyApprovesFollowers",
-                    "sensitive": "as:sensitive",
-                    "movedTo": {
-                        "@id": "as:movedTo",
-                        "@type": "@id"
-                    },
-                    "Hashtag": "as:Hashtag",
-                    "ostatus": "http://ostatus.org#",
-                    "atomUri": "ostatus:atomUri",
-                    "inReplyToAtomUri": "ostatus:inReplyToAtomUri",
-                    "conversation": "ostatus:conversation",
-                    "toot": "http://joinmastodon.org/ns#",
-                    "Emoji": "toot:Emoji",
-                    "focalPoint": {
-                        "@container": "@list",
-                        "@id": "toot:focalPoint"
-                    },
-                    "featured": {
-                        "@id": "toot:featured",
-                        "@type": "@id"
-                    },
-                    "schema": "http://schema.org#",
-                    "PropertyValue": "schema:PropertyValue",
-                    "value": "schema:value"
-                }
             ],
             "type": "Person",
             "id": self.uris.id,
@@ -193,8 +167,8 @@ class UserProfile(BaseModel):
                 "inbox": self.uris.inbox,
                 "publicKey": {
                     'publicKeyPem': KEYS["actorKeys"]["publicKey"],
-                    'id': f'{BASE_URL}/actor#main-key',
-                    'owner': f'{BASE_URL}/actor'
+                    'id': f'{BASE_URL}/users/{self.username}#main-key',
+                    'owner': f'{BASE_URL}/users/{self.username}'
                 },
                 "summary": self.description,
                 "manuallyApprovesFollowers": self.is_private,
