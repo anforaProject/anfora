@@ -24,21 +24,16 @@ from decorators.pagination import ap_pagination
 
 class Outbox(BaseHandler):
 
-    def get(self, username):
+    async def get(self, username):
         user = User.get_or_none(username=username)
         pagination = ap_pagination(self)
         if user:
             user = user.profile.get()
 
             # Retrive statuses
-            objects = []
-            for k in TimelineManager(user).query():
-                try:
-                    objects.append(Status.get(Status.identifier == status).to_activitystream())
-                except:
-                    pass
 
-            print(objects)
+            objects = await self.application.objects.execute(Status.select().where(Status.user == user ).order_by(Status.id).paginate(pagination['page'], pagination['default_pagination']))
+            objects = map(lambda x: x.to_activitystream(), objects)
             # create collection page
             collectionPage = activities.OrderedCollectionPage(map(activities.Note, objects), **pagination)
 

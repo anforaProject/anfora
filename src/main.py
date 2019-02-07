@@ -103,4 +103,10 @@ if __name__ == "__main__":
     #manager.connect()
     tornado.options.parse_command_line()
     tornado.ioloop.IOLoop.configure(TornadoUvloop)
+
+    #server = tornado.httpserver.HTTPServer(app)
+    #server.bind(3000)
+    #server.start(0)  # forks one process per cpu
+
+
     tornado.ioloop.IOLoop.current().start()

@@ -8,14 +8,31 @@ from urllib.parse import urlparse
 from Crypto.Hash import SHA256
 from Crypto.Signature import PKCS1_v1_5
 from requests.auth import AuthBase 
+from pyld import jsonld
 
-from src.activityPub.key import CryptoKey
+from activityPub.key import CryptoKey
 
 
 log = logging.getLogger(__name__)
 
+def _build_signed_string(
+    signed_headers: str, method: str, path: str, headers: Any, body_digest: str
+) -> str:
+    out = []
 
-class HTTPSignaturesAuth(AuthBase):
+    for signed_header in signed_headers.split(" "):
+        if signed_header == "(request-target)":
+            out.append("(request-target): " + method.lower() + " " + path)
+        elif signed_header == "digest":
+            out.append("digest: " + body_digest)
+        else:
+            out.append(signed_header + ": " + headers[signed_header])
+    return "\n".join(out)
+
+def sign_headers(dsf,fdfs,fdff,fdf):
+    pass
+
+class HTTPSignaturesAuthRequest(AuthBase):
 
     """
     Plugin for request to sign petitions
@@ -25,29 +42,9 @@ class HTTPSignaturesAuth(AuthBase):
     def __init__(self, key: CryptoKey) -> None:
         self.key = key 
 
-        self.headers = ["(request-target)", "user-agent", "host", "date", "digest", "content-type"]
-
-    def _build_signed_string(self, 
-                            signed_headers: List,
-                            method: str,
-                            path: str,
-                            headers: Any,
-                            body_digest: str 
-                            ) -> str:
-
-        production = []
-
-        for header in signed_headers:
-
-            if header == '(request-target)':
-                production.append('(request-target): ' + method.lower() + ' ' + path)
-            elif header == 'digest'
-                production.append('digest: ' + body_digest)
-            else:
-                production.append(header + ': ' + headers[header])
+        self.headers = "(request-target) user-agent host date digest content-type"
 
 
-        return '\n'.join(production)
 
     def __call__(self, r):
         
@@ -76,15 +73,15 @@ class HTTPSignaturesAuth(AuthBase):
         
         r.headers.update(new_headers)
 
-        hstring = " ".join(self.headers)
-
-        to_sign = self._build_signed_string(
+        to_sign = _build_signed_string(
             self.headers,
             r.method,
             r.path_url,
             r.headers,
             digest
         )
+
+        #print(to_sign)
 
         signer = PKCS1_v1_5.new(self.key.privkey)
         
@@ -97,10 +94,54 @@ class HTTPSignaturesAuth(AuthBase):
         key_id = self.key.key_id()
         
         headers = {
-            "Signature": f'keyId="{key_id}",algorithm="rsa-sha256",headers="{hstring}",signature="{sig}"'
+            "Signature": f'keyId="{key_id}",algorithm="rsa-sha256",headers="{self.headers}",signature="{sig}"'
         }
 
         log.debug(f'Signed request headers {headers}')
 
         r.headers.update(headers)
         return r
+
+# Manage RSA signatures 
+
+def _options_hash(doc):
+    doc = dict(doc["signature"])
+    for k in ["type", "id", "signatureValue"]:
+        if k in doc:
+            del doc[k]
+    doc["@context"] = "https://w3id.org/identity/v1"
+    normalized = jsonld.normalize(
+        doc, {"algorithm": "URDNA2015", "format": "application/nquads"}
+    )
+    h = hashlib.new("sha256")
+    h.update(normalized.encode("utf-8"))
+    return h.hexdigest()
+
+
+def _doc_hash(doc):
+    doc = dict(doc)
+    if "signature" in doc:
+        del doc["signature"]
+    normalized = jsonld.normalize(
+        doc, {"algorithm": "URDNA2015", "format": "application/nquads"}
+    )
+    h = hashlib.new("sha256")
+    h.update(normalized.encode("utf-8"))
+    return h.hexdigest()
+
+def generate_signature(doc: Dict, key: 'Key'):
+
+    options = {
+        'type': 'RsaSignature2017',
+        'creator': doc['actor'] + '#main-key',
+        'created': datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+    }
+
+    doc["signature"] = options 
+    to_be_signed = _options_hash(doc) + _doc_hash(doc)
+    signer = PKCS1_v1_5.new(key.privkey)
+    digest = SHA256.new()
+    digest.update(to_be_signed.encode("utf-8"))
+    sig = base64.b64encode(signer.sign(digest))
+    options["signatureValue"] = sig.decode("utf-8")
+    doc["signature"] = options 

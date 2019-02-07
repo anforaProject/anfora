@@ -32,6 +32,8 @@ aiohttp = "*"
 peewee-db-evolve = "*"
 cachetools = "*"
 async-lru = "*"
+pyld = "*"
+imageio-ffmpeg = "*"
 
 [requires]
 python_version = "3.6"

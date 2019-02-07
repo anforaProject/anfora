@@ -23,7 +23,7 @@ from avatar_gen.pixel_avatar import PixelAvatar
 from hashids import Hashids
 from settings import (MEDIA_FOLDER, salt_code)
 
-from keys import PRIVKEY, PUBKEY, KEYS
+from keys import import_keys
 
 log = logging.getLogger(__name__)
 
@@ -166,7 +166,7 @@ class UserProfile(BaseModel):
                 "outbox": self.uris.outbox,
                 "inbox": self.uris.inbox,
                 "publicKey": {
-                    'publicKeyPem': KEYS["actorKeys"]["publicKey"],
+                    'publicKeyPem': import_keys()["actorKeys"]["publicKey"],
                     'id': f'{BASE_URL}/users/{self.username}#main-key',
                     'owner': f'{BASE_URL}/users/{self.username}'
                 },

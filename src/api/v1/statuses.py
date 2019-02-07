@@ -127,7 +127,7 @@ class manageUserStatuses:
 
             if  req.get_param('media_ids') != None:
                     for image in req.get_param('media_ids').split(','):
-                        m = Media.get_or_none(media_name=image)
+                        m = Media.get_or_none(media_name=image) #TODO: Async this
                         m.status = status
                         m.save()
 

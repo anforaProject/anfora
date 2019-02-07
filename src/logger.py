@@ -4,7 +4,7 @@ import coloredlogs
 coloredlogs.install()
 
 logging.basicConfig(
-    level=logging.CRITICAL,
+    level=logging.DEBUG,
     format="[%(asctime)s] %(levelname)s: %(message)s",
     handlers=[logging.StreamHandler()]
 )

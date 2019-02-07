@@ -23,6 +23,7 @@ from settings import salt_code
 from tasks.emails import send_password_reset
 from tasks.timelines import *
 
+from database import DATABASE
 
 log = logging.getLogger(__name__)
 

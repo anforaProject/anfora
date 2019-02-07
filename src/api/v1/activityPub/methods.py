@@ -16,49 +16,19 @@ from models.follow_request import FollowRequest
 
 #ActivityPub things
 from activityPub import activities
-from activityPub.activities import as_activitystream
+from activityPub.activities import as_activitystream, Activity
 from activityPub.data_signature import *
 from activityPub.activities.verbs import Activity, Accept
+from activityPub.identity_manager import ActivityPubId
 from managers.notification_manager import NotificationManager
 
-from activityPub.data_signature import sign_headers
+from activityPub.data_signature import HTTPSignaturesAuthRequest #sign_headers
+from activityPub.activitypub import push_to_remote_actor
 from .http_debug import http_debug
-from keys import PRIVKEY, PUBKEY, KEYS
-
-PRIVKEYT = RSA.importKey(KEYS["actorKeys"]["privateKey"])
-
-async def push_to_remote_actor(actor:UserProfile , message: dict, user_key_id:str):
-
-    inbox = actor.uris.inbox
-    data = json.dumps(message)
-    headers = {
-        '(request-target)': 'post {}'.format(inbox),
-        'Content-Length': str(len(data)),
-        'Content-Type': 'application/activity+json',
-        'User-Agent': 'Anfora'
-    }
-
-    headers['signature'] = sign_headers(headers, PRIVKEYT, user_key_id)
-    headers.pop('(request-target)')
-    logging.info('%r >> %r', inbox, message)
+from keys import import_keys
 
 
-    conn = aiohttp.TCPConnector(
-        family=socket.AF_INET,
-        verify_ssl=False,
-        
-    )
-
-    try:
-        async with aiohttp.ClientSession(connector = conn, trace_configs=[http_debug()]) as session:
-            async with session.post(inbox, data=data, headers=headers) as resp:
-                if resp.status == 202:
-                    return
-                resp_payload = await resp.text()
-                logging.debug('%r >> resp %r', inbox, resp_payload)
-    except Exception as e:
-        logging.info('Caught %r while pushing to %r.', e, inbox)
-
+#PRIVKEYT = RSA.importKey(KEYS["actorKeys"]["privateKey"])
 
 def get_final_audience(audience):
     final_audience = []
@@ -92,7 +62,7 @@ def store(activity, person, remote=False):
     obj.save()
     return obj.id
 
-async def handle_follow(activity):
+async def handle_follow(activity: Activity) -> bool:
 
     # Find if the target user is in our system
     followed = UserProfile.get_or_none(ap_id=activity.object)
@@ -120,7 +90,6 @@ async def handle_follow(activity):
             # Handle local things
             #follower.follow(followed)
             #NotificationManager(follower).create_follow_notification(followed)
-
             message = {
                 "@context": "https://www.w3.org/ns/activitystreams",
                 "type": "Accept",
@@ -130,8 +99,8 @@ async def handle_follow(activity):
                 # this is wrong per litepub, but mastodon < 2.4 is not compliant with that profile.
                 "object": {
                     "type": "Follow",
-                    "id": followed.ap_id,
-                    "object": "https://{}/actor".format('pleroma.test'),
+                    "id": activity.id,
+                    "object": activity.object,
                     "actor": follower.ap_id
                 },
 
@@ -139,8 +108,9 @@ async def handle_follow(activity):
             }
 
 
-            await push_to_remote_actor(follower, message , f'{BASE_URL}/actor#main-key')
-            return True
+            response = await push_to_remote_actor(follower, message)
+            
+            return response
     else:
         logging.error(f"User not found: {activity.object}")
         return False

@@ -3,7 +3,7 @@ import os
 import requests
 import logging
 from urllib.parse import urlparse
-
+from typing import (Any)
 from settings import DOMAIN
 
 #ActivityPub
@@ -44,7 +44,7 @@ class ActivityPubId(IdentityManager):
 
         return as_activitystream(res.json())
 
-    def get_or_create_remote_user(self):
+    def get_or_create_remote_user(self) -> UserProfile:
         """ 
             Returns an instance of User after looking for it using it's ap_id
         """
@@ -76,7 +76,7 @@ class ActivityPubId(IdentityManager):
         return uri == DOMAIN
         
 
-    def uri_to_resource(self, klass):
+    def uri_to_resource(self, klass) -> Any:
 
         if self._local_uri(self.uri):
             if klass.__name__ == 'User':

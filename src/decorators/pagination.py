@@ -1,6 +1,14 @@
+from typing import Dict
+
 from settings import DOMAIN, SCHEME
 
-def ap_pagination(obj):
+def ap_pagination(obj) -> Dict:
+
+    """
+    Given a tornado request return a dictionary 
+    containing the current page and the next page
+    """
+
     pagination = {
         'default_pagination': 10,
         'id': f'{SCHEME}://{DOMAIN}{obj.request.path}',
