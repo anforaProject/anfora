@@ -12,7 +12,7 @@ from settings import (MEDIA_FOLDER, salt_code)
 
 class Album(BaseModel):
     name = CharField(max_length=200)
-    identifier = CharField(max_length=30)
+    identifier = CharField(max_length=30, default="1")
     created_date = DateTimeField(default=datetime.datetime.now)
     public = BooleanField(default=False)
     user = ForeignKeyField(UserProfile, backref='albums')

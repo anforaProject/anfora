@@ -34,7 +34,7 @@ class Status(BaseModel):
     favourites_count = IntegerField(default=0)
     reblogs_count = IntegerField(default=0)
     replies_count = IntegerField(default=0)
-    identifier = CharField(max_length=20, null=False)
+    identifier = CharField(max_length=20, null=False, default="1")
     #Need to add tagged users
     
     def __str__(self):
