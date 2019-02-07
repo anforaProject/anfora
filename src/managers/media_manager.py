@@ -3,8 +3,9 @@ import io
 import logging
 import magic 
 from PIL import Image # Manage images
-import moviepy.editor as mp #Manage videos
 
+#import moviepy.editor as mp #Manage videos
+mp = 3 #TODO: FIX THIS
 from models.status import Status 
 from models.user import UserProfile
 from models.media import Media 
