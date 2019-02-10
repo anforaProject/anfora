@@ -1,12 +1,43 @@
+import bcrypt
+import base64
+
+from tornado.web import HTTPError
+from typing import (
+    Optional,
+    Awaitable,
+    Callable,
+)
+import peewee_async
+import functools
+
 from models.user import User 
 from models.token import Token
 
-import peewee_async
-import functools
+
+
+
+
+from tornado.web import RequestHandler
 from models.base import db
 
-import bcrypt
-import base64
+
+
+
+def token_authenticated(
+    method: Callable[..., Optional[Awaitable[None]]]
+) -> Callable[..., Optional[Awaitable[None]]]:
+    """Decorate methods with this to require that the user be logged in.
+    """
+
+    @functools.wraps(method)
+    def wrapper(  # type: ignore
+        self: RequestHandler, *args, **kwargs
+    ) -> Optional[Awaitable[None]]:
+        if not self.current_user:
+            raise HTTPError(403)
+        return method(self, *args, **kwargs)
+
+    return wrapper
 
 
 def loadUserToken(token, object):

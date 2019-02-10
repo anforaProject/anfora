@@ -12,20 +12,22 @@ from models.media import Media
 from api.v1.base_handler import BaseHandler, CustomError
 from hashids import Hashids
 
-from auth.token_auth import (bearerAuth, is_authenticated)
+from auth.token_auth import (bearerAuth, is_authenticated, token_authenticated)
+from auth.token_handler import TokenAuthHandler
 from decorators.get_by_id import retrive_by_id
 from decorators.lists import group_lists
 from managers.user_manager import UserManager
 
 from tasks.redis.spreadStatus import spread_status
 from tasks.redis.remove_status import remove_status
+from tasks.media import atach_media_to_status
 
 from settings import (salt_code)
 
 logger = logging.getLogger(__name__)
 
 
-class StatusHandler(BaseHandler):
+class StatusHandler(TokenAuthHandler):
     """
     Operate over the status with a given id.
     
@@ -37,9 +39,10 @@ class StatusHandler(BaseHandler):
     def get(self, pid, target):
         self.write(json.dumps(target.to_json(), default=str))
             
-    @bearerAuth
+    @token_authenticated
     @retrive_by_id(Status)
-    def delete(self, pid, user, target):
+    def delete(self, pid, target):
+        user = self.current_user
         if target.user.id == user.id:
             remove_status(target)
         else:
@@ -47,21 +50,20 @@ class StatusHandler(BaseHandler):
             self.set_status(401)
 
 
-class FavouriteStatus(BaseHandler):
+class FavouriteStatus(TokenAuthHandler):
 
-    @bearerAuth
+    @token_authenticated
     @retrive_by_id(Status)
-    def post(self, pid, target, user):
-        UserManager(user).like(target)
+    def post(self, pid, target):
+        UserManager(self.current_user).like(target)
         self.write(json.dumps(target, default=str))
 
-class UnFavouriteStatus(BaseHandler):
+class UnFavouriteStatus(TokenAuthHandler):
     
-    @bearerAuth
+    @token_authenticated
     @retrive_by_id(Status)
-    def post(self, pid, target, user):
-
-        UserManager(user).dislike(target)
+    def post(self, pid, target):
+        UserManager(self.current_user).dislike(target)
         self.write(json.dumps(target, default=str))
 
 class FetchUserStatuses(BaseHandler):
@@ -80,14 +82,14 @@ class FetchUserStatuses(BaseHandler):
             self.write({"Error": "User not found"})
     
 
-class UserStatuses(BaseHandler):
+class UserStatuses(TokenAuthHandler):
 
     """
     Do stuff related to the status of one user
 
     get: requires the id argument
     """
-    @bearerAuth
+    @token_authenticated
     async def get(self, user):
         photos = await self.application.objects.execute(
             Status.select().where(Status.user == user).order_by(Status.created_at.desc())
@@ -96,15 +98,20 @@ class UserStatuses(BaseHandler):
         query = [photo.to_json() for photo in photos]
         self.write(json.dumps(query, default=str))
     
-    @bearerAuth
+    
+    
+    @token_authenticated
     @group_lists
-    async def post(self, user, **kwargs):
+    async def post(self, *args, **kwargs):
         """
         Handle creation of statuses
         """
+
+        user = self.current_user
+        print(user.username)
         hashids = Hashids(salt=salt_code, min_length=9)
 
-        if self.kwargs('media_ids', False):
+        if self.kwargs.get('media_ids', False):
             data = {
                 "caption": self.get_argument('status', ''),
                 "visibility": bool(self.get_argument('visibility', False)),
@@ -120,17 +127,13 @@ class UserStatuses(BaseHandler):
 
             status = await self.application.objects.create(Status, **data)
         
-            for image in self.kwargs('media_ids'):
-                try:
-                    m = await self.application.objects.get(Media, media_name=image)
-                    m.status = status
-                    await self.application.objects.update(m)
-                except Media.DoesNotExist:
-                    logger.error(f"Media id not found {image} for {status.id}")
+            for image in self.kwargs.get('media_ids'):
+                atach_media_to_status(status, image)
 
             await self.application.objects.execute(
                 UserProfile.update({UserProfile.statuses_count: UserProfile.statuses_count + 1}).where(UserProfile.id == user.id)
             )
+
             spread_status(status)
 
             self.write(json.dumps(status.to_json(),default=str))

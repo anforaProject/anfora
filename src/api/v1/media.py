@@ -14,19 +14,23 @@ from managers.media_manager import MediaManager
 
 from api.v1.base_handler import BaseHandler, CustomError
 
-from auth.token_auth import (bearerAuth, is_authenticated)
+from auth.token_auth import (bearerAuth, is_authenticated, token_authenticated)
+from auth.token_handler import TokenAuthHandler
 from decorators.get_by_id import retrive_by_id
 
 from managers.user_manager import UserManager
 
-from tasks.redis.spreadStatus import spread_status
+from tasks.media import store_media
+from urls import (URIs, uri)
 
-class UploadMedia(BaseHandler):
+class UploadMedia(TokenAuthHandler):
         
-    @bearerAuth
-    async def post(self, user):
-        
+    @token_authenticated
+    async def post(self):
+
+        user = self.current_user
         if not 'file' in self.request.files.keys():
+            
             self.write({"Error": "File not provided"})
             self.set_status(422)
             return
@@ -47,33 +51,33 @@ class UploadMedia(BaseHandler):
 
         manager = MediaManager(self.request.files['file'][0]['body'])
 
-        if manager.is_valid():
+        valid = manager.is_valid()
 
-            width, height, mtype = manager.store_media(ident)
+        if valid:
+            description = self.get_argument('description', '')
+            focus = (0,0)
+            if self.get_argument('focus', False):
+                args = self.get_argument('focus').replace(" ", "").split(',')
+                if len(args) == 2:
+                    focus = args[:2]
 
-            if width:
+            extension = manager.get_media_type()
+            
+            urls = URIs(
+                media=uri("media", {"id":ident, "extension": extension}),
+                preview=uri("preview", {"id":ident, "extension": extension})
+            )
+            m = {
+                "description": description,
+                "id": ident, 
+                "type": "unknown",
+                "url": urls.media,
+                "preview_url": urls.preview,
+                "meta": None
+            }   
+            store_media(manager, ident, description, focus)
 
-                description = self.get_argument('description', '')
-                focus_x = 0
-                focus_y = 0
-
-                if self.get_argument('focus', False):
-                    args = self.get_argument('focus').replace(" ", "").split(',')
-                    if len(args) == 2:
-                        focus_x, focus_y = args[:2]
-
-                data = {
-                    'media_name': ident,
-                    'height': height,
-                    'width': width,
-                    'focus_x': focus_x,
-                    'focus_y': focus_y,
-                    'media_type': mtype,
-                    'description': description
-                }
-
-                m = await self.application.objects.create(Media, **data)
-
-                self.write(json.dumps(m.to_json(), default=str))
+            self.write(json.dumps(m, default=str))
+            self.set_status(200)
         else:
             raise CustomError(reason="Error storing files", status_code=400)
