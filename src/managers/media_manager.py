@@ -24,29 +24,34 @@ class MediaManager:
 
     def __init__(self, data):
         self.data = data 
+        self.mine_type = magic.from_buffer(data, mime=True)
+    
+    def get_media_type(self):
+        
+        media_type = None
+
+        if self.mine_type == "image/jpeg":
+            media_type = "jpg"
+        elif self.mine_type == 'image/png':
+            media_type = 'png'
+
+        return media_type
 
     def is_valid(self):
-        mine_type = magic.from_buffer(self.data, mime=True)
-        return mine_type in self.allowed
+        return self.mine_type in self.allowed
 
 
     def store_media(self, filename):
         data = self.data
 
         #detect the minetype
-
-        mine_type = magic.from_buffer(data, mime=True)
-        media_type = 'jpg'
         iobytes = data
 
-        logger.debug(f"Detected media type {mine_type}")
+        logger.debug(f"Detected media type {self.mine_type}")
 
-        if mine_type == "image/jpeg":
-            media_type = "jpg"
-        elif mine_type == 'image/png':
-            media_type = 'png'
+        media_type = self.get_media_type()
 
-        if mine_type in self.allowed_images:
+        if self.mine_type in self.allowed_images:
 
             thumb = os.path.join(MEDIA_FOLDER, thumb_folder, filename + f'.thumbnail.{media_type}')
             file_path = os.path.join(MEDIA_FOLDER, pic_folder, filename + f'.{media_type}')
@@ -63,7 +68,7 @@ class MediaManager:
                 
             
 
-        elif mine_type in self.allowed_animated:
+        elif self.mine_type in self.allowed_animated:
             file_path = os.path.join(MEDIA_FOLDER, pic_folder, filename + "_temp" + '.gif')
 
             with open(file_path, 'wb') as f:
@@ -82,7 +87,7 @@ class MediaManager:
             os.remove(os.path.join(MEDIA_FOLDER, pic_folder, filename + "_temp" + '.gif'))
             return 1, 1, 'video/mp4'
 
-        elif mine_type in self.allowed_video:
+        elif self.mine_type in self.allowed_video:
 
             file_path = os.path.join(MEDIA_FOLDER, pic_folder, filename + "_temp")
             with open(file_path, 'wb') as f:
