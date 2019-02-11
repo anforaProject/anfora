@@ -1,7 +1,9 @@
 import json
 import logging
 import datetime
+import html 
 
+from hashids import Hashids
 from tornado.web import HTTPError, RequestHandler
 
 from models.user import UserProfile, User
@@ -10,19 +12,19 @@ from models.token import Token
 from models.media import Media 
 
 from api.v1.base_handler import BaseHandler, CustomError
-from hashids import Hashids
 
 from auth.token_auth import (bearerAuth, is_authenticated, token_authenticated)
 from auth.token_handler import TokenAuthHandler
 from decorators.get_by_id import retrive_by_id
 from decorators.lists import group_lists
 from managers.user_manager import UserManager
+from anfora_parser.parser import Parser
 
 from tasks.redis.spreadStatus import spread_status
 from tasks.redis.remove_status import remove_status
 from tasks.media import atach_media_to_status
 
-from settings import (salt_code)
+from settings import (salt_code, BASE_URL)
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +82,7 @@ class FetchUserStatuses(BaseHandler):
             self.write(json.dumps(query, default=str))
         except User.DoesNotExist:
             self.write({"Error": "User not found"})
-    
+  
 
 class UserStatuses(TokenAuthHandler):
 
@@ -119,11 +121,18 @@ class UserStatuses(TokenAuthHandler):
                 "sensitive": bool(self.get_argument('sensitive', False)),
                 "remote": False,
                 "sotory": bool(self.get_argument('story', False)),
-                "identifier": hashids.encode(int(str(user.id) + str(int(datetime.datetime.now().timestamp()))))
+                "identifier": hashids.encode(int(str(user.id) + str(int(datetime.datetime.now().timestamp())))) # TODO: We're losing time here
             }
             
             if data['sensitive']:
                 data['spoliet_text'] = self.get_argument('spoiler_text', '')
+
+            par = Parser(domain=BASE_URL)
+            parsed = par.parse(html.escape(data["caption"]))
+
+            mentions = parsed.users 
+            
+            data['caption'] = parsed.html
 
             status = await self.application.objects.create(Status, **data)
         
@@ -134,7 +143,7 @@ class UserStatuses(TokenAuthHandler):
                 UserProfile.update({UserProfile.statuses_count: UserProfile.statuses_count + 1}).where(UserProfile.id == user.id)
             )
 
-            spread_status(status)
+            spread_status(status, mentions)
 
             self.write(json.dumps(status.to_json(),default=str))
 
