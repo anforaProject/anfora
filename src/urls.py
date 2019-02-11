@@ -13,6 +13,8 @@ urls = {
     "preview": "/media/files/small/{id}.thumbnail.{extension}",
     "logout": "/logout",
     "featured": "/users/{username}/collections/featured",
+
+    "status_client_url": "/@{username}/{id}"
 }
 
 from models.base import BaseModel
