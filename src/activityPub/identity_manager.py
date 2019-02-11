@@ -11,8 +11,10 @@ from activityPub.activities import as_activitystream
 
 #Models
 from models.user import UserProfile, User
-from managers.user_manager import new_user
 from models.followers import FollowerRelation
+
+# from managers.user_manager import new_user TODO: FIX THIS
+
 
 class IdentityManager:
 
@@ -55,8 +57,11 @@ class ActivityPubId(IdentityManager):
             hostname = urlparse(user.id).hostname
             #username = "{0}@{1}".format(user.preferredUsername, hostname)
             logging.debug(f"I'm going to request the creation of user with username @{user.preferredUsername}")
+
+            username = f'{user.preferredUsername}@{hostname}'
+
             user = new_user(
-                username=user.preferredUsername,
+                username=username,
                 name=user.name,
                 ap_id=user.id,
                 is_remote=True,
