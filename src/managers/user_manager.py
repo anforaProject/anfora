@@ -1,6 +1,9 @@
 import bcrypt
 import re 
 import logging
+from typing import Union
+
+from peewee_async import Manager
 
 from settings import salt_code
 from models.user import User, UserProfile
@@ -10,6 +13,9 @@ from models.status import Status
 from models.like import Like
 
 from tasks.redis.spreadStatus import like_status
+
+from models.base import db
+from urls import uri
 
 class UserManager:
 
@@ -135,4 +141,88 @@ def new_user(username, password, email,
     except Exception as e:
         logging.error(e)
         user.delete_instance()
+        return False
+
+async def new_user_async(username : str, 
+                    password : str, 
+                    email : str,
+                    is_remote : bool = False, 
+                    confirmed : bool = False, 
+                    is_private : bool  = False, 
+                    is_admin : bool = False, 
+                    public_key : str = None, 
+                    name : str = None, 
+                    description : str = "", 
+                    ap_id : str = None,
+                    send_confirmation: bool = True) -> Union[bool,UserProfile]:
+
+    """
+        Returns False or UserProfile
+    """
+
+    if not (password and username and email):
+        return False
+
+    objects = Manager(db)
+    
+    # Verify username
+
+    logging.debug(f"Starting to create user {username}")
+
+    if not valid_username(username):
+        logger.error(f"@{username} is a not valid username")
+        return False
+
+    # Hash the password
+    passw = bcrypt.hashpw(password, salt_code)
+
+    # First we create the actual user
+    try:
+        user = await objects.create(User,
+            username = username,
+            password = passw,
+            email = email, 
+            confirmed = confirmed,
+            is_admin = is_admin,
+            is_private = is_private
+        )
+    except Exception as e:
+        logging.error(f"User not created: {e}")
+        return False
+
+    logging.debug(f"Created user {user.username}")
+
+    if name == None:
+        name = username
+
+    # Now we create the profile
+    try:
+
+        data = {
+            "id": user.id,
+            "disabled": True,
+            "is_remote": is_remote,
+            "user":  user,
+            "name":  name,
+            "public_key":  public_key,
+            "description": description
+        }
+
+        if is_remote:
+            data['ap_id'] = ap_id
+        else:
+            data['ap_id'] = uri("user", {"username":username})
+
+        profile = await objects.create(UserProfile,**data)
+
+        # Send the confirmation email
+
+        if not user.confirmed and send_confirmation:
+            send_activation_email(profile)
+        
+        logging.info(f"New Profile created: {profile}")
+        return profile
+    except Exception as e:
+        logging.error(e)
+        await objects.delete(user)
         return False
