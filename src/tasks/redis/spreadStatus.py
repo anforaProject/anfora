@@ -58,7 +58,8 @@ def spread_status(status: Status, mentions: List[str]) -> None:
                 remote.append(target_user)
 
     # Spread via AP 
-    create = generate_create_note(status, users)
+    create = generate_create_note(status, remote)
+    print(create)
     
     
 @huey.task()
@@ -73,6 +74,6 @@ def like_status(status: Status, user: UserProfile) -> None:
     
     NotificationManager(user).create_like_notification(status)
 
-    json_file = json.dumps(status.json(), default=str)
+    json_file = json.dumps(status.to_json(), default=str)
 
     r.publish(f'timeline:{status.user.id}', f'notification {json_file}')
