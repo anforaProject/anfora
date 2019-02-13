@@ -25,4 +25,4 @@ def remove_status(status):
     UserProfile.update({UserProfile.statuses_count: UserProfile.statuses_count - 1}).where(UserProfile.id == status.user.id).execute()
 
     # Remove the status
-    status.delete_instance().execute()
+    status.delete_instance(recursive=True)
