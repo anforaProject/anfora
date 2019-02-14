@@ -20,8 +20,8 @@ def random():
     return os.urandom(5).hex()
 
 class Status(BaseModel):
-    created_at = DateTimeField(default=datetime.datetime.now)
-    updated_at = DateTimeField(default=datetime.datetime.now)
+    created_at = DateTimeField(default=datetime.datetime.utcnow)
+    updated_at = DateTimeField(default=datetime.datetime.utcnow)
     caption = TextField()
     spoiler_text = CharField(max_length=255, null=True)
     is_public = BooleanField(default=True)
@@ -47,7 +47,9 @@ class Status(BaseModel):
             ap_id = self.ap_id
         else:
             ap_id = uri("status", {"username":self.user.username, "id":self.id})
+            
         return URIs(id=ap_id,
+                    url = uri("status_client_url", {"username": self.user.username, "id": self.id }), 
                     media=[uri.uris.media for uri in self.media_object],
                     preview=[uri.uris.preview for uri in self.media_object]
                     )
@@ -57,6 +59,7 @@ class Status(BaseModel):
         from models.media import Media 
 
         return self.media_object.order_by(Media.id.desc())
+        
     @property
     def media_data(self):
         return {"hola": 3}
@@ -67,22 +70,26 @@ class Status(BaseModel):
 
     def to_activitystream(self):
         json = {
+            "id": self.ap_id,
             "type": "Note",
-            "id": self.id,
-            "url": self.uris.media,
-            "message": self.caption,
+            "summary": None,
+            
+            "published": self.created_at.replace(microsecond=0).isoformat() + "Z",
+            "url": self.uris.url,
+            "attributedTo": self.user.ap_id,
             #"hashtags": self.hashtags,
-            "likes": self.likes_count(),
-            "actor": self.user.uris.id,
-            "is_sensitive": self.sensitive,
-            "created_at": self.created_at.strftime('%Y-%m-%dT%H:%M:%S'),
+            "sensitive": self.sensitive,
             "attachment":[ media.to_activitystream() for media in self.media_object],
             "spoiler_text": self.spoiler_text,
-            "reblogged": None,
-            "favourited": None,
-            "muted": None,
-            "comments": [x.to_json() for x in self.replies]
+            "content": self.caption,
         }
+
+        if self.is_public:
+            json['to'] = ["https://www.w3.org/ns/activitystreams#Public"]
+        else:
+            json['to'] = []
+        
+        json['cc'] = [self.user.uris.followers] 
 
         return json
 
@@ -113,7 +120,6 @@ class Status(BaseModel):
         data = {
             "id": self.identifier,
             "description": self.caption,
-            "preview": self.uris.preview,
             "message": self.caption,
             "hashtags": self.hashtags,
             "likes": self.likes_count(),
