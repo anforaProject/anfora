@@ -28,6 +28,18 @@ from database import DATABASE
 log = logging.getLogger(__name__)
 
 
+class RedirectUsername(BaseHandler):
+
+    async def get(self, username:str):
+        
+        try:
+            user = await self.application.objects.get(UserProfile.select().where(UserProfile.user.username==username))
+
+            self.refirect(f'/accounts/{user.id}')
+        except:
+            self.redirect(f'/404')
+
+
 class AuthUser(BaseHandler):
 
     @basicAuth

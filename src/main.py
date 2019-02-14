@@ -15,7 +15,7 @@ from models.base import db
 from api.v1.user import (UserHandler, ProfileManager, RegisterUser, AuthUser,
                         VerifyCredentials, PasswordRecovery, RequestPasswordRecovery, 
                         FollowUser, UnFollowUser, FetchFollowers, FetchFollowing,
-                        Relationship)
+                        Relationship, RedirectUsername)
 from api.v1.status import (StatusHandler, UserStatuses, FavouriteStatus,
                             UnFavouriteStatus, FetchUserStatuses  
                         )
@@ -35,6 +35,10 @@ from api.v1.explore import (ExploreUsers, ExploreServer)
 from settings import ROOT_PATH
 import tornado.options
 
+
+STARTING_MESSAGE = f"""
+    Anfora is running
+"""
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self, path):
@@ -57,6 +61,7 @@ def make_app():
         (r'/api/v1/accounts/(?P<id>[\d+]+)/statuses', FetchUserStatuses),
         (r'/api/v1/accounts/update_credentials', ProfileManager),
         (r'/api/v1/accounts/relationships', Relationship),
+        (r'/@(?P<username>[\w]+)', RedirectUsername),
 
         (r'/api/v1/statuses', UserStatuses),
         (r'/api/v1/statuses/(?P<pid>[a-zA-Z0-9]+)', StatusHandler),
@@ -107,6 +112,8 @@ if __name__ == "__main__":
     #server = tornado.httpserver.HTTPServer(app)
     #server.bind(3000)
     #server.start(0)  # forks one process per cpu
+    print(STARTING_MESSAGE)
 
 
     tornado.ioloop.IOLoop.current().start()
+
