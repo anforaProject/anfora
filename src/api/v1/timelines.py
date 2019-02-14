@@ -34,15 +34,31 @@ class HomeTimeline(BaseHandler):
         
         statuses = []
         errors = 0
-
+        """
         for post in TimelineManager(user).query(since_id=since_id, max_id=max_id, local=True, limit=limit):
-            status = Status.get_or_none(id=int(post))
-            if status:
+            try:
+                status = self.application.objects.get(Status,id=int(post))
                 json_data = status.to_json()
                 count = await self.application.objects.count(Like.select().join(UserProfile).switch(Like).join(Status).switch(Like).where(Like.user.id == user.id, Like.status.id == status))
                 if count:
                     json_data["favourited"] = True
                 
                 statuses.append(json_data)
+            except:
+                pass
         
-        self.write(json.dumps(statuses, default=str))
+        """
+        ids = TimelineManager(user).query(since_id=since_id, max_id=max_id, local=True, limit=limit)
+        statuses = await self.application.objects.execute(Status.select().where(Status.id << ids).order_by(Status.created_at))
+
+        hydratated = []
+
+        for status in statuses:
+            json_data = status.to_json()
+            count = await self.application.objects.count(Like.select().join(UserProfile).switch(Like).join(Status).switch(Like).where(Like.user.id == user.id, Like.status.id == status))
+            if count:
+                json_data["favourited"] = True
+            
+            hydratated.append(json_data)     
+
+        self.write(json.dumps(hydratated[::-1], default=str))
