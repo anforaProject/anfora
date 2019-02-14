@@ -49,7 +49,7 @@ class UserProfile(BaseModel):
     disabled = BooleanField(default=False) # True if the user is disabled in the server
     is_remote = BooleanField(default=False) # The user is a remote user
     private_key = TextField(null=True) # Private key used to sign AP actions
-    public_key = TextField() # Public key
+    public_key = TextField(null=True) # Public key
     description = TextField(default="") # Description of the profile
     avatar_file = CharField(null=True)
     following_count = IntegerField(default=0)
