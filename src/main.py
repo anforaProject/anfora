@@ -20,7 +20,7 @@ from api.v1.status import (StatusHandler, UserStatuses, FavouriteStatus,
                             UnFavouriteStatus, FetchUserStatuses  
                         )
 
-from api.v1.server import (WellKnownNodeInfo, WellKnownWebFinger, NodeInfo)
+from api.v1.server import (WellKnownNodeInfo, WellKnownWebFinger, NodeInfo, RegistrationOpen)
 from api.v1.media import UploadMedia
 from api.v1.timelines import (HomeTimeline)
 from api.v1.streaming import SSEHandler, SubscriptionManager
@@ -70,7 +70,8 @@ def make_app():
 
         (r'/.well-known/nodeinfo', WellKnownNodeInfo),
         (r'/.well-known/webfinger', WellKnownWebFinger),
-        (r'/nodeinfo', NodeInfo),
+        (r'/api/nodeinfo/2.0.json', NodeInfo),
+        (r'/api/instance/registrations', RegistrationOpen),
 
         (r'/api/v1/notifications', NotificationHandler),
 

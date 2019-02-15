@@ -14,7 +14,8 @@ urls = {
     "logout": "/logout",
     "featured": "/users/{username}/collections/featured",
 
-    "status_client_url": "/@{username}/{id}"
+    "status_client_url": "/@{username}/{id}",
+    "user_client": "/@{username}"
 }
 
 from models.base import BaseModel

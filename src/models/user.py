@@ -97,7 +97,8 @@ class UserProfile(BaseModel):
                 inbox=f'{self.ap_id}/inbox',
                 outbox=f'{self.ap_id}/inbox',
                 following=f'{self.ap_id}/following',
-                followers=f'{self.ap_id}/followers'
+                followers=f'{self.ap_id}/followers',
+                client=uri('user_client', {"username":self.user.username})
             )
 
         return URIs(
