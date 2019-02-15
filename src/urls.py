@@ -2,19 +2,23 @@ urls = {
     "activity": "/@{username}/outbox/{id}",
     "outbox": "/users/{username}/outbox",
     "inbox": "/users/{username}/inbox",
-    "photos": "/@{username}/photos",
-    "status": "/p/{username}/{id}",
     "following": "/users/{username}/following",
     "followers": "/users/{username}/followers",
-    "user": "/users/{username}",
+    "featured": "/users/{username}/collections/featured",
     "atom": "/users/atom/{id}/",
+    "sharedInbox": "/inbox"
+
+    "photos": "/@{username}/photos",
+    "status": "/p/{username}/{id}",
+
+    "user": "/users/{username}",
     "profile_image": "/media/files/avatars/{name}",
     "media": "/media/files/max_resolution/{id}.{extension}",
     "preview": "/media/files/small/{id}.thumbnail.{extension}",
     "logout": "/logout",
-    "featured": "/users/{username}/collections/featured",
 
-    "status_client_url": "/@{username}/{id}"
+    "status_client_url": "/@{username}/{id}",
+    
 }
 
 from models.base import BaseModel

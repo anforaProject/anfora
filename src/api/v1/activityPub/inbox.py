@@ -17,7 +17,7 @@ from activityPub import activities
 from activityPub.activities import as_activitystream
 
 from api.v1.activityPub.methods import (store, handle_note)
-from tasks.ap_methods import handle_follow
+from tasks.ap_methods import handle_follow, handle_create
 from activityPub.activities.verbs import (Accept)
 
 from activityPub.identity_manager import ActivityPubId
@@ -28,7 +28,7 @@ from api.v1.base_handler import BaseHandler
 
 class Inbox(BaseHandler):
 
-    def post(self, username):
+    def post(self, username=None):
 
         #First we check the headers 
         #Lowercase them to ensure all have the same name
@@ -58,15 +58,15 @@ class Inbox(BaseHandler):
             logging.info(f"Starting follow process for {activity.object}" )
             result = handle_follow(activity)
             print(result)
-            self.set_status(200)
+            self.set_status(201)
         elif activity.type == 'Accept':
             #print(activity.to_json())
             self.write("WHAT?!")
         elif activity.type == 'Create':
-            #result = handle_create(activity)
-            pass
+            handle_create(activity)
+            self.set_status(201)
         elif activity.type == 'Delete':
-            pass 
+            self.set_status(201)
 
         #store(activity, user, remote = True)
         #self.set_status(500)
