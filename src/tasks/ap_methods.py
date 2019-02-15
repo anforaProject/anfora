@@ -73,34 +73,5 @@ def handle_follow(activity):
         logging.error(f"User not found: {activity.object}")
         return False
 
-#@huey.task(retries=5, retry_delay=60)
-def send_activity(activity, actor, target):
-    """
-    activity: A object ready to make json dumps and be sent.
-    actor   : An instance of User
-    target  : A string representing the url objetive of the request
-    """
-
-    target = f'{target}/inbox'
-
-    headers = {
-        'date': f'{datetime.datetime.utcnow():%d-%b-%YT%H:%M:%SZ}',
-        "(request-target)": target,
-        "content-type": "application/activity+json",
-        "host": DOMAIN,                
-    }
-
-    signature = SignatureVerification(headers, 'post', target).sign(actor)
-    headers.update({'signature': signature})
-    
-    print("=======================")
-    print(headers)
-    print(activity)
-    print(target)
-    print("=======================")
-    r = requests.post(target, data=json.dumps(activity), headers=headers)
-    print(r.text)
-    print(r.status_code)
-
     
     
