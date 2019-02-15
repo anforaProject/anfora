@@ -56,7 +56,8 @@ class UserProfile(BaseModel):
     followers_count = IntegerField(default=0)
     statuses_count = IntegerField(default=0)
     user = ForeignKeyField(User, backref='profile', on_delete='CASCADE')
-    
+    public_inbox = CharField(max_length=255, null=True)
+
     @property
     def username(self):
         return self.user.username
@@ -172,7 +173,10 @@ class UserProfile(BaseModel):
                 },
                 "summary": self.description,
                 "manuallyApprovesFollowers": self.is_private,
-                "featured": self.uris.featured
+                "featured": self.uris.featured,
+                "endpoints": [
+                    "sharedInbox": uri('sharedInbox')
+                ]
             })
 
         return json

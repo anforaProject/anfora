@@ -15,13 +15,17 @@ from managers.notification_manager import NotificationManager
 from activityPub.create_activities import generate_create_note
 from activityPub.identity_manager import ActivityPubId
 @huey.task()
-def spread_status(status: Status, mentions: List[str]) -> None:
+def spread_status(status: Status, mentions: List[str], ap_spread: bool = False) -> None:
     """
     Given a status we have to: 
 
     - Populate users timelines
     - Notifiy mentions
     - Send via AP TODO
+
+    if we are spreading to local follers (for example from a external
+    request) the ap_spread should be false but if the local user is the
+    one creating the spread tag we should use ap_spread = true
 
     """
     r = redis.StrictRedis(host=os.environ.get('REDIS_HOST', 'localhost'))
@@ -42,6 +46,7 @@ def spread_status(status: Status, mentions: List[str]) -> None:
     
     remote = []
 
+    # Notify mentions
     for user in mentions:
         # We have two formats: local user and remote user 
         # if the user is local the user string is of the from 
@@ -58,8 +63,9 @@ def spread_status(status: Status, mentions: List[str]) -> None:
                 remote.append(target_user)
 
     # Spread via AP 
-    create = generate_create_note(status, remote)
-    print(create)
+    if ap_spread:
+        create = generate_create_note(status, remote)
+        print(create)
     
     
 @huey.task()
