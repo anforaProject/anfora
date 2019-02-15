@@ -28,7 +28,7 @@ from api.v1.base_handler import BaseHandler
 
 class Inbox(BaseHandler):
 
-    def post(self, username):
+    async def post(self, username):
 
         #First we check the headers 
         #Lowercase them to ensure all have the same name
@@ -45,8 +45,7 @@ class Inbox(BaseHandler):
         data = tornado.escape.json_decode(self.request.body)
 
         logging.info(f'Received activity {data}')
-        logging.info(self.request.headers)
-
+        
         if data:
             activity = as_activitystream(data)
         else:
@@ -56,17 +55,16 @@ class Inbox(BaseHandler):
         result = False
         if activity.type == 'Follow':
             logging.info(f"Starting follow process for {activity.object}" )
-            result = handle_follow(activity)
-            print(result)
+            handle_follow(activity)
             self.set_status(200)
         elif activity.type == 'Accept':
             #print(activity.to_json())
-            self.write("WHAT?!")
+            self.set_status(200)
         elif activity.type == 'Create':
             #result = handle_create(activity)
-            pass
+            self.set_status(200)
         elif activity.type == 'Delete':
-            pass 
+            self.set_status(200) 
 
         #store(activity, user, remote = True)
         #self.set_status(500)
