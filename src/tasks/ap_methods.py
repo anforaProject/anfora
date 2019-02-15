@@ -1,6 +1,7 @@
 import requests
 import logging 
 import uuid
+from urllib.parse import urlparse
 
 from settings import DOMAIN
 
@@ -74,4 +75,59 @@ def handle_follow(activity):
         return False
 
     
+@huey.task()
+def handle_create(activity):
+
+    PUBLIC_CONTEXT = "https://www.w3.org/ns/activitystreams#Public"
+
+    # Confirm that the status has images on it. At least one
+
+    attachments =  activity.object.attachment
+    valid_atachments = []
+    for attachment in attachments:
+        if 'image' in attachment.type:
+            valid_atachments.append(attachment) 
+
+    # If not end the job
+    if not len(valid_atachments):
+        return 
+
+    # Check who is the actor
+    ap_id = ""
+    if isinstance(activity.actor, activities.Actor):
+        ap_id = activity.actor.id
+    elif isinstance(activity.actor, str):
+        ap_id = activity.actor
+
+    # Get the profile of the creator
+    actor = ActivityPubId(ap_id).get_or_create_remote_user()
+
+    # Get the targets of the status
+    targets = [x for x in activity.get("to", []) + activity.get("cc", []) + activity.get('bcc', [])]
+
+    is_public =  PUBLIC_CONTEXT in targets
+
+    followers_of = [ActivityPubId(x.replace('/followers', '')).get_or_create_remote_user() for x in targets]
+    directs = [x.split('/')[-1] for x in targets if urlparse(x).hostname == DOMAIN]
     
+
+    # Data for the new status
+    note = activity.object
+    data = {
+        "caption": note.content,
+        "visibility": is_public,
+        "user": actor,
+        "sensitive": False,
+        "remote": True,
+        "story": False,
+        "ap_id": note.id
+        "identifier": note.id.split('/')[-1]
+    }
+
+    try:
+        status = Status.create(**data)
+    except:
+        return 
+
+    for follow_targets in followers_of.followers():
+        

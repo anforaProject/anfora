@@ -4,7 +4,7 @@ import requests
 from .errors import ASTypeError, ASDecodeError
 
 class Object:
-    attributes = ["type", "id", "name", "to"]
+    attributes = ["type", "id", "name", "to", 'cc', 'bto', '@context']
     type = "Object"
 
     def __init__(self, obj=None, *args, **kwargs):
@@ -87,12 +87,21 @@ class Person(Actor):
     type = "Person"
 
 class Note(Object):
-    attributes = Object.attributes + ["actor","message",
-    "is_sensitive","favourites_count", "created_at", 'media_data', 'attachment']
+    attributes = Object.attributes + [
+        'sensitive',
+        'content',
+        'summary',
+        'attachment',
+        'attributedTo',
+        'id',
+        'context',
+        'likes',
+        'published',
+    ]
     type = "Note"
 
 class Document(Object):
-    attributes = Object.attributes + ['media_type', 'media_name']
+    attributes = Object.attributes + ['type', 'name', 'mediaType', 'url']
     type = 'Object'
 
 class Collection(Object):

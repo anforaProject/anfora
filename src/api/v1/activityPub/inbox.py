@@ -17,7 +17,7 @@ from activityPub import activities
 from activityPub.activities import as_activitystream
 
 from api.v1.activityPub.methods import (store, handle_note)
-from tasks.ap_methods import handle_follow
+from tasks.ap_methods import handle_follow, handle_create
 from activityPub.activities.verbs import (Accept)
 
 from activityPub.identity_manager import ActivityPubId
@@ -28,7 +28,7 @@ from api.v1.base_handler import BaseHandler
 
 class Inbox(BaseHandler):
 
-    async def post(self, username):
+    def post(self, username=None):
 
         #First we check the headers 
         #Lowercase them to ensure all have the same name

@@ -94,6 +94,7 @@ def make_app():
         (r'/users/(?P<username>[\w]+)/outbox', Outbox),
         (r'/users/(?P<username>[\w]+)/inbox', Inbox),
         (r'/users/(?P<username>[\w]+)', getActor),
+        (r'/inbox', Inbox), # Shared inbox
 
         (r'/(.*)', MainHandler),
     ], debug=True)
