@@ -1,7 +1,7 @@
 import json
 from tornado.web import HTTPError, RequestHandler
 
-from settings import (ID, NODENAME, DOMAIN, SCHEME)
+from settings import (ID, NODENAME, DOMAIN, SCHEME, REG_OPEN)
 from release_info import VERSION
 
 from models.followers import FollowerRelation
@@ -17,14 +17,19 @@ class WellKnownNodeInfo(BaseHandler):
 
     def get(self):
 
-        links = [
+        data = {'links':[
             {
                 "rel": "http://nodeinfo.diaspora.software/ns/schema/2.0",
-                "href": "{}/nodeinfo.json".format(ID),
+                "href": "{}/api/nodeinfo/2.0.json".format(ID),
             }
-        ]
+        ]}
 
-        self.write(links)
+        self.write(data)
+
+class RegistrationOpen(BaseHandler):
+
+    def get(self):
+        self.write({"Open": REG_OPEN})
 
 
 class NodeInfo(BaseHandler):
@@ -38,11 +43,11 @@ class NodeInfo(BaseHandler):
             "version": "2.0",
             "software": {
                 "name": "Anfora",
-                "version": "Anfora {}".format(VERSION),
+                "version": "{}".format(VERSION),
             },
             "protocols": ["activitypub"],
             "services": {"inbound": [], "outbound": []},
-            "openRegistrations": False,
+            "openRegistrations": REG_OPEN,
             "usage": {
                 "users": {
                     "total": number_of_users
@@ -50,8 +55,12 @@ class NodeInfo(BaseHandler):
                 "localPosts": number_of_statuses
             },
             "metadata": {
-                "sourceCode": "https://github.com/anforaProject/anfora",
                 "nodeName": NODENAME,
+                "software": {
+                    "homepage": "https://anfora.app",
+                    "github": "https://github.com/anforaProject/anfora",
+                    "follow": "https://mastodon.social/@anfora"
+                },
             },    
         }
 
