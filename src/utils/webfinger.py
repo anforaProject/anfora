@@ -4,7 +4,7 @@ from models.user import UserProfile
 
 class Webfinger:
 
-    def __init__(self, user):
+    def __init__(self, user: UserProfile) -> None:
 
         self.user = user
         self.aliases = []
@@ -19,7 +19,7 @@ class Webfinger:
 
     def generate_aliases(self):
         username = self.user.username
-        url = self.user.uris.id
+        url = self.user.uris.client
 
         self.aliases = [
             'acct:{}@{}'.format(username, DOMAIN),
