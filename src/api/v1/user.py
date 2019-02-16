@@ -204,7 +204,7 @@ class RegisterUser(BaseHandler):
 
             try:
                 log.debug("Creating new user")
-                profile = new_user_async(
+                profile = await new_user_async(
                     username = username, 
                     password = password,
                     email = parseaddr(email)[1]
