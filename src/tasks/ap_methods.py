@@ -8,6 +8,7 @@ from settings import DOMAIN
 from models.status import Status
 from models.user import UserProfile
 
+from managers.notification_manager import NotificationManager
 
 from activityPub import activities
 from activityPub.data_signature import *
@@ -18,6 +19,8 @@ from activityPub.identity_manager import ActivityPubId
 from api.v1.helpers import sign_data
 
 from tasks.config import huey # import the huey we instantiated in config.py
+
+from tasks.redis.spreadStatus import spread_status
 
 logger = logging.getLogger(__name__)
 
@@ -47,8 +50,8 @@ def handle_follow(activity):
         else:
 
             # Handle local things
-            #follower.follow(followed)
-            #NotificationManager(follower).create_follow_notification(followed)
+            follower.follow(followed)
+            NotificationManager(follower).create_follow_notification(followed)
             message = {
                 "@context": "https://www.w3.org/ns/activitystreams",
                 "type": "Accept",
@@ -120,14 +123,14 @@ def handle_create(activity):
         "sensitive": False,
         "remote": True,
         "story": False,
-        "ap_id": note.id
+        "ap_id": note.id,
         "identifier": note.id.split('/')[-1]
     }
 
     try:
         status = Status.create(**data)
+        spread_status(status, [], False)
     except:
         return 
 
-    for follow_targets in followers_of.followers():
-        
+    
