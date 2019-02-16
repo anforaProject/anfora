@@ -5,6 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 pytest = "*"
+pytest-asyncio = "*"
 
 [packages]
 tornado = "*"
@@ -34,6 +35,7 @@ cachetools = "*"
 async-lru = "*"
 pyld = "*"
 imageio-ffmpeg = "*"
+py-dateutil = "*"
 
 [requires]
 python_version = "3.6"
