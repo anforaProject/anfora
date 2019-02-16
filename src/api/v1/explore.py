@@ -18,7 +18,7 @@ class ExploreStatuses(BaseHandler):
 
     async def get(self):
 
-        query = await self.application.objects.execute(Status.select().where(Status.in_reply_to==None).limit(15))
+        query = await self.application.objects.execute(Status.select().where(Status.in_reply_to==None).limit(33))
         
         data = [n.to_json() for n in query]
 
