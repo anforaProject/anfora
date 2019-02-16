@@ -17,7 +17,7 @@ from api.v1.user import (UserHandler, ProfileManager, RegisterUser, AuthUser,
                         FollowUser, UnFollowUser, FetchFollowers, FetchFollowing,
                         Relationship, RedirectUsername)
 from api.v1.status import (StatusHandler, UserStatuses, FavouriteStatus,
-                            UnFavouriteStatus, FetchUserStatuses  
+                            UnFavouriteStatus, FetchUserStatuses, StatusAP
                         )
 
 from api.v1.server import (WellKnownNodeInfo, WellKnownWebFinger, NodeInfo, RegistrationOpen)
@@ -95,7 +95,7 @@ def make_app():
         (r'/users/(?P<username>[\w]+)/inbox', Inbox),
         (r'/users/(?P<username>[\w]+)', getActor),
         (r'/inbox', Inbox), # Shared inbox
-
+        (r'/p/(?P<username>[\w]+)/(?P<id>[\w]+)/ap', StatusAP),
         (r'/(.*)', MainHandler),
     ], debug=True)
 
