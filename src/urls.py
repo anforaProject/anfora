@@ -6,10 +6,10 @@ urls = {
     "followers": "/users/{username}/followers",
     "featured": "/users/{username}/collections/featured",
     "atom": "/users/atom/{id}/",
-    "sharedInbox": "/inbox"
+    "sharedInbox": "/inbox",
 
     "photos": "/@{username}/photos",
-    "status": "/p/{username}/{id}",
+    "status": "/p/{username}/{id}/ap",
 
     "user": "/users/{username}",
     "profile_image": "/media/files/avatars/{name}",
@@ -25,7 +25,10 @@ from models.base import BaseModel
 from settings import (DOMAIN, SCHEME)
 
 def reverse_uri(name, *args):
-    return urls[name].format(**args[0])
+    if len(args):
+        return urls[name].format(**args[0])
+    else:
+        return urls[name]
 
 def uri(name, *args):
     path = reverse_uri(name, *args)
