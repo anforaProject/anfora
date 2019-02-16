@@ -20,17 +20,21 @@ def generate_create_note(status: Status, users: List[UserProfile]) -> Create:
 
     for user in users:
         note['cc'].append(user.ap_id)
+    
+    note['to'] += ['https://mstdn.io/users/yabirgb']
+
+    t = Note(note)
 
     data = {
-        'id': note['id'] + 'activity',
+        'id': note['id'] + '/activity',
         'type': "Create",
         'actor': note['attributedTo'],
         'published': note['published'],
-        'object': note,
+        'object': t,
     }
 
     if note.get('to'):
-        data['to'] = note['to']
+        data['to'] = note['to'] 
 
     if note.get('cc'):
         data['cc'] = note['cc']
