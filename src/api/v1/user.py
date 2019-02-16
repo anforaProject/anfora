@@ -14,7 +14,7 @@ from auth.token_auth import bearerAuth, userPassLogin, basicAuth
 
 from utils.atomFeed import generate_feed
 
-from managers.user_manager import new_user, UserManager
+from managers.user_manager import new_user_async, UserManager
 from managers.notification_manager import NotificationManager
 from tasks.emails import confirm_token
 
@@ -33,11 +33,11 @@ class RedirectUsername(BaseHandler):
     async def get(self, username:str):
         
         try:
-            user = await self.application.objects.get(UserProfile.select().where(UserProfile.user.username==username))
+            user = await self.application.objects.get(UserProfile.select().join(User).where(User.username==username.lower()))
 
-            self.refirect(f'/accounts/{user.id}')
+            self.redirect(f'/accounts/{user.id}')
         except:
-            self.redirect(f'/404')
+            self.redirect('/404')
 
 
 class AuthUser(BaseHandler):
@@ -200,16 +200,11 @@ class RegisterUser(BaseHandler):
         if '@' not in parseaddr(email)[1]: 
             raise CustomError(reason="Invalid email", status_code=400)
 
-        # TODO: Move the logic from here to elsewhere
-        username_count = await self.application.objects.count(User.select().where(User.username==username))
-
-        free = username_count == 0
-        log.debug(f'username is free: {free}')
-        if valid_password and free:
+        if valid_password:
 
             try:
                 log.debug("Creating new user")
-                profile = new_user(
+                profile = new_user_async(
                     username = username, 
                     password = password,
                     email = parseaddr(email)[1]
