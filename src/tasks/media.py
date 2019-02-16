@@ -40,11 +40,12 @@ def store_media(manager: MediaManager, ident: str, description: str, focus:Tuple
             description = description,
         )
 
-@huey.task()
+@huey.task(retries=3, retry_delay=5)
 def atach_media_to_status(status, media_id):
     try:
         m = Media.get(Media.media_name==media_id)
         m.status = status
         m.save()
     except Media.DoesNotExist:
-        logger.error(f"Media id not found {image} for {status.id}")
+        # TODO: FIX THIS to delete_status
+        logger.error(f"Media id not found {media_id} for {status.id}")
