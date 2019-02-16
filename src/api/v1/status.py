@@ -23,10 +23,19 @@ from anfora_parser.parser import Parser
 from tasks.redis.spreadStatus import spread_status
 from tasks.redis.remove_status import remove_status
 from tasks.media import atach_media_to_status
+from tasks.config import huey # import the huey we instantiated in config.py
 
 from settings import (salt_code, BASE_URL)
 
 logger = logging.getLogger(__name__)
+
+class StatusAP(BaseHandler):
+
+    async def get(self, username, id):
+
+        status = await self.application.objects.get(Status, id=id)
+
+        self.write(status.to_activitystream())
 
 
 class StatusHandler(TokenAuthHandler):
@@ -91,6 +100,10 @@ class UserStatuses(TokenAuthHandler):
 
     get: requires the id argument
     """
+
+    def _then(self, task, *args):
+        return task.then(*args)
+
     @token_authenticated
     async def get(self, user):
         photos = await self.application.objects.execute(
@@ -135,15 +148,22 @@ class UserStatuses(TokenAuthHandler):
             data['caption'] = parsed.html
 
             status = await self.application.objects.create(Status, **data)
-        
-            for image in self.kwargs.get('media_ids'):
-                atach_media_to_status(status, image)
+
+            
+            imgs = self.kwargs.get('media_ids')
+
+            task = atach_media_to_status.s(status, imgs[0])
+
+            for image in imgs[1:]:
+                task = self._then(task, atach_media_to_status, status, image)
 
             await self.application.objects.execute(
                 UserProfile.update({UserProfile.statuses_count: UserProfile.statuses_count + 1}).where(UserProfile.id == user.id)
             )
 
-            spread_status(status, mentions)
+            task = self._then(task, spread_status, status, mentions, True)
+
+            huey.enqueue(task)
 
             self.write(json.dumps(status.to_json(),default=str))
 
