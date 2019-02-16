@@ -18,4 +18,5 @@ smtp_port: 572,
 smtp_login: '',
 smtp_password: '',
 smtp_adress: '',
-DEBUG: False}
+DEBUG: False,
+reg: True}
