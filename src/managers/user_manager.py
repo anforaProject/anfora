@@ -85,7 +85,7 @@ def valid_username(username):
 
 def new_user(username, password, email,
              is_remote = False, confirmed=False, is_private = False, 
-             is_admin=False, public_key=None, name=None, description = "", ap_id = None):
+             is_admin=False, public_key=None, name=None, description = "", ap_id = None, public_inbox=None):
 
     """
         Returns False or UserProfile
@@ -110,7 +110,7 @@ def new_user(username, password, email,
         email = email, 
         confirmed = confirmed,
         is_admin = is_admin,
-        is_private = is_private
+        is_private = is_private,
     )
 
     logging.debug(f"Created user {user.username}")
@@ -128,7 +128,9 @@ def new_user(username, password, email,
             name = name,
             public_key = public_key,
             ap_id = ap_id,
-            description = description
+            description = description,
+            public_inbox = public_inbox
+
         )
 
         # Send the confirmation email
@@ -154,7 +156,8 @@ async def new_user_async(username : str,
                     name : str = None, 
                     description : str = "", 
                     ap_id : str = None,
-                    send_confirmation: bool = True) -> Union[bool,UserProfile]:
+                    send_confirmation: bool = True,
+                    public_inbox: Union[str, None] = None) -> Union[bool,UserProfile]:
 
     """
         Returns False or UserProfile
@@ -168,8 +171,10 @@ async def new_user_async(username : str,
     # Verify username
 
     logging.debug(f"Starting to create user {username}")
-
-    if not valid_username(username):
+    
+    username_count = await objects.count(User.select().where(User.username==username))
+    
+    if not valid_username(username) or (username_count != 0):
         logger.error(f"@{username} is a not valid username")
         return False
 
@@ -179,12 +184,12 @@ async def new_user_async(username : str,
     # First we create the actual user
     try:
         user = await objects.create(User,
-            username = username,
+            username = username.lower(),
             password = passw,
             email = email, 
             confirmed = confirmed,
             is_admin = is_admin,
-            is_private = is_private
+            is_private = is_private,
         )
     except Exception as e:
         logging.error(f"User not created: {e}")
@@ -205,7 +210,9 @@ async def new_user_async(username : str,
             "user":  user,
             "name":  name,
             "public_key":  public_key,
-            "description": description
+            "description": description,
+            'public_inbox': public_inbox
+
         }
 
         if is_remote:
