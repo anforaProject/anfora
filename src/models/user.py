@@ -74,13 +74,6 @@ class UserProfile(BaseModel):
         if not self.id:
             self.id = self.user.id
 
-        if not self.private_key and not self.public_key:
-            #Create a pair public/private key to sign messages
-            random_generator = Random.new().read
-            key = RSA.generate(2048, random_generator)
-            self.public_key = key.publickey().exportKey().decode('utf-8')
-            self.private_key = key.exportKey().decode('utf-8')
-
         if not self.avatar_file:
             pixel_avatar = PixelAvatar(rows=10, columns=10)
             image_byte_array = pixel_avatar.get_image(size=400, string=self.ap_id, filetype="jpeg")
@@ -99,7 +92,6 @@ class UserProfile(BaseModel):
                 outbox=f'{self.ap_id}/inbox',
                 following=f'{self.ap_id}/following',
                 followers=f'{self.ap_id}/followers',
-                client=uri('user_client', {"username":self.user.username})
             )
 
         return URIs(
@@ -110,7 +102,8 @@ class UserProfile(BaseModel):
             inbox=uri("inbox", {"username":self.username}),
             atom=uri("atom", {"id": self.id}),
             featured=uri("featured", {"username": self.username}),
-            avatar=uri('profile_image', {"name": self.avatar_file})
+            avatar=uri('profile_image', {"name": self.avatar_file}),
+            client=uri('user_client',{'username': self.username})
         )
 
 
@@ -175,9 +168,9 @@ class UserProfile(BaseModel):
                 "summary": self.description,
                 "manuallyApprovesFollowers": self.is_private,
                 "featured": self.uris.featured,
-                "endpoints": [
+                "endpoints": {
                     "sharedInbox": uri('sharedInbox')
-                ]
+                }
             })
 
         return json
