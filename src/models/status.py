@@ -70,7 +70,7 @@ class Status(BaseModel):
 
     def to_activitystream(self):
         json = {
-            "id": self.ap_id,
+            "id": uri("status", {"username":self.user.username, "id":self.id}),
             "type": "Note",
             "summary": None,
             
@@ -95,7 +95,7 @@ class Status(BaseModel):
 
     def save(self,*args, **kwargs):
         if not self.ap_id:
-            self.ap_id = self.uris.id
+            self.ap_id = uri("status", {"username":self.user.username, "id":self.id})
 
         if not self.identifier:
             self.identifier = self.generate_id()
