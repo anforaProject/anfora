@@ -77,6 +77,9 @@ class Undo(Activity):
 class Accept(Activity):
     type = "Accept"
 
+class Delete(Activity):
+    type = 'Delete'
+
 class RsaSignature2017(Activity):
     type = "RsaSignature2017"
 
@@ -86,5 +89,6 @@ ALLOWED_TYPES.update({
     "Follow": Follow,
     "Accept": Accept,
     "Reject": Reject,
+    "Delete": Delete,
     "Undo": Undo
 })
