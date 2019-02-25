@@ -1,10 +1,14 @@
 import json
 import os
+import re
 import requests
 import logging
+import bcrypt
+
 from urllib.parse import urlparse
 from typing import (Any)
 from settings import DOMAIN
+from settings import salt_code
 
 #ActivityPub
 from activityPub.activities import as_activitystream
@@ -13,7 +17,69 @@ from activityPub.activities import as_activitystream
 from models.user import UserProfile, User
 from models.followers import FollowerRelation
 
+#from managers.user_manager import new_user
 # from managers.user_manager import new_user TODO: FIX THIS
+
+def valid_username(username):
+    regex = r'[@\w\d_.]+$'
+    return re.match(regex, username) != None
+
+def new_user(username, password, email,
+             is_remote = False, confirmed=False, is_private = False, 
+             is_admin=False, public_key=None, name=None, description = "", ap_id = None, public_inbox=None):
+
+    """
+        Returns False or UserProfile
+    """
+    
+    # Verify username
+
+    logging.debug(f"Starting to create user {username}")
+
+    if not valid_username(username):
+        logging.error(f"@{username} is a not valid username")
+        return False
+
+    # Hash the password
+    passw = bcrypt.hashpw(password, salt_code)
+
+    # First we create the actual user
+
+    user = User.create(
+        username = username,
+        password = passw,
+        email = email, 
+        confirmed = confirmed,
+        is_admin = is_admin,
+        is_private = is_private,
+    )
+
+    logging.debug(f"Created user {user.username}")
+
+    if name == None:
+        name = username
+
+    # Now we create the profile
+    try:
+        profile = UserProfile.create(
+            id = user.id,
+            disabled = True,
+            is_remote = is_remote,
+            user = user,
+            name = name,
+            public_key = public_key,
+            ap_id = ap_id,
+            description = description,
+            public_inbox = public_inbox
+
+        )
+        
+        logging.info(f"New Profile created: {profile}")
+        return profile
+    except Exception as e:
+        logging.error(e)
+        user.delete_instance()
+        return False
 
 
 class IdentityManager:
@@ -39,7 +105,7 @@ class ActivityPubId(IdentityManager):
         headers = {'Accept': 'application/activity+json'}
 
         #Make a request to the server
-        res = requests.get(self.uri, headers=headers, verify=False)
+        res = requests.get(self.uri, headers=headers)
 
         if res.status_code != 200:
             raise Exception("Failed to dereference {0}".format(self.uri))
@@ -62,7 +128,7 @@ class ActivityPubId(IdentityManager):
 
             user = new_user(
                 username=username,
-                name=user.name,
+                name=user.preferredUsername,
                 ap_id=user.id,
                 is_remote=True,
                 email = None,
