@@ -39,7 +39,11 @@ def push_to_remote_actor(target: Union[UserProfile, str], body: Dict) -> Any:
 
     
     headers = {
-        'Content-Type': 'application/activity+json'
+        'Content-Type': 'application/activity+json',
+        'Accept': 'application/activity+json',
+        'User-Agent': 'Anfora',
+        'Content-Length': str(len(data)),
+        '(request-target)': 'post {}'.format(typed_target)
     }
 
 

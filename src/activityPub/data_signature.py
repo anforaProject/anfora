@@ -99,6 +99,7 @@ class HTTPSignaturesAuthRequest(AuthBase):
 
         log.debug(f'Signed request headers {headers}')
 
+        r.headers.pop('(request-target)')
         r.headers.update(headers)
         return r
 

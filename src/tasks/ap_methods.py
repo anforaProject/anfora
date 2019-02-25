@@ -25,7 +25,7 @@ from tasks.redis.spreadStatus import spread_status
 logger = logging.getLogger(__name__)
 
 @huey.task()
-def handle_follow(activity):
+def handle_follow(activity, original=None):
     # Find if the target user is in our system
     followed = UserProfile.get_or_none(ap_id=activity.object)
     
@@ -55,18 +55,12 @@ def handle_follow(activity):
             message = {
                 "@context": "https://www.w3.org/ns/activitystreams",
                 "type": "Accept",
-                "to": follower.uris.inbox,
+                "to": follower.ap_id,
                 "actor": followed.ap_id,
 
-                # this is wrong per litepub, but mastodon < 2.4 is not compliant with that profile.
-                "object": {
-                    "type": "Follow",
-                    "id": activity.id,
-                    "object": activity.object,
-                    "actor": follower.ap_id
-                },
+                "object": original,
 
-                "id": "https://{}/activities/{}".format('anfora.test', uuid.uuid4()),
+                "id": followed.ap_id + '#accepts/follows/' + str(uuid.uuid4()),
             }
 
 

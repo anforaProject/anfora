@@ -9,7 +9,7 @@ urls = {
     "sharedInbox": "/inbox",
 
     "photos": "/@{username}/photos",
-    "status": "/p/{username}/{id}/ap",
+    "status": "/p/{username}/{id}",
 
     "user": "/users/{username}",
     "profile_image": "/media/files/avatars/{name}",

@@ -55,7 +55,7 @@ class Inbox(BaseHandler):
         result = False
         if activity.type == 'Follow':
             logging.info(f"Starting follow process for {activity.object}" )
-            handle_follow(activity)
+            handle_follow(activity, data)
             self.set_status(200)
         elif activity.type == 'Accept':
             #print(activity.to_json())
