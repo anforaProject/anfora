@@ -53,8 +53,6 @@ parser.add_argument('-m', '--migrate',
                     action="store_const",
                     const="migrate")
 
-
-
 parser.add_argument('--travis-config', dest="command",action="store_const", const="travis")
 
 args = parser.parse_args()
