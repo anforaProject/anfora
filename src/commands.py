@@ -5,6 +5,8 @@ from utils.settings_creator import create_settings_file, travis_setup
 
 from manage_db import (connect, create_tables, migrate)
 
+from manage_user import (create_user)
+
 parser = ArgumentParser()
 parser.add_argument("-t", "--timelines", dest="command",
                     help="Build timelines in the redis database", 
@@ -31,6 +33,20 @@ parser.add_argument('-d', '--syncdb',
                     action="store_const",
                     const="db")
 
+parser.add_argument('-u', '--usercreate',
+                    dest="command",
+                    help="created user",
+                    action="store_const",
+                    const="user")
+
+parser.add_argument('--username', required=False, help="username")
+
+parser.add_argument('--password', required=False, help="password")
+
+parser.add_argument('--email', required=False, help="email")
+
+parser.add_argument('--is_admin', required=False, help="is_admin")
+
 parser.add_argument('-m', '--migrate',
                     dest="command",
                     help="created database",
@@ -51,6 +67,8 @@ elif args.command == 'settings' and args.config:
 elif args.command == 'db':
     connect()
     create_tables()
+elif args.command == 'usercreate' and args.username:
+    create_user(args.username, args.password, args.email, args.is_admin)
 elif args.command == 'travis':
     travis_setup()
 elif args.command == 'migrate':
