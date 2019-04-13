@@ -37,7 +37,7 @@ parser.add_argument('-u', '--usercreate',
                     dest="command",
                     help="created user",
                     action="store_const",
-                    const="user")
+                    const="usercreate")
 
 parser.add_argument('--username', required=False, help="username")
 
@@ -65,7 +65,7 @@ elif args.command == 'settings' and args.config:
 elif args.command == 'db':
     connect()
     create_tables()
-elif args.command == 'usercreate' and args.username:
+elif args.command == 'usercreate':
     create_user(args.username, args.password, args.email, args.is_admin)
 elif args.command == 'travis':
     travis_setup()
