@@ -1,5 +1,5 @@
 from peewee import Model
-from settings import (DB_USER, DB_NAME, DB_PORT, DB_HOST)
+from settings import (DB_USER, DB_NAME, DB_PORT, DB_HOST, DB_PWD)
 #from playhouse.postgres_ext import PostgresqlExtDatabase
 from peewee_async import Manager
 
@@ -9,6 +9,7 @@ from peewee_async import PostgresqlDatabase
 db = PostgresqlDatabase(
     DB_NAME,  # Required by Peewee.
     user=DB_USER,  # Will be passed directly to psycopg2.
+    password=DB_PWD,
     host=DB_HOST,  # Ditto.
     port=DB_PORT,
 )

@@ -23,6 +23,7 @@ salt_code: 'whySoSalty?'
 # DB
 
 db_user: 'anforaUser'
+db_pwd: 'anforaPwd'
 db_port: '5432'
 db_host: 'localhost'
 db_name: 'anforadb'
