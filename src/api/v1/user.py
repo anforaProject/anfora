@@ -200,6 +200,13 @@ class RegisterUser(BaseHandler):
         if '@' not in parseaddr(email)[1]: 
             raise CustomError(reason="Invalid email", status_code=400)
 
+        try:
+            user = await self.application.objects.get(User, username=username)
+            if user:
+                raise CustomError(reason="Username not available", status_code=400)
+        except:
+            pass
+
         if valid_password:
 
             try:
