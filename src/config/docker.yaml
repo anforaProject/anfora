@@ -5,6 +5,7 @@ server_description: ''
 # http config
 scheme: 'http'
 domain: 'localhost'
+port: '3000'
 
 # Positition
 root_path: '/home/yabir/anfora'
