@@ -21,6 +21,7 @@ def create_settings(filen):
         f'SECRET = "{binascii.hexlify(os.urandom(64)).decode()}"\n'
         f'ROOT_PATH = "{settings.get("root_path")}"\n'
         f'DB_USER = "{settings.get("db_user")}"\n'
+        f'DB_PWD = "{settings.get("db_pwd")}"\n'
         f'DB_PORT = "{settings.get("db_port")}"\n'
         f'DB_HOST = "{settings.get("db_host")}"\n'
         f'DB_NAME = "{settings.get("db_name")}"\n'

@@ -1,6 +1,6 @@
 import psycopg2
 
-from settings import (DB_USER, DB_NAME, DB_PORT, DB_HOST)
+from settings import (DB_USER, DB_NAME, DB_PORT, DB_HOST, DB_PWD)
 
 from models.base import db
 import peeweedbevolve
@@ -23,7 +23,7 @@ from models.circles import Circle
 
 
 def create_db():
-    con = psycopg2.connect(dbname='postgres',user="postgres", host=DB_HOST, port=DB_PORT)
+    con = psycopg2.connect(dbname=DB_NAME, user=DB_USER, host=DB_HOST, port=DB_PORT, password=DB_PWD)
     con.autocommit = True
     cursor = con.cursor()
     cursor.execute(f"SELECT COUNT(*) = 0 FROM pg_catalog.pg_database WHERE datname = '{DB_NAME}'")
