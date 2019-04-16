@@ -1,5 +1,6 @@
 {application_name: Anfora, 
 domain: anfora.test, 
+port: 3000,
 icons_folder: icons, 
 image_folder: max_resolution,
 media_folder: /home/yabir/anfora/uploads, 

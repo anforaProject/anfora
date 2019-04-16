@@ -32,7 +32,7 @@ from api.v1.notifications import NotificationHandler
 
 from api.v1.explore import (ExploreUsers, ExploreServer)
 
-from settings import ROOT_PATH
+from settings import (ROOT_PATH, PORT)
 import tornado.options
 
 
@@ -103,7 +103,7 @@ if __name__ == "__main__":
     #AsyncIOMainLoop().install()
     app = make_app()
 
-    app.listen(3000)
+    app.listen(PORT)
     app.objects = peewee_async.Manager(db)
     
     #loop = asyncio.get_event_loop()
