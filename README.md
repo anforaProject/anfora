@@ -62,5 +62,3 @@ You should have received a copy of the GNU Affero General Public License along w
 ## Some images
 
 ![MobileView](/images/mobile.png)
-![ProfileView](/images/profile_view.png)
-
