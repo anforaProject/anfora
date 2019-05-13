@@ -47,6 +47,8 @@ parser.add_argument('--email', required=False, help="email")
 
 parser.add_argument('--is_admin', required=False, help="is_admin")
 
+parser.add_argument('-q', '--quiet', action="store_false")
+
 parser.add_argument('-m', '--migrate',
                     dest="command",
                     help="created database",
@@ -70,6 +72,6 @@ elif args.command == 'usercreate':
 elif args.command == 'travis':
     travis_setup()
 elif args.command == 'migrate':
-    migrate()
+    migrate(interactive=args.quiet)
 else:
     print("No command found")

@@ -62,5 +62,5 @@ def create_tables():
         if not table.table_exists():
             table.create_table()
 
-def migrate():
-    db.evolve()
+def migrate(interactive=True):
+    db.evolve(interactive=interactive)
