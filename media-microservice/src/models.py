@@ -29,4 +29,4 @@ class Media(Model):
             'created': self.created
         }
         
-        return json.dumps(data, default=str) 
+        return json.dumps(data, default=str)

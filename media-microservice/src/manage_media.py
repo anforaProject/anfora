@@ -7,6 +7,8 @@ from typing import List, Dict
 
 
 from fastapi import APIRouter, File, UploadFile, Form
+from starlette.responses import Response
+from starlette.status import HTTP_201_CREATED, HTTP_404_NOT_FOUND, HTTP_200_OK
 import aiofiles
 
 from models import Media
@@ -43,7 +45,7 @@ async def new_media(user_id:str=Form(...), description:str=Form(...),
 
         await media.save()
         
-        return media.to_json()
+        return Response(status_code = HTTP_201_CREATED, content=media.to_json())
 
     except Exception:
         traceback.print_exc(file=sys.stdout)
