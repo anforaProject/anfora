@@ -1,0 +1,13 @@
+-i https://pypi.org/simple
+aioredis==1.3.0
+async-timeout==3.0.1
+click==7.0
+fastapi==0.40.0
+h11==0.8.1
+hiredis==1.0.0
+httptools==0.0.13 ; sys_platform != 'win32' and sys_platform != 'cygwin' and platform_python_implementation != 'pypy'
+pydantic==0.32.2
+starlette==0.12.8
+uvicorn==0.9.0
+uvloop==0.13.0 ; sys_platform != 'win32' and sys_platform != 'cygwin' and platform_python_implementation != 'pypy'
+websockets==8.0.2

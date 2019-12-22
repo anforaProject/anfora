@@ -1,0 +1,5 @@
+base_url: 'localhost:8000'
+media_folder: '/home/yabirgb/Documents/anfora/microservices/users/src'
+salt_code: 'salt?code'
+domain: 'localhost'
+schema: 'http'

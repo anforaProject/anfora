@@ -1,0 +1,17 @@
+version: '3'
+services:
+  web:
+    build: .
+    ports:
+      - "8005:8080"
+    environment:
+      - PORT=8080
+    volumes:
+      - ./src:/app
+    entrypoint: '/start-reload.sh'
+    depends_on:
+      - redis
+  redis:
+    image: "redis:alpine"
+    expose:
+      - "6379"
