@@ -1,12 +1,19 @@
+import os
 import yaml
 from jsonschema import validate
 
 def load_config(filename='settings.yaml'):
-    with open(filename) as f:
+    try:
+        with open(filename) as f:
     
-        data = yaml.load(f, Loader=yaml.FullLoader)
-        return data
-
+            data = yaml.load(f, Loader=yaml.FullLoader)
+            return data
+    except FileNotFoundError:
+        filename = os.path.join(os.environ.get('PYTHONPATH', '.'), filename)
+        with open(filename) as f:
+            data = yaml.load(f, Loader=yaml.FullLoader)
+            return data
+        
 def validate_user_creation(data:dict) -> bool:
 
     schema = {

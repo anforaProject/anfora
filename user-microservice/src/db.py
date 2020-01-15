@@ -34,8 +34,8 @@ log = logging.getLogger(__name__)
 
 class User(Model):
     id = fields.IntField(pk=True)
-    username = fields.CharField(25,unique=True)
-    password = fields.CharField(256,unique=True)
+    username = fields.CharField(25)
+    password = fields.CharField(256)
     created_at = fields.DatetimeField(auto_now_add = True)
     is_bot = fields.BooleanField(default=False) # True if the account is a bot
     is_admin = fields.BooleanField(default=False) # True if the user is admin
