@@ -4,6 +4,7 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+requests = "*"
 
 [packages]
 aiohttp = "*"
@@ -22,6 +23,7 @@ jsonschema = "*"
 bcrypt = "*"
 gunicorn = "*"
 fastapi = "*"
+pytest = "*"
 
 [requires]
 python_version = "3.7"
