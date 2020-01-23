@@ -9,10 +9,16 @@ def load_config(filename='settings.yaml'):
             data = yaml.load(f, Loader=yaml.FullLoader)
             return data
     except FileNotFoundError:
-        filename = os.path.join(os.environ.get('PYTHONPATH', '.'), filename)
-        with open(filename) as f:
-            data = yaml.load(f, Loader=yaml.FullLoader)
-            return data
+        data = {
+            "base_url": 'localhost:8000',
+            "domain": 'localhost',
+            "schema": "https",
+            "media_folder": ".",
+            "salt_code": "salty"
+        }
+
+        return data
+        
         
 def validate_user_creation(data:dict) -> bool:
 

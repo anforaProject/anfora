@@ -9,19 +9,19 @@ import uvicorn
 
 # db imports 
 
-from db import User, UserProfile
+from src.db import User, UserProfile
 import tortoise.exceptions
 from tortoise.contrib.starlette import register_tortoise
 # Modules
 
-from v1.users.main import router as users_router
-from v1.ap.main import router as ap_router
+from src.v1.users.main import router as users_router
+from src.v1.ap.main import router as ap_router
 # custom import 
 
-from errors import DoesNoExist, ValidationError, UserAlreadyExists
-from utils import validate_user_creation
+from src.errors import DoesNoExist, ValidationError, UserAlreadyExists
+from src.utils import validate_user_creation
 
-from forms import NewUser
+from src.forms import NewUser
 
 app = FastAPI(
     title="Anfora users' API",

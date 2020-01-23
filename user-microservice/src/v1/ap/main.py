@@ -4,11 +4,11 @@ from starlette.schemas import SchemaGenerator
 
 # db imports 
 
-from db import UserProfile
+from src.db import UserProfile
 
 # custom import 
 
-from errors import DoesNoExist, ValidationError, UserAlreadyExists
+from src.errors import DoesNoExist, ValidationError, UserAlreadyExists
 
 router = APIRouter()
 

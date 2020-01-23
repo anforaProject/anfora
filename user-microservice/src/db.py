@@ -14,15 +14,15 @@ from Crypto import Random
 from tortoise.models import Model
 from tortoise import fields
 
-from urls import (uri, URIs)
+from src.urls import (uri, URIs)
 
 #Generate pixeled avatars
 from avatar_gen.pixel_avatar import PixelAvatar
 from hashids import Hashids
 
-from keys import import_keys
+from src.keys import import_keys
 
-from utils import load_config
+from src.utils import load_config
 
 config = load_config()
 

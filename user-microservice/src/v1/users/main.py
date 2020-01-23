@@ -4,14 +4,14 @@ from starlette.schemas import SchemaGenerator
 
 # db imports 
 from tortoise.exceptions import DoesNotExist as TortoiseDoesNotExist
-from db import User, UserProfile
+from src.db import User, UserProfile
 
 # custom import 
 
-from errors import DoesNoExist, ValidationError, UserAlreadyExists
-from utils import validate_user_creation
+from src.errors import DoesNoExist, ValidationError, UserAlreadyExists
+from src.utils import validate_user_creation
 
-from forms import NewUser
+from src.forms import NewUser
 
 router = APIRouter()
 

@@ -5,6 +5,19 @@ from src.server import app
 
 client = TestClient(app)
 
+import os
+
+import pytest
+
+from tortoise.contrib.test import finalizer, initializer
+
+
+@pytest.fixture(scope="session", autouse=True)
+def initialize_tests(request):
+    db_url = os.environ.get("TORTOISE_TEST_DB", "sqlite://:memory:")
+    initializer(["src.db"], db_url=db_url)
+    request.addfinalizer(finalizer)
+
 
 @pytest.fixture
 def set_test_env(monkeypatch):
