@@ -25,46 +25,29 @@ jobs:
       - checkout
 
       - restore_cache:
-          keys:
-            - cache-{{ checksum "Pipfile.lock" }}
-            - cache-
+          keys: 
+            - deps-{{ checksum "poetry.lock" }}
+      - run:
+          name: Install Dependencies
+          command: |
+            poetry install --dev
 
+      - save_cache:
+          key: deps-{{ checksum "poetry.lock" }}
+          paths: 
+            - /home/circleci/.cache/pypoetry/virtualenvs
       - run:
           name: setup env
           command: |
-            pipenv install --dev
             echo 'export VENV_HOME_DIR=$(pwd)' >> $BASH_ENV
             mkdir uploads
             mkdir uploads/avatars
             mkdir uploads/max_resolution
             mkdir uploads/small
 
-      - save_cache:
-          key: cache-{{ checksum "Pipfile.lock" }}
-          paths:
-            - ~/.local
-            - ~/.cache
-      - run:
-          name: setup data
-          command: |
-            cd src 
-            pipenv run python commands.py --travis-config
-            pipenv run python commands.py -s --config config/tests.yaml
-            pipenv run python commands.py -d
-            pipenv run python populate.py
-      - run:
-          name: huey
-          background: true
-          command: |
-            cd src
-            pipenv run huey_consumer.py tasks.main.huey -m 1 -w 12
       - run:
           name: run tests
           command: |
-            cd src
-            pipenv run python -m pytest tests/
-
-      - store_artifacts:
-          path: test-reports
-          destination: test-reports
+            cd user-microservice
+           	poetry run pytest tests/
           
