@@ -24,7 +24,7 @@ jobs:
       - run:
           name: Install Dependencies
           command: |
-            poetry install --dev
+            poetry install
 
       - save_cache:
           key: deps-{{ checksum "poetry.lock" }}
