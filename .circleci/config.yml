@@ -1,14 +1,8 @@
-# Python CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-python/ for more details
-#
-version: 2
+version: 2.1
 jobs:
   build:
     docker:
-      # specify the version you desire here
-      # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
-      - image: circleci/python:3.6.6-jessie-browsers-legacy
+      - image: circleci/python:3.6.8
         environment:
           POPULATE: travis
           REDIS_HOST: localhost
