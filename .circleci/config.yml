@@ -24,8 +24,9 @@ jobs:
       - run:
           name: Install Dependencies
           command: |
-            cd cd user-microservice/
+            cd user-microservice/
             poetry install
+            cd ..
 
       - save_cache:
           key: deps-{{ checksum "poetry.lock" }}
