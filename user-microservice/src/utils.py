@@ -1,12 +1,25 @@
+import os
 import yaml
 from jsonschema import validate
 
 def load_config(filename='settings.yaml'):
-    with open(filename) as f:
+    try:
+        with open(filename) as f:
     
-        data = yaml.load(f, Loader=yaml.FullLoader)
-        return data
+            data = yaml.load(f, Loader=yaml.FullLoader)
+            return data
+    except FileNotFoundError:
+        data = {
+            "base_url": 'localhost:8000',
+            "domain": 'localhost',
+            "schema": "https",
+            "media_folder": ".",
+            "salt_code": "salty"
+        }
 
+        return data
+        
+        
 def validate_user_creation(data:dict) -> bool:
 
     schema = {

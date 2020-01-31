@@ -14,15 +14,15 @@ from Crypto import Random
 from tortoise.models import Model
 from tortoise import fields
 
-from urls import (uri, URIs)
+from src.urls import (uri, URIs)
 
 #Generate pixeled avatars
 from avatar_gen.pixel_avatar import PixelAvatar
 from hashids import Hashids
 
-from keys import import_keys
+from src.keys import import_keys
 
-from utils import load_config
+from src.utils import load_config
 
 config = load_config()
 
@@ -34,8 +34,8 @@ log = logging.getLogger(__name__)
 
 class User(Model):
     id = fields.IntField(pk=True)
-    username = fields.CharField(25,unique=True)
-    password = fields.CharField(256,unique=True)
+    username = fields.CharField(25)
+    password = fields.CharField(256)
     created_at = fields.DatetimeField(auto_now_add = True)
     is_bot = fields.BooleanField(default=False) # True if the account is a bot
     is_admin = fields.BooleanField(default=False) # True if the user is admin

@@ -1,3 +1,5 @@
+import os
+
 # starlette inports 
 from fastapi import FastAPI
 from starlette.responses import JSONResponse
@@ -7,30 +9,48 @@ import uvicorn
 
 # db imports 
 
-from db import User, UserProfile
-from init_db import register_tortoise
+from src.db import User, UserProfile
 import tortoise.exceptions
+from tortoise.contrib.starlette import register_tortoise
+# Modules
 
+from src.v1.users.main import router as users_router
+from src.v1.ap.main import router as ap_router
 # custom import 
 
-from errors import DoesNoExist, ValidationError, UserAlreadyExists
-from utils import validate_user_creation
+from src.errors import DoesNoExist, ValidationError, UserAlreadyExists
+from src.utils import validate_user_creation
 
-from forms import NewUser
+from src.forms import NewUser
 
-app = FastAPI(debug=True)
-
-register_tortoise(
-    app, db_url="sqlite://memory.sql", modules={"models": ["db"]}, generate_schemas=True
+app = FastAPI(
+    title="Anfora users' API",
+    version="0.0.1",
+    debug=True
 )
+
+if os.environ.get("ENV", "production") == "testing":
+    register_tortoise(
+        app,
+        db_url="sqlite://testing_db.sql",
+        modules={"models": ["db"]},
+        generate_schemas=True
+    )
+else:
+    register_tortoise(
+        app,
+        db_url="sqlite://memory.sql",
+        modules={"models": ["db"]},
+        generate_schemas=True
+    )
 
 
 @app.get('/api/v1/health')
-async def homepage(request):
+async def homepage():
     return JSONResponse({'status': 'running'})
 
 @app.route('/mock')
-async def moch(request):
+async def moch():
     await User.create(
         username='anforaUser',
         password='shouldBeAHashedPassword',
@@ -50,50 +70,12 @@ async def moch(request):
     print(prof)
     return JSONResponse(prof)
 
-@app.get('/api/v1/users/{username}')
-async def get_user_by_username(username):
-    try:
-        user = await UserProfile.get(user__username=username)
-        return JSONResponse(await user.to_json())
-    except tortoise.exceptions.DoesNotExist: 
-        return DoesNoExist()
+app.include_router(
+    users_router,
+    prefix='/api/v1'
+)
 
-@app.get('/v1/activitypub/{username}')
-async def get_ap_by_username_ap(request):
-    username = request.path_params['username']
-    try:
-        user = await UserProfile.get(user__username=username)
-        print(await user.to_activitystream())
-        return JSONResponse(await user.to_activitystream())
-    except tortoise.exceptions.DoesNotExist: 
-        return DoesNoExist()
-
-
-@app.post('/api/v1/users/create')
-async def create_new_user(data:dict, response:JSONResponse):
-
-    try:
-        data = NewUser(**data)
-    except:
-        ValidationError()
-
-        # Check that an user with this userma doesn't exists already
-
-    try:
-        user = await User.get(username=data.username)
-        if user:
-            return UserAlreadyExists()
-    except tortoise.exceptions.DoesNotExist:
-        user = await User.create(
-            username=data.username,
-            password=data.password,
-            email=data.email
-        )
-
-        prof = UserProfile(
-            user_id = user.id
-        )
-
-        await prof.save()
-
-        return JSONResponse(await prof.to_json())
+app.include_router(
+    ap_router,
+    prefix='/api/v1'
+)
