@@ -6,6 +6,8 @@
 
 ## About
 
+**Not recommended for non developers. Currently under development**
+
 This projects aims to create a simple to use self-hosted gallery app
 with a minimal footprint in the server.
 
