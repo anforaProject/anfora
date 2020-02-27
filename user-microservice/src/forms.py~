@@ -1,6 +1,0 @@
-class NewUser:
-
-    username:str
-    password:str
-    password_confirmation:str
-    email:str

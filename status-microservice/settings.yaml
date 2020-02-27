@@ -1,5 +1,0 @@
-media_server_url: 'http://localhost:5003'
-domain: 'http://localhost:5002'
-schema: 'http'
-base_url: 'localhost'
-media_folder: '.'
