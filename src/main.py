@@ -33,14 +33,14 @@ if os.environ.get("ENV", "production") == "testing":
     register_tortoise(
         app,
         db_url="sqlite://testing_db.sql",
-        modules={"models": ["models.users"]},
+        modules={"models": ["src.models.users"]},
         generate_schemas=True
     )
 else:
     register_tortoise(
         app,
         db_url="sqlite://memory.sql",
-        modules={"models": ["models.users"]},
+        modules={"models": ["src.models.users"]},
         generate_schemas=True
     )
 
