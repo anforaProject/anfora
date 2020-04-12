@@ -7,6 +7,7 @@ import threading
 from concurrent.futures import Future, ThreadPoolExecutor
 import contextvars
 
+
 class SyncToAsync:
     """
     Utility class which turns a synchronous callable into an awaitable that
