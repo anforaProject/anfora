@@ -7,7 +7,7 @@ from jwt import PyJWTError
 from passlib.context import CryptContext
 from pydantic import BaseModel
 
-from src.models import UserProfile
+from src.models.users import UserProfile
 
 # to get a string like this run:
 # openssl rand -hex 32
@@ -36,9 +36,6 @@ class TokenData(BaseModel):
     username: str = None
 
 
-class UserInDB(User):
-    hashed_password: str
-
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -62,10 +59,10 @@ def get_user(db, username: str):
 
 
 def authenticate_user(fake_db, username: str, password: str):
-    user = get_user(fake_db, username)
+    user = await UserProfile.filter(username = username).first()
     if not user:
         return False
-    if not verify_password(password, user.hashed_password):
+    if not verify_password(password, user.password):
         return False
     return user
 
