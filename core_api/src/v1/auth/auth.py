@@ -1,17 +1,26 @@
 from datetime import datetime, timedelta
 
 import jwt
-from fastapi import Depends, FastAPI, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi import Depends, APIRouter, HTTPException, status
+from fastapi.security import (
+    OAuth2PasswordBearer,
+    OAuth2PasswordRequestForm,
+    HTTPBasic,
+    HTTPBasicCredentials,
+)
 from jwt import PyJWTError
 from passlib.context import CryptContext
 from pydantic import BaseModel
 
 from src.models.users import UserProfile
+<<<<<<< HEAD:core_api/src/v1/auth/auth.py
+=======
+from src.settings import settings
+>>>>>>> 41e6f65d82f580c9fa219fb32f1a6ce2021e6ba7:src/v1/auth/auth.py
 
 # to get a string like this run:
 # openssl rand -hex 32
-SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
+SECRET_KEY = settings.security.secret_key
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -36,12 +45,18 @@ class TokenData(BaseModel):
     username: str = None
 
 
+<<<<<<< HEAD:core_api/src/v1/auth/auth.py
+=======
+class UserInDB:
+    hashed_password: str
+
+>>>>>>> 41e6f65d82f580c9fa219fb32f1a6ce2021e6ba7:src/v1/auth/auth.py
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
-app = FastAPI()
+app = APIRouter()
 
 
 def verify_password(plain_password, hashed_password):
@@ -52,19 +67,26 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def get_user(db, username: str):
-    if username in db:
-        user_dict = db[username]
-        return UserInDB(**user_dict)
+async def get_user(username: str):
+    u = await UserProfile.get_or_none(user__username=username)
+    return u
 
 
+<<<<<<< HEAD:core_api/src/v1/auth/auth.py
 def authenticate_user(fake_db, username: str, password: str):
     user = await UserProfile.filter(username = username).first()
     if not user:
         return False
     if not verify_password(password, user.password):
+=======
+async def authenticate_user(username: str, password: str):
+    prof = await get_user(username)
+    if not prof:
         return False
-    return user
+    if not verify_password(password, await prof.password):
+>>>>>>> 41e6f65d82f580c9fa219fb32f1a6ce2021e6ba7:src/v1/auth/auth.py
+        return False
+    return prof
 
 
 def create_access_token(*, data: dict, expires_delta: timedelta = None):
@@ -92,22 +114,27 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         token_data = TokenData(username=username)
     except PyJWTError:
         raise credentials_exception
-    user = get_user(fake_users_db, username=token_data.username)
+    user = await get_user(token_data.username)
     if user is None:
         raise credentials_exception
     return user
 
 
-async def get_current_active_user(current_user: User = Depends(get_current_user)):
+async def get_current_active_user(
+    current_user: UserProfile = Depends(get_current_user),
+):
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
 
+security = HTTPBasic()
+
+
 @app.post("/token", response_model=Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = authenticate_user(fake_users_db, form_data.username, form_data.password)
-    if not user:
+async def login_for_access_token(form_data: HTTPBasicCredentials = Depends(security)):
+    prof = await authenticate_user(form_data.username, form_data.password)
+    if not prof:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -115,6 +142,6 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
+        data={"sub": prof.user.username}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}

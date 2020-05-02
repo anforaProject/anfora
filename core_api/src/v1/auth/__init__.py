@@ -1,1 +1,3 @@
-from src.v1.auth.auth import get_current_user
+# import router from auth file 
+
+from .auth import app

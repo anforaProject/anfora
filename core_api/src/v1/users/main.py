@@ -2,23 +2,23 @@ from fastapi import APIRouter, Depends
 from starlette.responses import JSONResponse
 from starlette.schemas import SchemaGenerator
 
-# db imports 
+from passlib.context import CryptContext
+
+# db imports
 from tortoise.exceptions import DoesNotExist as TortoiseDoesNotExist
 from src.models.users import User, UserProfile
 
-# custom import 
+# custom import
 
 from src.errors import DoesNoExist, ValidationError, UserAlreadyExists
 from src.utils import validate_user_creation
-
 from src.forms import NewUser
-
-from src.v1.auth import get_current_user
 
 router = APIRouter()
 
-@router.get('/accounts/{username}')
-async def get_user_by_username(username:str):
+
+@router.get("/accounts/{username}")
+async def get_user_by_username(username: str):
 
     """
 
@@ -26,16 +26,16 @@ async def get_user_by_username(username:str):
     with the given username
 
     """
-    
+
     try:
         user = await UserProfile.get(user__username=username)
         return JSONResponse(await user.to_json())
-    except TortoiseDoesNotExist: 
+    except TortoiseDoesNotExist:
         return DoesNoExist()
 
 
-@router.post('/accounts/create')
-async def create_new_user(data:dict, response:JSONResponse):
+@router.post("/accounts/create")
+async def create_new_user(data: dict, response: JSONResponse):
 
     try:
         data = NewUser(**data)
@@ -49,37 +49,38 @@ async def create_new_user(data:dict, response:JSONResponse):
         if user:
             return UserAlreadyExists()
     except TortoiseDoesNotExist:
+
+        myctx = CryptContext(schemes=["bcrypt"])
+
         user = await User.create(
-            username=data.username,
-            password=data.password,
-            email=data.email
+            username=data.username, password=myctx.hash(data.password), email=data.email
         )
 
-        prof = UserProfile(
-            user_id = user.id
-        )
+        prof = UserProfile(user_id=user.id)
 
         await prof.save()
 
         return JSONResponse(await prof.to_json())
 
-@router.get('/accounts/{username}/followers')
+
+@router.get("/accounts/{username}/followers")
 async def get_followers(username):
     try:
         user = await UserProfile.get(user__username=username)
         return JSONResponse(await user.followers.all())
-    except TortoiseDoesNotExist: 
+    except TortoiseDoesNotExist:
         return DoesNoExist()
 
-@router.get('/accounts/{username}/following')
+
+@router.get("/accounts/{username}/following")
 async def get_followers(username):
     try:
         user = await UserProfile.get(user__username=username)
         return JSONResponse(await user.followers)
-    except TortoiseDoesNotExist: 
+    except TortoiseDoesNotExist:
         return DoesNoExist()
 
 
-@router.get('/accounts/me')
-async def get_current_user_information(current_user:UserProfile = Depends):
+@router.get("/accounts/me")
+async def get_current_user_information(current_user: UserProfile = Depends()):
     pass
