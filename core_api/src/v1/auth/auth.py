@@ -13,10 +13,7 @@ from passlib.context import CryptContext
 from pydantic import BaseModel
 
 from src.models.users import UserProfile
-<<<<<<< HEAD:core_api/src/v1/auth/auth.py
-=======
 from src.settings import settings
->>>>>>> 41e6f65d82f580c9fa219fb32f1a6ce2021e6ba7:src/v1/auth/auth.py
 
 # to get a string like this run:
 # openssl rand -hex 32
@@ -45,12 +42,9 @@ class TokenData(BaseModel):
     username: str = None
 
 
-<<<<<<< HEAD:core_api/src/v1/auth/auth.py
-=======
 class UserInDB:
     hashed_password: str
 
->>>>>>> 41e6f65d82f580c9fa219fb32f1a6ce2021e6ba7:src/v1/auth/auth.py
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -72,19 +66,11 @@ async def get_user(username: str):
     return u
 
 
-<<<<<<< HEAD:core_api/src/v1/auth/auth.py
-def authenticate_user(fake_db, username: str, password: str):
-    user = await UserProfile.filter(username = username).first()
-    if not user:
-        return False
-    if not verify_password(password, user.password):
-=======
 async def authenticate_user(username: str, password: str):
     prof = await get_user(username)
     if not prof:
         return False
     if not verify_password(password, await prof.password):
->>>>>>> 41e6f65d82f580c9fa219fb32f1a6ce2021e6ba7:src/v1/auth/auth.py
         return False
     return prof
 
