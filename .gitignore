@@ -9,3 +9,4 @@ node_modules/*
 dev.yaml
 *.sh
 src/server_info.py
+*/target/*
