@@ -13,7 +13,7 @@ jobs:
       - image: circleci/postgres:10.3-alpine
       - image: circleci/redis:4.0.9-alpine
 
-    working_directory: ~/anfora/core_api
+    working_directory: ~/anfora/core
 
     steps:
       - checkout
