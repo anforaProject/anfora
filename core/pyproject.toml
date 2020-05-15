@@ -8,7 +8,7 @@ license = "AGPL-3.0"
 [tool.poetry.dependencies]
 python = "^3.6"
 fastapi = "^0.54.1"
-tortoise-orm = "^0.15.9"
+tortoise-orm = "^0.16.11"
 uvicorn = "^0.11.2"
 pyyaml = "^5.3"
 avatar-gen = {git = "https://github.com/lsdlab/avatar-gen.git"}
@@ -21,6 +21,7 @@ passlib = {extras = ["bcrypt"], version = "^1.7.2"}
 toml = "^0.10.0"
 python-box = "^4.2.2"
 python-multipart = "^0.0.5"
+aerich = "^0.1.1"
 
 [tool.poetry.dev-dependencies]
 requests = "^2.22.0"
