@@ -13,26 +13,29 @@ jobs:
       - image: circleci/postgres:10.3-alpine
       - image: circleci/redis:4.0.9-alpine
 
-    working_directory: ~/anfora/core
+    
 
     steps:
       - checkout
 
       - restore_cache:
+          working_directory: ~/anfora/core
           keys: 
             - deps-{{ checksum "poetry.lock" }}
       - run:
           name: Install Dependencies
+          working_directory: ~/anfora/core
           command: |
-            ls
             poetry install
 
       - save_cache:
+          working_directory: ~/anfora/core
           key: deps-{{ checksum "poetry.lock" }}
           paths: 
             - /home/circleci/.cache/pypoetry/virtualenvs
       - run:
           name: setup env
+          working_directory: ~/anfora/core
           command: |
             echo 'export VENV_HOME_DIR=$(pwd)' >> $BASH_ENV
             mkdir uploads
@@ -42,6 +45,7 @@ jobs:
 
       - run:
           name: run tests
+          working_directory: ~/anfora/core
           command: |
             poetry run pytest tests/
           
