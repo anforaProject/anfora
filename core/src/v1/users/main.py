@@ -6,7 +6,7 @@ from passlib.context import CryptContext
 
 # db imports
 from tortoise.exceptions import DoesNotExist as TortoiseDoesNotExist
-from src.models.users import User, UserProfile
+from src.models.users import UserProfile
 
 # custom import
 
@@ -45,22 +45,18 @@ async def create_new_user(data: dict, response: JSONResponse):
         # Check that an user with this userma doesn't exists already
 
     try:
-        user = await User.get(username=data.username)
+        user = await UserProfile.get(username=data.username)
         if user:
             return UserAlreadyExists()
     except TortoiseDoesNotExist:
 
         myctx = CryptContext(schemes=["bcrypt"])
 
-        user = await User.create(
+        user = await UserProfile.create(
             username=data.username, password=myctx.hash(data.password), email=data.email
         )
 
-        prof = UserProfile(user_id=user.id)
-
-        await prof.save()
-
-        return JSONResponse(await prof.to_json())
+        return JSONResponse(user.to_json())
 
 
 @router.get("/accounts/{username}/followers")

@@ -32,28 +32,6 @@ salt_code = config["salt_code"]
 
 log = logging.getLogger(__name__)
 
-
-class User(Model):
-    id = fields.IntField(pk=True)
-    username = fields.CharField(25)
-    password = fields.CharField(256)
-    created_at = fields.DatetimeField(auto_now_add=True)
-    is_bot = fields.BooleanField(default=False)  # True if the account is a bot
-    is_admin = fields.BooleanField(default=False)  # True if the user is admin
-    email = fields.CharField(256, unique=True, null=False)  # User's email
-    confirmed = fields.BooleanField(default=False)  # The user has confirmed the email
-    confirmation_sent_at = fields.DatetimeField(
-        auto_now_add=True
-    )  # Moment when the confirmation email was sent
-    last_sign_in_at = fields.DatetimeField(
-        auto_now_add=True
-    )  # Last time the user signed in epoch since
-    is_private = fields.BooleanField(default=False)  # The account has limited access
-
-    def __repr__(self):
-        return self.username
-
-
 class UserProfile(Model):
 
     id = fields.IntField(pk=True)
@@ -72,28 +50,27 @@ class UserProfile(Model):
     following_count = fields.IntField(default=0)
     followers_count = fields.IntField(default=0)
     statuses_count = fields.IntField(default=0)
-    user = fields.ForeignKeyField("models.User", on_delete="CASCADE")
     public_inbox = fields.CharField(256, null=True)
 
     followers = fields.ManyToManyField("models.UserProfile", related_name="following")
 
-    @property
-    async def username(self):
-        await self.fetch_related("user")
-        return self.user.username
+    username = fields.CharField(25)
+    password = fields.CharField(256)
+    created_at = fields.DatetimeField(auto_now_add=True)
+    is_bot = fields.BooleanField(default=False)  # True if the account is a bot
+    is_admin = fields.BooleanField(default=False)  # True if the user is admin
+    email = fields.CharField(256, unique=True, null=False)  # User's email
+    confirmed = fields.BooleanField(default=False)  # The user has confirmed the email
+    confirmation_sent_at = fields.DatetimeField(
+        auto_now_add=True
+    )  # Moment when the confirmation email was sent
+    last_sign_in_at = fields.DatetimeField(
+        auto_now_add=True
+    )  # Last time the user signed in epoch since
+    is_private = fields.BooleanField(default=False)  # The account has limited access
 
     @property
-    async def password(self):
-        await self.fetch_related("user")
-        return self.user.password
-
-    @property
-    async def is_private(self):
-        await self.fetch_related("user")
-        return self.user.is_private
-
-    @property
-    async def uris(self):
+    def uris(self):
         if self.is_remote:
             return URIs(
                 id=self.ap_id,
@@ -104,26 +81,25 @@ class UserProfile(Model):
             )
 
         return URIs(
-            id=uri("user", {"username": await self.username}),
-            following=uri("following", {"username": await self.username}),
-            followers=uri("followers", {"username": await self.username}),
-            outbox=uri("outbox", {"username": await self.username}),
-            inbox=uri("inbox", {"username": await self.username}),
+            id=uri("user", {"username": self.username}),
+            following=uri("following", {"username": self.username}),
+            followers=uri("followers", {"username": self.username}),
+            outbox=uri("outbox", {"username": self.username}),
+            inbox=uri("inbox", {"username": self.username}),
             atom=uri("atom", {"id": self.id}),
-            featured=uri("featured", {"username": await self.username}),
+            featured=uri("featured", {"username": self.username}),
             avatar=uri("profile_image", {"name": self.avatar_file}),
-            client=uri("user_client", {"username": await self.username}),
+            client=uri("user_client", {"username": self.username}),
         )
 
-    async def to_json(self):
-        await self.fetch_related("user")
+    def to_json(self):
         json = {
             "id": self.id,
-            "username": await self.username,
+            "username": self.username,
             "name": self.name,
             "display_name": self.name,
-            "locked": await self.is_private,
-            "created_at": str(self.user.created_at),
+            "locked": self.is_private,
+            "created_at": str(self.created_at),
             "followers_count": self.followers_count,
             "following_count": self.following_count,
             "statuses_count": self.statuses_count,
@@ -132,14 +108,14 @@ class UserProfile(Model):
             "avatar": self.avatar,
             "moved": None,
             "fields": [],
-            "bot": self.user.is_bot,
+            "bot": self.is_bot,
         }
 
         if self.is_remote:
             json.update({"acct": self.ap_id})
 
         else:
-            json.update({"acct": await self.username})
+            json.update({"acct": self.username})
 
         return json
 

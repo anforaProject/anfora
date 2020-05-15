@@ -9,14 +9,13 @@ import uvicorn
 
 # db imports
 
-from src.models.users import User, UserProfile
+from src.models.users import UserProfile
 import tortoise.exceptions
 from tortoise.contrib.starlette import register_tortoise
 
 # Modules
 
 from src.v1.users.main import router as users_router
-from src.v1.ap.main import router as ap_router
 from src.v1.auth import app as auth_router
 
 # custom import
@@ -70,7 +69,5 @@ async def moch():
 
 
 app.include_router(users_router, prefix="/api/v1")
-
-app.include_router(ap_router, prefix="/api/v1")
 
 app.include_router(auth_router, prefix="/api/v1")

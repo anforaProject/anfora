@@ -4,7 +4,7 @@ from starlette.schemas import SchemaGenerator
 
 # db imports
 from tortoise.exceptions import DoesNotExist as TortoiseDoesNotExist
-from src.models.users import User, UserProfile
+from src.models.users import UserProfile
 
 # custom import
 
@@ -20,6 +20,6 @@ from src.v1.users.main import router
 async def get_user_by_username(username):
     try:
         user = await UserProfile.get(user__username=username)
-        return JSONResponse(await user.to_json())
+        return JSONResponse(user.to_json())
     except TortoiseDoesNotExist:
         return DoesNoExist()
