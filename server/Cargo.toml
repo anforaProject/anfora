@@ -1,0 +1,19 @@
+[package]
+name = "server"
+version = "0.1.0"
+authors = ["Yabir Garcia <yabirg@protonmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+diesel = { version = "1.4.5", features = ["postgres","chrono", "r2d2", "64-column-tables"] }
+diesel_migrations = "1.4.0"
+dotenv = "0.15.0"
+bcrypt = "0.8.0"
+activitystreams = "0.6.2"
+actix = "0.9.0"
+actix-web = "2.0.0"
+actix-files = "0.2.2"
+actix-web-actors = "2.0.0"
+actix-rt = "1.1.1"
