@@ -10,7 +10,7 @@ edition = "2018"
 diesel = { version = "1.4.5", features = ["postgres","chrono", "r2d2", "64-column-tables"] }
 diesel_migrations = "1.4.0"
 dotenv = "0.15.0"
-bcrypt = "0.8.0"
+rust-argon2 = "0.8"
 activitystreams = "0.6.2"
 actix = "0.9.0"
 actix-web = "2.0.0"
