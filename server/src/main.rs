@@ -1,8 +1,6 @@
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
-use diesel::prelude::*;
-use diesel::r2d2::{self, ConnectionManager};
-
-type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
+use ::routes;
+use crate::DbPool
 
 async fn index(
     pool: web::Data<DbPool>
@@ -32,6 +30,7 @@ async fn main() -> std::io::Result<()> {
             .data(pool.clone())
             .route("/", web::get().to(index))
             .route("/again", web::get().to(index2))
+            .configure(routes::api::config)
     })
     .bind("127.0.0.1:8000")?
     .run()

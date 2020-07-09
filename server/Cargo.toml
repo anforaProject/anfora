@@ -17,3 +17,6 @@ actix-web = "2.0.0"
 actix-files = "0.2.2"
 actix-web-actors = "2.0.0"
 actix-rt = "1.1.1"
+serde = { version = "1.0.114", features = ["derive"] }
+chrono = { version = "0.4.13", features = ["serde"] }
+failure = "0.1.8"

@@ -1,11 +1,12 @@
 use diesel::prelude::PgConnection;
-use diesel::dsl::{insert_into};
+use diesel::dsl::*;
 use diesel::result::Error;
-use diesel;
+use diesel::*;
 use crate::schema::{user_, user_::dsl::*, user_profile, user_profile::dsl::*};
 use argon2::{self, Config};
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug, Queryable)]
+#[derive(Identifiable, Debug, Queryable)]
 #[table_name = "user_"]
 pub struct User{
     pub id: i32,
@@ -21,12 +22,12 @@ pub struct User{
     pub email_verified_at: Option<chrono::NaiveDateTime>,
     pub is_twofa_enabled: bool,
     pub twofa_codes: Option<diesel::pg::types::sql_types::Json>,
-    pub twofa_secret: Option<String>m
+    pub twofa_secret: Option<String>,
     pub twofa_setup_at: Option<chrono::NaiveDateTime>,
     pub delete_after: Option<chrono::NaiveDateTime>
 }
 
-#[derive(Insertable, Clone, Debug)]]
+#[derive(Insertable, Clone, Debug)]
 #[table_name="user_"]
 pub struct NewUser{
     pub username: String,
@@ -42,12 +43,11 @@ impl User{
     }
 
     pub fn read(conn: &PgConnection, user_id: i32)-> Result<Self, Error>{
-        user_find(user_id).first::<Self>(conn)
+        user_.find(user_id).first::<Self>(conn)
     }
 }
 
-#[derive(Debug, Queryable)]
-#[table_name = "user_profile"]
+#[derive(Serialize, Deserialize, Debug, Queryable)]
 pub struct User_profile{
     pub user_id: i32,
     pub domain: Option<String>,
@@ -74,46 +74,45 @@ pub struct User_profile{
     pub webfinger: Option<String>
 }
 
-#[derive(Clone, Debug)]]
-#[table_name="user_profile"]
+#[derive(Clone, Debug)]
 pub struct NewUserProfileForm{
     pub username: String,
     pub email: String,
     pub password_secured: String,
     pub is_admin: bool,
     pub can_login: bool,
-    pub inbox_url Option<String>,
-    pub outbox_url Option<String>,
-    pub follower_url Option<String>,
-    pub following_url Option<String>,
-    pub shared_inbox Option<String>,
-    pub webfinger Option<String>,
+    pub inbox_url: Option<String>,
+    pub outbox_url: Option<String>,
+    pub follower_url: Option<String>,
+    pub following_url: Option<String>,
+    pub shared_inbox: Option<String>,
+    pub webfinger: Option<String>,
 
     pub is_remote: Option<bool>
 }
 
-#[derive(Insertable, Clone, Debug)]]
+#[derive(Insertable, Clone, Debug)]
 #[table_name="user_profile"]
 pub struct NewUserProfile{
     pub user_id: i32,
-    pub inbox_url Option<String>,
-    pub outbox_url Option<String>,
-    pub follower_url Option<String>,
-    pub following_url Option<String>,
-    pub shared_inbox Option<String>,
-    pub webfinger Option<String>,
+    pub inbox_url: Option<String>,
+    pub outbox_url: Option<String>,
+    pub follower_url: Option<String>,
+    pub following_url: Option<String>,
+    pub shared_inbox: Option<String>,
+    pub webfinger: Option<String>,
 
     pub is_remote: Option<bool>
 }
 
 impl User_profile{
     pub fn register(conn: &PgConnection, user: &NewUserProfileForm) -> Result<Self, Error>{
-        let mut new_user = form.clone();
+        let mut new_user = user.clone();
         // TODO: Take this salt from other place
         let salt = b"randomsalt213123123";
         let config = Config::default();
 
-        let hashed_password = argon2::hash_encoded(form.password_secured, salt, &config)
+        let hashed_password = argon2::hash_encoded(user.password_secured.as_bytes(), salt, &config)
                                         .expect("Error hashing password");
         
         new_user.password_secured = hashed_password;
@@ -133,12 +132,12 @@ impl User_profile{
             can_login: new_user_profile.can_login
         };
 
-        let user = new_user.create(conn, new_user).expect("Error crating user for profile");
+        let user = User::create(conn, new_user).expect("Error crating user for profile");
 
         let new_profile = NewUserProfile{
             user_id: user.id,
             // TODO: Update the AP urls
-        }
+        };
 
         insert_into(user_profile).values(new_profile).get_result::<Self>(conn)
     }
