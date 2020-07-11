@@ -5,6 +5,7 @@ pub extern crate diesel;
 pub extern crate actix;
 pub extern crate actix_web;
 pub extern crate chrono;
+pub extern crate serde_json;
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
 

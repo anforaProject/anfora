@@ -7,9 +7,9 @@ use serde::{Serialize, Deserialize};
 use diesel::prelude::*;
 
 #[derive(Serialize, Deserialize)]
-struct Register {
+pub struct Register {
   pub username: String,
-  pub email: Option<String>,
+  pub email: String,
   pub password: String,
   pub password_confirmation: String,
   pub admin: bool,
@@ -35,16 +35,23 @@ pub fn register_user_action(
   }
 
   let user_form = NewUserProfileForm{
-    username: form.username,
-    email: form.email,
-    password_secured: form.password,
+    username: form.username.to_owned(),
+    email: form.email.to_owned(),
+    password_secured: form.password.to_owned(),
     is_admin: false,
-    can_login: true
+    can_login: true,
+    is_remote: Some(false),
+    follower_url: None,
+    following_url: None,
+    inbox_url: None,
+    outbox_url: None,
+    webfinger: None,
+    shared_inbox: None
   };
 
   let user_profile_result = match User_profile::register(conn, &user_form) {
     Ok(profile) => profile,
-    Err(e) => return Err(e),
+    Err(e) => return Err(APIError::err("Error registering user")),
   };
 
   Ok(user_profile_result)
@@ -54,7 +61,7 @@ pub fn register_user_action(
 pub async fn register_user(
   pool: web::Data<DbPool>,
   form: web::Json<Register>,
-)->Result<HttpResponse, Error>{
+)->Result<HttpResponse, Error>{  
   let conn = pool.get().expect("couldn't get db connection from pool");
 
   let user = web::block(move || register_user_action(&form, &conn))

@@ -5,8 +5,9 @@ use diesel::*;
 use crate::schema::{user_, user_::dsl::*, user_profile, user_profile::dsl::*};
 use argon2::{self, Config};
 use serde::{Serialize, Deserialize};
+use serde_json;
 
-#[derive(Identifiable, Debug, Queryable)]
+#[derive(Identifiable, PartialEq, Clone, Debug, Queryable)]
 #[table_name = "user_"]
 pub struct User{
     pub id: i32,
@@ -21,13 +22,13 @@ pub struct User{
     pub deleted_at: Option<chrono::NaiveDateTime>,
     pub email_verified_at: Option<chrono::NaiveDateTime>,
     pub is_twofa_enabled: bool,
-    pub twofa_codes: Option<diesel::pg::types::sql_types::Json>,
+    pub twofa_codes: Option<serde_json::Value>,
     pub twofa_secret: Option<String>,
     pub twofa_setup_at: Option<chrono::NaiveDateTime>,
     pub delete_after: Option<chrono::NaiveDateTime>
 }
 
-#[derive(Insertable, Clone, Debug)]
+#[derive(Serialize, Deserialize, Insertable, AsChangeset, Clone, Debug)]
 #[table_name="user_"]
 pub struct NewUser{
     pub username: String,
@@ -42,30 +43,31 @@ impl User{
         insert_into(user_).values(user).get_result::<Self>(conn)
     }
 
-    pub fn read(conn: &PgConnection, user_id: i32)-> Result<Self, Error>{
-        user_.find(user_id).first::<Self>(conn)
+    pub fn read(conn: &PgConnection, id_of_user: i32)-> Result<Self, Error>{
+        user_.find(id_of_user).first::<Self>(conn)
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Queryable)]
+#[derive(Serialize, Deserialize, Debug, Queryable, AsChangeset)]
+#[table_name="user_profile"]
 pub struct User_profile{
     pub user_id: i32,
     pub domain: Option<String>,
     pub status: Option<String>,
     pub name: Option<String>,
     pub bio: Option<String>,
-    pub is_private: bool,
-    pub is_artist: bool,
+    pub is_private: Option<bool>,
+    pub is_artist: Option<bool>,
     pub website: Option<String>,
     pub avatar_url: Option<String>,
     pub header_url: Option<String>,
-    pub profile_layout: String,
+    pub profile_layout: Option<String>,
     pub location: Option<String>,
-    pub is_recommendable: bool,
-    pub is_remote: bool,
+    pub is_recommendable: Option<bool>,
+    pub is_remote: Option<bool>,
     pub private_key: Option<String>,
     pub public_key: Option<String>,
-    pub unlisted: bool,
+    pub unlisted: Option<bool>,
     pub inbox_url: Option<String>,
     pub outbox_url: Option<String>,
     pub follower_url: Option<String>,
@@ -91,7 +93,7 @@ pub struct NewUserProfileForm{
     pub is_remote: Option<bool>
 }
 
-#[derive(Insertable, Clone, Debug)]
+#[derive(Insertable, AsChangeset, Clone, Debug)]
 #[table_name="user_profile"]
 pub struct NewUserProfile{
     pub user_id: i32,
@@ -117,7 +119,7 @@ impl User_profile{
         
         new_user.password_secured = hashed_password;
 
-        // TODO: Add outbox_url, inbos_url ....
+        // TODO: Add outbox_url, inbox_url ....
 
         Self::create(&conn, &new_user)
     }
@@ -125,17 +127,24 @@ impl User_profile{
     fn create(conn: &PgConnection, new_user_profile: &NewUserProfileForm)->Result<Self, Error>{
 
         let new_user = NewUser{
-            username: new_user_profile.username,
-            email: new_user_profile.email,
-            password_secured: new_user_profile.password_secured,
+            username: new_user_profile.username.to_owned(),
+            email: new_user_profile.email.to_owned(),
+            password_secured: new_user_profile.password_secured.to_owned(),
             is_admin: new_user_profile.is_admin,
             can_login: new_user_profile.can_login
         };
 
-        let user = User::create(conn, new_user).expect("Error crating user for profile");
+        let user = User::create(conn, &new_user).expect("Error crating user for profile");
 
         let new_profile = NewUserProfile{
             user_id: user.id,
+            inbox_url: new_user_profile.inbox_url.to_owned(),
+            outbox_url: new_user_profile.outbox_url.to_owned(),
+            follower_url: new_user_profile.follower_url.to_owned(),
+            following_url: new_user_profile.following_url.to_owned(),
+            shared_inbox: new_user_profile.shared_inbox.to_owned(),
+            webfinger: new_user_profile.webfinger.to_owned(),
+            is_remote: new_user_profile.is_remote.to_owned(),
             // TODO: Update the AP urls
         };
 
