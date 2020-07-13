@@ -37,11 +37,16 @@ create table user_profile (
     private_key text,
     public_key text,
     unlisted boolean default true,
+    followers_count integer default 0 not null,
+    following_count integer default 0 not null,
+    statuses_count integer default 0 not null,
     -- Activity pub things
     inbox_url text,
     outbox_url text,
     follower_url text,
     following_url text,
     shared_inbox text,
-    webfinger text
+    webfinger text,
+    -- Retrieval information
+    url text not null
 );

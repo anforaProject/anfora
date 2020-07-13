@@ -68,12 +68,16 @@ pub struct User_profile{
     pub private_key: Option<String>,
     pub public_key: Option<String>,
     pub unlisted: Option<bool>,
+    pub followers_count: i32,
+    pub following_count: i32,
+    pub statuses_count: i32,
     pub inbox_url: Option<String>,
     pub outbox_url: Option<String>,
     pub follower_url: Option<String>,
     pub following_url: Option<String>,
     pub shared_inbox: Option<String>,
-    pub webfinger: Option<String>
+    pub webfinger: Option<String>,
+    pub url: String
 }
 
 #[derive(Clone, Debug)]
@@ -89,7 +93,7 @@ pub struct NewUserProfileForm{
     pub following_url: Option<String>,
     pub shared_inbox: Option<String>,
     pub webfinger: Option<String>,
-
+    pub url: String,
     pub is_remote: Option<bool>
 }
 
@@ -104,7 +108,8 @@ pub struct NewUserProfile{
     pub shared_inbox: Option<String>,
     pub webfinger: Option<String>,
 
-    pub is_remote: Option<bool>
+    pub is_remote: Option<bool>,
+    pub url: String,
 }
 
 impl User_profile{
@@ -145,6 +150,7 @@ impl User_profile{
             shared_inbox: new_user_profile.shared_inbox.to_owned(),
             webfinger: new_user_profile.webfinger.to_owned(),
             is_remote: new_user_profile.is_remote.to_owned(),
+            url: new_user_profile.url.to_owned()
             // TODO: Update the AP urls
         };
 
