@@ -10,5 +10,9 @@ pub fn config(cfg: &mut web::ServiceConfig){
                 web::resource("/user/register")
                     .route(web::post().to(register_user))
             )
+            .service(
+                web::resource("/user/query")
+                    .route(web::post().to(get_user_data))
+            )
     );    
 }
