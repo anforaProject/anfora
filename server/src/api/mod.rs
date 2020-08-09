@@ -3,6 +3,7 @@ use actix_web::{web, ResponseError, HttpResponse};
 use actix_web::http::StatusCode;
 use serde_json::{json, to_string_pretty};
 pub mod user;
+pub mod uploads;
 
 #[derive(Fail, Debug)]
 #[fail(display = "{{\"error\":\"{}\"}}", message)]

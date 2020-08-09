@@ -13,7 +13,8 @@ dotenv = "0.15.0"
 rust-argon2 = "0.8"
 activitystreams = "0.6.2"
 actix = "0.9.0"
-actix-web = "2.0.0"
+actix-multipart = "0.3.0-alpha.1"
+actix-web = "3.0.0-alpha.2"
 actix-files = "0.2.2"
 actix-web-actors = "2.0.0"
 actix-rt = "1.1.1"
@@ -22,3 +23,10 @@ serde_json = { version = "1.0.56", features = ["preserve_order"]}
 chrono = { version = "0.4.13", features = ["serde"] }
 failure = "0.1.8"
 env_logger = "0.7.1"
+actix-form-data = {git = "https://git.asonix.dog/Aardwolf/actix-form-data.git"}
+futures = "0.3.4"
+thiserror = "1.0"
+tokio = { version = "0.2.21", features = ["sync"] }
+tracing = "0.1.15"
+tracing-futures = "0.2.4"
+bytes = "0.5.0"

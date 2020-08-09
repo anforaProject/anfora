@@ -1,9 +1,15 @@
+use actix_form_data::{Error, Field, Form, Value};
+use futures::stream::StreamExt;
+
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
-use anfora_server::routes::{api};
+use anfora_server::routes::{api as routeAPI};
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager, Pool};
+use anfora_server::api;
 
 extern crate env_logger;
+
+struct Gen;
 
 pub type DbPool = Pool<ConnectionManager<PgConnection>>;
 
@@ -32,13 +38,31 @@ async fn main() -> std::io::Result<()> {
     .build(manager)
     .expect("Failed to create pool.");
 
+    let upload_media_form = Form::new()
+    .field("field-name", Field::text())
+    .field(
+        "files",
+        Field::file(|_, _, mut stream| async move {
+            while let Some(res) = stream.next().await {
+                res?;
+            }
+            Ok(None) as Result<_, Error>
+        }),
+    );
+
+
     HttpServer::new(move || {
         App::new()
             .data(pool.clone())
             .wrap(actix_web::middleware::Logger::default())
             .route("/", web::get().to(index))
             .route("/health", web::get().to(index2))
-            .configure(api::config)
+            .configure(routeAPI::config)
+            .wrap(upload_media_form.clone())
+            .service(
+                web::resource("/media/upload")
+                    .route(web::post().to(api::uploads::upload))
+            )
     })
     .bind("127.0.0.1:8000")?
     .run()

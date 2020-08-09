@@ -14,5 +14,6 @@ pub fn config(cfg: &mut web::ServiceConfig){
                 web::resource("/user/query")
                     .route(web::post().to(get_user_data))
             )
+
     );    
 }
