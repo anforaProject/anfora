@@ -144,6 +144,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "actix-fs"
+version = "0.1.0"
+source = "git+https://git.asonix.dog/asonix/actix-fs#460259dda64a158ec3085c483db36d50c70bbe8d"
+dependencies = [
+ "actix-threadpool",
+ "bytes",
+ "futures",
+ "thiserror",
+]
+
+[[package]]
 name = "actix-http"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -557,6 +568,7 @@ dependencies = [
  "actix",
  "actix-files",
  "actix-form-data",
+ "actix-fs",
  "actix-multipart",
  "actix-rt",
  "actix-web 3.0.0-beta.1",
@@ -576,6 +588,7 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-futures",
+ "uuid",
 ]
 
 [[package]]
@@ -2343,6 +2356,16 @@ dependencies = [
  "idna",
  "matches",
  "percent-encoding",
+]
+
+[[package]]
+name = "uuid"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9fde2f6a4bea1d6e007c4ad38c6839fa71cbb63b6dbf5b595aa38dc9b1093c11"
+dependencies = [
+ "rand",
+ "serde",
 ]
 
 [[package]]

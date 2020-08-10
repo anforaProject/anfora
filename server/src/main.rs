@@ -1,7 +1,7 @@
 use actix_form_data::{Error, Field, Form, Value};
 use futures::stream::StreamExt;
 
-use actix_web::{web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{web, App, http::StatusCode,HttpResponse, ResponseError, HttpServer, Responder};
 use anfora_server::routes::{api as routeAPI};
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager, Pool};
@@ -25,6 +25,8 @@ async fn index2(
     HttpResponse::Ok().body("Server is receiving requests")
 }
 
+
+
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
 
@@ -39,14 +41,18 @@ async fn main() -> std::io::Result<()> {
     .expect("Failed to create pool.");
 
     let upload_media_form = Form::new()
-    .field("field-name", Field::text())
+    .field("description", Field::text())
     .field(
-        "files",
-        Field::file(|_, _, mut stream| async move {
-            while let Some(res) = stream.next().await {
-                res?;
-            }
-            Ok(None) as Result<_, Error>
+        "file",
+        Field::file(|filename, ctype, stream| async move {
+            async move {
+                api::uploads::save_file(filename, ctype.to_string(), stream).await
+            }     
+            .await                   
+            .map(Into::into)
+            .map(Some)
+            .map_err(api::uploads::Errors::from)
+
         }),
     );
 
