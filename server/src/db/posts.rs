@@ -37,7 +37,7 @@ pub struct Media{
     pub status_id: i32,
     pub profile_id: i32,
     pub media_path: String,
-    pub reference: Option<String>
+    pub reference: Option<String>,
     pub thumbnail_path: String,
     pub created_at: chrono::NaiveDateTime,
     pub updated_at: chrono::NaiveDateTime,
@@ -80,7 +80,7 @@ pub struct NewPost{
 #[derive(Serialize, Deserialize, Insertable, AsChangeset, Clone, Debug)]
 #[table_name="media"]
 pub struct NewMedia{
-    pub status_id: i32,
+    pub status_id: Option<i32>,
     pub profile_id: i32,
     pub media_path: String,
     pub reference: Option<String>

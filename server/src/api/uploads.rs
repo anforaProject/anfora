@@ -1,12 +1,15 @@
-use actix_form_data::{Field, Form, Value, Error};
+use actix_form_data::{Field, Form, Value, Error, FileMeta};
 use actix_web::{http::StatusCode,HttpResponse, ResponseError};
 use bytes::Bytes;
 use futures::stream::{Stream, TryStreamExt};
 use crate::api::APIError;
 
 use std::{pin::Pin};
+use std::path::{Path, PathBuf};
 
 use uuid::Uuid;
+
+//use crate::db::posts as dbposts;
 
 #[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
 pub struct JsonError {
@@ -50,9 +53,32 @@ impl ResponseError for Errors {
 
 
 pub async fn upload(uploaded_content: Value) -> HttpResponse {
-    println!("Uploaded Content: {:#?}", uploaded_content.map());
+    //println!("Uploaded Content: {:#?}", uploaded_content.copy().map());
 
     // TODO: Insert media here
+    //let path = Path::new(uploaded_content.map().get("file").unwrap());
+
+    let filepath = match uploaded_content.map(){
+        Some(mut map) => {
+            match map.remove("file"){
+                Some(filemeta) => {
+                    match filemeta.file(){
+                        Some(filemeta) => filemeta.saved_as.unwrap().clone(),
+                        _ => PathBuf::from("/")
+                    }                   
+                },
+                _ => PathBuf::from("/")
+            }
+        },
+        _ => PathBuf::from("/")
+    };
+
+    let filename = match filepath.file_name(){
+        Some(name) => name.to_str().unwrap(),
+        None => ""
+    };
+
+    println!("{:?}",filename);
 
     HttpResponse::Created().finish()
 

@@ -9,7 +9,7 @@ use anfora_server::api;
 
 extern crate env_logger;
 
-struct Gen;
+//RUST_LOG=actix_web=debug
 
 pub type DbPool = Pool<ConnectionManager<PgConnection>>;
 
@@ -24,6 +24,7 @@ async fn index2(
 ) -> impl Responder {
     HttpResponse::Ok().body("Server is receiving requests")
 }
+
 
 
 
