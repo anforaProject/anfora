@@ -1,8 +1,8 @@
-use diesel::prelude::PgConnection;
 use diesel::dsl::*;
+use diesel::prelude::PgConnection;
 use diesel::result::Error;
 use diesel::*;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 table! {
     user_view (id) {
@@ -20,11 +20,9 @@ table! {
     }
 }
 
-#[derive(
-    Queryable, Identifiable, PartialEq, Debug, Serialize, Deserialize, Clone
-)]
+#[derive(Queryable, Identifiable, PartialEq, Debug, Serialize, Deserialize, Clone)]
 #[table_name = "user_view"]
-pub struct User_view{
+pub struct User_view {
     pub id: i32,
     pub username: String,
     pub acct: String,
@@ -35,15 +33,19 @@ pub struct User_view{
     pub header: Option<String>,
     pub followers_count: i32,
     pub following_count: i32,
-    pub statuses_count: i32
+    pub statuses_count: i32,
 }
 
-impl User_view{
-    pub fn get_by_username(conn:&PgConnection, username_provided: String)->Result<Self, Error>{
-        user_view::table.filter(user_view::username.eq(username_provided.to_owned())).first::<Self>(conn)
+impl User_view {
+    pub fn get_by_username(conn: &PgConnection, username_provided: String) -> Result<Self, Error> {
+        user_view::table
+            .filter(user_view::username.eq(username_provided.to_owned()))
+            .first::<Self>(conn)
     }
 
-    pub fn get_by_id(conn:&PgConnection, id_provided: i32)->Result<Self, Error>{
-        user_view::table.filter(user_view::id.eq(id_provided)).first::<Self>(conn)
+    pub fn get_by_id(conn: &PgConnection, id_provided: i32) -> Result<Self, Error> {
+        user_view::table
+            .filter(user_view::id.eq(id_provided))
+            .first::<Self>(conn)
     }
 }

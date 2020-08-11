@@ -1,11 +1,11 @@
-use actix_form_data::{Field, Form, Value, Error, FileMeta};
-use actix_web::{http::StatusCode,HttpResponse, ResponseError};
+use crate::api::APIError;
+use actix_form_data::{Error, Field, FileMeta, Form, Value};
+use actix_web::{http::StatusCode, HttpResponse, ResponseError};
 use bytes::Bytes;
 use futures::stream::{Stream, TryStreamExt};
-use crate::api::APIError;
 
-use std::{pin::Pin};
 use std::path::{Path, PathBuf};
+use std::pin::Pin;
 
 use uuid::Uuid;
 
@@ -49,53 +49,44 @@ impl ResponseError for Errors {
     }
 }
 
-
-
-
 pub async fn upload(uploaded_content: Value) -> HttpResponse {
     //println!("Uploaded Content: {:#?}", uploaded_content.copy().map());
 
     // TODO: Insert media here
     //let path = Path::new(uploaded_content.map().get("file").unwrap());
 
-    let filepath = match uploaded_content.map(){
-        Some(mut map) => {
-            match map.remove("file"){
-                Some(filemeta) => {
-                    match filemeta.file(){
-                        Some(filemeta) => filemeta.saved_as.unwrap().clone(),
-                        _ => PathBuf::from("/")
-                    }                   
-                },
-                _ => PathBuf::from("/")
-            }
+    let filepath = match uploaded_content.map() {
+        Some(mut map) => match map.remove("file") {
+            Some(filemeta) => match filemeta.file() {
+                Some(filemeta) => filemeta.saved_as.unwrap().clone(),
+                _ => PathBuf::from("/"),
+            },
+            _ => PathBuf::from("/"),
         },
-        _ => PathBuf::from("/")
+        _ => PathBuf::from("/"),
     };
 
-    let filename = match filepath.file_name(){
+    let filename = match filepath.file_name() {
         Some(name) => name.to_str().unwrap(),
-        None => ""
+        None => "",
     };
 
-    println!("{:?}",filename);
+    println!("{:?}", filename);
 
     HttpResponse::Created().finish()
-
 }
-
 
 pub async fn save_file(
     filename: String,
     ctype: String,
     stream: Pin<Box<dyn Stream<Item = Result<Bytes, Error>>>>,
-)->Result<String, JsonError>{
+) -> Result<String, JsonError> {
     println!("{} {}", filename, ctype);
 
-    let stream = stream.err_into::<JsonError>();    
+    let stream = stream.err_into::<JsonError>();
 
     let uuid = Uuid::new_v4();
-    // TODO: Add extension to file 
+    // TODO: Add extension to file
     let name = format!("/home/yabirgb/anfora_uploads/{}", uuid.to_simple());
 
     let file = actix_fs::file::create(name.clone()).await?;
@@ -106,5 +97,4 @@ pub async fn save_file(
     }
 
     Ok(name)
-
 }

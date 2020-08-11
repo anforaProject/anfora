@@ -10,8 +10,8 @@ use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
 
 pub mod api;
-pub mod routes;
 pub mod db;
+pub mod routes;
 pub mod schema;
 
 pub type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;

@@ -111,10 +111,4 @@ joinable!(post -> place (location_id));
 joinable!(post -> user_profile (profile_id));
 joinable!(user_profile -> user_ (user_id));
 
-allow_tables_to_appear_in_same_query!(
-    media,
-    place,
-    post,
-    user_,
-    user_profile,
-);
+allow_tables_to_appear_in_same_query!(media, place, post, user_, user_profile,);
